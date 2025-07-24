@@ -11,7 +11,7 @@
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
         .transition-all { transition: all 0.3s ease-in-out; }
-        #modal-container.hidden, .tab-content.hidden, #form-modal-container.hidden { display: none; }
+        #modal-container.hidden, .tab-content.hidden, #form-modal-container.hidden, #login-modal-container.hidden { display: none; }
         .tab-btn.active { background-color: #4f46e5; color: white; }
         .tab-btn { background-color: #eef2ff; color: #4f46e5; }
         .gallery-thumbnail { cursor: pointer; border: 2px solid transparent; }
@@ -31,10 +31,15 @@
 
     <div class="container mx-auto p-4 md:p-8">
         
-        <div class="mb-8 flex justify-center border-b border-slate-200">
-            <div class="flex space-x-2 p-1 bg-slate-100 rounded-lg">
-                <button id="tab-home" class="tab-btn active font-semibold py-2 px-6 rounded-md transition-all">Trang Chủ</button>
-                <button id="tab-admin" class="tab-btn font-semibold py-2 px-6 rounded-md transition-all">Admin</button>
+        <div class="flex justify-between items-center mb-8 border-b border-slate-200 pb-4">
+            <div class="text-xl font-bold text-indigo-600">PhongTro.VIP</div>
+            <div class="flex items-center space-x-2">
+                <div id="tab-container" class="flex p-1 bg-slate-100 rounded-lg">
+                    <button id="tab-home" class="tab-btn active font-semibold py-2 px-4 md:px-6 rounded-md transition-all">Trang Chủ</button>
+                    <button id="tab-admin" class="tab-btn font-semibold py-2 px-4 md:px-6 rounded-md transition-all hidden">Admin</button>
+                </div>
+                <button id="login-btn" class="bg-emerald-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-emerald-600 transition-all">Đăng Nhập</button>
+                <button id="logout-btn" class="hidden bg-red-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-600 transition-all">Đăng Xuất</button>
             </div>
         </div>
 
@@ -122,6 +127,25 @@
     <!-- MODALS -->
     <div id="modal-container" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50"></div>
     <div id="form-modal-container" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-[60]"></div>
+    
+    <!-- LOGIN MODAL -->
+    <div id="login-modal-container" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-[70]">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm">
+            <form id="login-form" class="p-8 space-y-6">
+                <h2 class="text-2xl font-bold text-center">Đăng Nhập Admin</h2>
+                <div>
+                    <label for="username" class="block text-sm font-medium text-slate-700">Tên đăng nhập</label>
+                    <input type="text" id="username" class="mt-1 w-full p-2 border border-slate-300 rounded-lg" required>
+                </div>
+                <div>
+                    <label for="password" class="block text-sm font-medium text-slate-700">Mật khẩu</label>
+                    <input type="password" id="password" class="mt-1 w-full p-2 border border-slate-300 rounded-lg" required>
+                </div>
+                <p id="login-error" class="text-red-500 text-sm text-center hidden">Tên đăng nhập hoặc mật khẩu không đúng.</p>
+                <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700">Đăng Nhập</button>
+            </form>
+        </div>
+    </div>
 
     <script>
     const initialData = [
@@ -133,10 +157,17 @@
     let parsedBuildingData = null;
 
     document.addEventListener('DOMContentLoaded', function() {
-        const UPLOADCARE_PUBLIC_KEY = '752888ab1ddb6b4723ac'; // <-- ĐÃ CẬP NHẬT API KEY CỦA BẠN
+        const UPLOADCARE_PUBLIC_KEY = '752888ab1ddb6b4723ac';
         let editingContext = null;
-        
+        let isLoggedIn = false;
+
         // --- LẤY CÁC PHẦN TỬ HTML ---
+        const loginBtn = document.getElementById('login-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const loginModalContainer = document.getElementById('login-modal-container');
+        const loginForm = document.getElementById('login-form');
+        const loginError = document.getElementById('login-error');
+        // ... các element khác
         const zaloInput = document.getElementById('zalo-input');
         const parseBtn = document.getElementById('parse-btn');
         const zaloParserPreview = document.getElementById('zalo-parser-preview');
@@ -144,7 +175,6 @@
         const zaloImagePreviewContainer = document.getElementById('zalo-image-preview-container');
         const zaloUploadBtn = document.getElementById('zalo-upload-btn');
         const addParsedBuildingBtn = document.getElementById('add-parsed-building-btn');
-        // ... các element khác
         const tabHome = document.getElementById('tab-home');
         const tabAdmin = document.getElementById('tab-admin');
         const contentHome = document.getElementById('content-home');
@@ -161,7 +191,55 @@
         const formModalContainer = document.getElementById('form-modal-container');
         const exportJsonBtn = document.getElementById('export-json-btn');
 
-        // --- CÔNG CỤ NHẬP NHANH TỪ ZALO (v5.1) ---
+        // --- HỆ THỐNG ĐĂNG NHẬP ---
+        const ADMIN_USERNAME = 'admin';
+        const ADMIN_PASSWORD = 'password123'; // Bạn nên đổi mật khẩu này
+
+        function updateLoginUI() {
+            if (isLoggedIn) {
+                loginBtn.classList.add('hidden');
+                logoutBtn.classList.remove('hidden');
+                tabAdmin.classList.remove('hidden');
+            } else {
+                loginBtn.classList.remove('hidden');
+                logoutBtn.classList.add('hidden');
+                tabAdmin.classList.add('hidden');
+                switchTab('home'); // Tự động chuyển về trang chủ khi đăng xuất
+            }
+        }
+
+        loginBtn.addEventListener('click', () => {
+            loginModalContainer.classList.remove('hidden');
+        });
+
+        logoutBtn.addEventListener('click', () => {
+            isLoggedIn = false;
+            updateLoginUI();
+        });
+
+        loginModalContainer.addEventListener('click', (e) => {
+            if (e.target === loginModalContainer) {
+                loginModalContainer.classList.add('hidden');
+            }
+        });
+
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+                isLoggedIn = true;
+                loginError.classList.add('hidden');
+                loginModalContainer.classList.add('hidden');
+                updateLoginUI();
+                switchTab('admin'); // Tự động chuyển sang tab admin khi đăng nhập thành công
+            } else {
+                loginError.classList.remove('hidden');
+            }
+        });
+
+        // --- CÔNG CỤ NHẬP NHANH TỪ ZALO ---
         parseBtn.addEventListener('click', () => {
             const text = zaloInput.value;
             if (!text.trim()) { alert('Vui lòng dán nội dung Zalo vào ô.'); return; }
@@ -524,6 +602,7 @@
             amenitiesContainer.innerHTML = Array.from(allAmenities).map(amenity => `<label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" class="amenity-checkbox rounded text-indigo-600" value="${amenity}"><span class="text-slate-600">${amenity.charAt(0).toUpperCase() + amenity.slice(1)}</span></label>`).join('');
             refreshHomeView();
             refreshAdminView();
+            updateLoginUI(); // Cập nhật UI đăng nhập khi tải trang
         };
         tabHome.addEventListener('click', () => switchTab('home'));
         tabAdmin.addEventListener('click', () => switchTab('admin'));
@@ -550,8 +629,13 @@
             URL.revokeObjectURL(url);
             alert("Đã tải file 'data.js'. Vui lòng dùng file này để thay thế dữ liệu trong file HTML của bạn, sau đó cập nhật lên GitHub.");
         });
-        const switchTab = (tab) => { /* Giữ nguyên từ v4 */ 
+        const switchTab = (tab) => { 
             const isHome = tab === 'home';
+            if (!isHome && !isLoggedIn) { // Chặn truy cập admin nếu chưa đăng nhập
+                alert("Vui lòng đăng nhập để truy cập trang Admin.");
+                loginModalContainer.classList.remove('hidden');
+                return;
+            }
             tabHome.classList.toggle('active', isHome);
             tabAdmin.classList.toggle('active', !isHome);
             contentHome.classList.toggle('hidden', !isHome);
