@@ -319,13 +319,17 @@
         zaloUploadBtn.addEventListener('click', () => {
             if (!parsedBuildingData) { alert("Vui lòng xử lý dữ liệu Zalo trước."); return; }
             const widget = uploadcare.openDialog(null, {
-                publicKey: UPLOADCARE_PUBLIC_KEY, multiple: true, tabs: 'file url gdrive facebook instagram',
+                publicKey: UPLOADCARE_PUBLIC_KEY,
+                multiple: true,
+                tabs: `file url gdrive facebook instagram ${UPLOADCARE_PUBLIC_KEY}`
             });
             widget.done(fileGroup => {
                 fileGroup.promise().then(groupInfo => {
                     groupInfo.files.forEach(file => {
-                        parsedBuildingData.tempImageLinks.push(file.cdnUrl);
-                        addImagePreview(zaloImagePreviewContainer, file.cdnUrl, true);
+                        if (!parsedBuildingData.tempImageLinks.includes(file.cdnUrl)) {
+                            parsedBuildingData.tempImageLinks.push(file.cdnUrl);
+                            addImagePreview(zaloImagePreviewContainer, file.cdnUrl, true);
+                        }
                     });
                 });
             });
@@ -390,7 +394,9 @@
                 const uploadBtn = document.getElementById('upload-btn');
                 uploadBtn.addEventListener('click', () => {
                     const widget = uploadcare.openDialog(null, {
-                        publicKey: UPLOADCARE_PUBLIC_KEY, multiple: true, tabs: 'file url gdrive facebook instagram',
+                        publicKey: UPLOADCARE_PUBLIC_KEY,
+                        multiple: true,
+                        tabs: `file url gdrive facebook instagram ${UPLOADCARE_PUBLIC_KEY}`
                     });
                     widget.done(fileGroup => {
                         fileGroup.promise().then(groupInfo => {
