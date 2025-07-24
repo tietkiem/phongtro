@@ -25,6 +25,16 @@
             font-size: 12px; font-weight: bold; cursor: pointer;
             border: 1px solid white;
         }
+        .thumbnail-selector {
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.2s;
+        }
+        .thumbnail-selector.selected {
+            border-color: #4f46e5;
+            box-shadow: 0 0 10px rgba(79, 70, 229, 0.5);
+            transform: scale(1.05);
+        }
     </style>
 </head>
 <body class="text-slate-800">
@@ -116,10 +126,16 @@
                 <button id="add-building-btn" class="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition-all">Thêm Tòa Nhà Mới</button>
             </div>
             <div id="admin-listings-container" class="space-y-4"></div>
-            <div class="mt-8 p-4 border-t-2 border-dashed border-amber-400 bg-amber-50 rounded-lg">
-                 <h3 class="text-lg font-bold text-amber-800">Lưu ý Quan trọng:</h3>
-                 <p class="text-amber-700 mt-2">Sau khi bạn thêm, sửa, hoặc xóa thông tin, dữ liệu chỉ được cập nhật tạm thời trên trình duyệt. Để lưu thay đổi vĩnh viễn, hãy nhấn nút "Tải File Dữ Liệu" và làm theo hướng dẫn.</p>
-                 <button id="export-json-btn" class="mt-4 bg-amber-500 text-white font-bold py-3 px-5 rounded-lg hover:bg-amber-600 transition-all">Tải File Dữ Liệu</button>
+            <div class="mt-8 p-6 bg-amber-50 rounded-lg border border-amber-200">
+                 <h3 class="text-xl font-bold text-amber-800">Quy trình Lưu trữ Dữ liệu</h3>
+                 <p class="text-amber-700 mt-2">Website này hoạt động mà không cần máy chủ để tiết kiệm chi phí. Do đó, quy trình lưu dữ liệu vĩnh viễn cần bạn thực hiện một vài bước đơn giản:</p>
+                 <ol class="list-decimal list-inside mt-4 space-y-2 text-amber-900">
+                    <li>Sau khi hoàn tất việc thêm/sửa/xóa, nhấn vào nút <strong class="font-semibold">"Tải File Dữ Liệu"</strong> bên dưới.</li>
+                    <li>Một file tên là <code class="bg-amber-200 px-1 rounded">data.js</code> sẽ được tải về máy tính của bạn.</li>
+                    <li>Trên máy tính, hãy dùng file vừa tải về để <strong class="font-semibold">thay thế (ghi đè)</strong> file `data.js` cũ trong thư mục dự án.</li>
+                    <li>Cuối cùng, bạn chỉ cần <strong class="font-semibold">đẩy (push) file `data.js` đã thay đổi này lên GitHub</strong>. Website sẽ được cập nhật.</li>
+                 </ol>
+                 <button id="export-json-btn" class="mt-6 bg-amber-500 text-white font-bold py-3 px-5 rounded-lg hover:bg-amber-600 transition-all">Tải File Dữ Liệu (data.js)</button>
             </div>
         </div>
     </div>
@@ -149,7 +165,7 @@
 
     <script>
     const initialData = [
-      { "id_toa_nha": "building001", "tenToaNha": "Chung Cư Mini Láng Hạ", "diaChi": "Số 123, Ngõ 50, Láng Hạ, Đống Đa, Hà Nội", "viTriMap": "https://www.google.com/maps/search/?api=1&query=21.0169,105.8194", "danhSachPhong": [
+      { "id_toa_nha": "building001", "tenToaNha": "Chung Cư Mini Láng Hạ", "diaChi": "Số 123, Ngõ 50, Láng Hạ, Đống Đa, Hà Nội", "viTriMap": "https://www.google.com/maps/search/?api=1&query=21.0169,105.8194", "anhDaiDien": "https://ucarecdn.com/a9e59524-1b28-40c8-9144-54a7a8a65b32/", "danhSachPhong": [
           { "id_phong": "p101", "tenPhong": "Phòng 101 - Ban công", "trangThai": "còn trống", "giaThue": 4500000, "dienTich": 25, "thongTinChiTiet": "Phòng đầy đủ nội thất cao cấp, có ban công thoáng mát, cửa sổ lớn. View nhìn ra công viên.", "tienIch": ["điều hòa", "nóng lạnh", "ban công", "tủ lạnh", "máy giặt"], "linkAnhVideo": ["https://ucarecdn.com/a9e59524-1b28-40c8-9144-54a7a8a65b32/","https://ucarecdn.com/7a68a554-2f22-4634-8d1e-97a935588510/"], "chiPhi": { "điện": "3.800đ/số", "nước": "100.000đ/người", "internet": "100.000đ/phòng", "dịch vụ": "200.000đ/phòng (gồm vệ sinh, an ninh)" }, "datCoc": { "soThang": 1, "ghiChu": "Thanh toán 1 tháng, cọc 1 tháng. Hợp đồng tối thiểu 1 năm." } }
       ]}
     ];
@@ -321,6 +337,10 @@
                 parsedBuildingData.danhSachPhong.forEach(room => {
                     room.linkAnhVideo = [...parsedBuildingData.tempImageLinks];
                 });
+                // Tự động chọn ảnh đầu tiên làm ảnh đại diện
+                if (parsedBuildingData.tempImageLinks.length > 0) {
+                    parsedBuildingData.anhDaiDien = parsedBuildingData.tempImageLinks[0];
+                }
                 delete parsedBuildingData.tempImageLinks; // Xóa thuộc tính tạm
                 
                 currentData.unshift(parsedBuildingData);
@@ -356,6 +376,16 @@
             formModalContainer.querySelector('.cancel-form-btn').addEventListener('click', () => formModalContainer.classList.add('hidden'));
             formModalContainer.querySelector('#admin-form').addEventListener('submit', handleFormSubmit);
 
+            if (type === 'building') {
+                document.querySelectorAll('.thumbnail-selector').forEach(thumb => {
+                    thumb.addEventListener('click', e => {
+                        document.querySelectorAll('.thumbnail-selector').forEach(t => t.classList.remove('selected'));
+                        e.currentTarget.classList.add('selected');
+                        document.getElementById('anhDaiDien').value = e.currentTarget.dataset.url;
+                    });
+                });
+            }
+
             if (type === 'room') {
                 const uploadBtn = document.getElementById('upload-btn');
                 uploadBtn.addEventListener('click', () => {
@@ -382,7 +412,8 @@
 
         function getFormFields(type) {
             if (type === 'building') return [
-                { id: 'tenToaNha', label: 'Tên tòa nhà', type: 'text' }, { id: 'diaChi', label: 'Địa chỉ', type: 'text' }, { id: 'viTriMap', label: 'Link Google Map', type: 'text' }
+                { id: 'tenToaNha', label: 'Tên tòa nhà', type: 'text' }, { id: 'diaChi', label: 'Địa chỉ', type: 'text' }, { id: 'viTriMap', label: 'Link Google Map', type: 'text' },
+                { id: 'anhDaiDien', label: 'Ảnh đại diện', type: 'thumbnail_selector' }
             ];
             return [
                 { id: 'tenPhong', label: 'Tên phòng', type: 'text' }, { id: 'trangThai', label: 'Trạng thái', type: 'select', options: ['còn trống', 'đã thuê'] },
@@ -408,6 +439,16 @@
                                 </div>
                                 <input type="hidden" id="linkAnhVideo" value="${value.join(',')}">
                                 <button type="button" id="upload-btn" class="mt-2 w-full bg-blue-100 text-blue-800 font-semibold py-2 px-4 rounded-lg hover:bg-blue-200">Thêm Ảnh/Video...</button>
+                            </div>`;
+                case 'thumbnail_selector':
+                    const allImages = data.danhSachPhong.flatMap(room => room.linkAnhVideo || []);
+                    if (allImages.length === 0) return `<div><span class="text-slate-700">${field.label}</span><p class="text-sm text-slate-500 mt-1">Tòa nhà này chưa có ảnh nào để chọn.</p><input type="hidden" id="anhDaiDien" value="${value}"></div>`;
+                    return `<div>
+                                <span class="text-slate-700">${field.label} (Nhấp để chọn)</span>
+                                <div class="mt-2 flex flex-wrap gap-2 p-2 border rounded-md bg-slate-50">
+                                    ${allImages.map(url => `<img src="${url}-/preview/100x100/" class="thumbnail-selector w-20 h-20 object-cover rounded-md ${url === value ? 'selected' : ''}" data-url="${url}">`).join('')}
+                                </div>
+                                <input type="hidden" id="anhDaiDien" value="${value}">
                             </div>`;
                 default: return `<label class="block"><span class="text-slate-700">${field.label}</span><input type="${field.type}" id="${field.id}" value="${value}" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm"></label>`;
             }
@@ -457,11 +498,14 @@
             }
         }
         
-        function handleFormSubmit(e) { /* Tương tự v4, nhưng lấy value từ hidden input cho ảnh */
+        function handleFormSubmit(e) {
             e.preventDefault();
             const data = {};
             const fields = getFormFields(editingContext.type);
-            fields.forEach(field => setNestedValue(data, field.id, document.getElementById(field.id).value));
+            fields.forEach(field => {
+                const el = document.getElementById(field.id);
+                if (el) setNestedValue(data, field.id, el.value);
+            });
 
             if (editingContext.type === 'building') {
                 if (editingContext.buildingId) {
@@ -487,7 +531,7 @@
             refreshHomeView();
         }
 
-        function refreshAdminView() { /* Giữ nguyên từ v4 */ 
+        function refreshAdminView() { 
             adminListingsContainer.innerHTML = currentData.map(building => `
                 <div class="admin-card bg-white p-4 rounded-lg shadow border-2 border-transparent transition-all">
                     <div class="flex justify-between items-start">
@@ -505,7 +549,7 @@
                     </div>
                 </div>`).join('');
         }
-        adminListingsContainer.addEventListener('click', e => { /* Giữ nguyên từ v4 */ 
+        adminListingsContainer.addEventListener('click', e => { 
             const { buildingId, roomId } = e.target.dataset;
             if (e.target.matches('.edit-building-btn')) openFormModal('building', currentData.find(b => b.id_toa_nha === buildingId), { buildingId });
             if (e.target.matches('.delete-building-btn')) {
@@ -528,7 +572,7 @@
             }
         });
         const refreshHomeView = () => filterData();
-        function filterData() { /* Giữ nguyên từ v4 */ 
+        function filterData() { 
             const keyword = searchInput.value.toLowerCase();
             const priceRange = priceFilter.value ? priceFilter.value.split('-').map(Number) : null;
             const areaRange = areaFilter.value ? areaFilter.value.split('-').map(Number) : null;
@@ -546,12 +590,12 @@
             }).filter(Boolean);
             renderListings(filtered);
         }
-        function renderListings(filteredData) { /* Giữ nguyên từ v4 */ 
+        function renderListings(filteredData) { 
             listingsContainer.innerHTML = '';
             noResultsDiv.classList.toggle('hidden', filteredData.length > 0);
             filteredData.forEach(building => {
                 const firstAvailableRoom = building.danhSachPhong.find(r => r.trangThai === 'còn trống' && r.linkAnhVideo && r.linkAnhVideo.length > 0);
-                const previewImage = firstAvailableRoom?.linkAnhVideo[0] || 'https://placehold.co/400x300/e2e8f0/64748b?text=Không+có+ảnh';
+                const previewImage = building.anhDaiDien || firstAvailableRoom?.linkAnhVideo[0] || 'https://placehold.co/400x300/e2e8f0/64748b?text=Không+có+ảnh';
                 const isYoutube = previewImage.includes('youtube.com/embed');
                 const card = document.createElement('div');
                 card.className = 'bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all flex flex-col';
@@ -565,7 +609,7 @@
                 listingsContainer.appendChild(card);
             });
         }
-        function showModal(buildingId, roomId) { /* Giữ nguyên từ v4 */ 
+        function showModal(buildingId, roomId) { 
             const building = currentData.find(b => b.id_toa_nha === buildingId);
             const room = building.danhSachPhong.find(r => r.id_phong === roomId);
             const modalHTML = `
@@ -597,7 +641,7 @@
             if (room.linkAnhVideo && room.linkAnhVideo.length > 0) showMedia(room.linkAnhVideo[0]);
         }
         
-        const initializeAll = () => { /* Giữ nguyên từ v4 */ 
+        const initializeAll = () => { 
             const allAmenities = new Set(currentData.flatMap(b => b.danhSachPhong.flatMap(r => r.tienIch || [])));
             amenitiesContainer.innerHTML = Array.from(allAmenities).map(amenity => `<label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" class="amenity-checkbox rounded text-indigo-600" value="${amenity}"><span class="text-slate-600">${amenity.charAt(0).toUpperCase() + amenity.slice(1)}</span></label>`).join('');
             refreshHomeView();
@@ -618,7 +662,7 @@
         modalContainer.addEventListener('click', e => {
             if (e.target === modalContainer) e.currentTarget.classList.add('hidden');
         });
-        exportJsonBtn.addEventListener('click', () => { /* Giữ nguyên từ v4 */ 
+        exportJsonBtn.addEventListener('click', () => { 
             const dataStr = `const initialData = ${JSON.stringify(currentData, null, 4)};`;
             const dataBlob = new Blob([dataStr], {type: "text/javascript"});
             const url = URL.createObjectURL(dataBlob);
@@ -648,4 +692,4 @@
     });
     </script>
 </body>
-</ht
+</html>
