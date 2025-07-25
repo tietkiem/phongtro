@@ -321,17 +321,22 @@
             const widget = uploadcare.openDialog(null, {
                 publicKey: UPLOADCARE_PUBLIC_KEY,
                 multiple: true,
-                tabs: `file url gdrive facebook instagram ${UPLOADCARE_PUBLIC_KEY}`
+                tabs: 'file url gdrive facebook instagram project'
             });
             widget.done(fileGroup => {
-                fileGroup.promise().then(groupInfo => {
-                    groupInfo.files.forEach(file => {
-                        if (!parsedBuildingData.tempImageLinks.includes(file.cdnUrl)) {
-                            parsedBuildingData.tempImageLinks.push(file.cdnUrl);
-                            addImagePreview(zaloImagePreviewContainer, file.cdnUrl, true);
-                        }
+                if (fileGroup) {
+                    fileGroup.promise().then(groupInfo => {
+                        groupInfo.files.forEach(file => {
+                            if (!parsedBuildingData.tempImageLinks.includes(file.cdnUrl)) {
+                                parsedBuildingData.tempImageLinks.push(file.cdnUrl);
+                                addImagePreview(zaloImagePreviewContainer, file.cdnUrl, true);
+                            }
+                        });
+                    }).catch(error => {
+                        console.error("Lỗi xử lý ảnh từ Zalo uploader:", error);
+                        alert("Có lỗi xảy ra khi xử lý ảnh, vui lòng thử lại.");
                     });
-                });
+                }
             });
         });
 
@@ -396,21 +401,26 @@
                     const widget = uploadcare.openDialog(null, {
                         publicKey: UPLOADCARE_PUBLIC_KEY,
                         multiple: true,
-                        tabs: `file url gdrive facebook instagram ${UPLOADCARE_PUBLIC_KEY}`
+                        tabs: 'file url gdrive facebook instagram project'
                     });
                     widget.done(fileGroup => {
-                        fileGroup.promise().then(groupInfo => {
-                            const previewContainer = document.getElementById('image-preview-container');
-                            const hiddenInput = document.getElementById('linkAnhVideo');
-                            let currentUrls = hiddenInput.value ? hiddenInput.value.split(',') : [];
-                            groupInfo.files.forEach(file => {
-                                if (!currentUrls.includes(file.cdnUrl)) {
-                                    currentUrls.push(file.cdnUrl);
-                                    addImagePreview(previewContainer, file.cdnUrl, false);
-                                }
+                        if (fileGroup) {
+                            fileGroup.promise().then(groupInfo => {
+                                const previewContainer = document.getElementById('image-preview-container');
+                                const hiddenInput = document.getElementById('linkAnhVideo');
+                                let currentUrls = hiddenInput.value ? hiddenInput.value.split(',') : [];
+                                groupInfo.files.forEach(file => {
+                                    if (!currentUrls.includes(file.cdnUrl)) {
+                                        currentUrls.push(file.cdnUrl);
+                                        addImagePreview(previewContainer, file.cdnUrl, false);
+                                    }
+                                });
+                                hiddenInput.value = currentUrls.join(',');
+                            }).catch(error => {
+                                console.error("Lỗi xử lý ảnh từ form:", error);
+                                alert("Có lỗi xảy ra khi xử lý ảnh, vui lòng thử lại.");
                             });
-                            hiddenInput.value = currentUrls.join(',');
-                        });
+                        }
                     });
                 });
             }
