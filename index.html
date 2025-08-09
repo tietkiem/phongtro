@@ -6,7 +6,6 @@
     <title>Tìm Kiếm Phòng Trọ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Tích hợp thư viện Uploadcare -->
     <script src="https://ucarecdn.com/libs/widget/3.x/uploadcare.full.min.js" charset="utf-8"></script>
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
@@ -53,7 +52,6 @@
             </div>
         </div>
 
-        <!-- NỘI DUNG TAB TRANG CHỦ -->
         <div id="content-home" class="tab-content">
             <header class="text-center mb-8">
                 <h1 class="text-3xl md:text-4xl font-bold">Tìm Phòng Trọ Ưng Ý</h1>
@@ -95,7 +93,6 @@
             <div id="no-results" class="hidden text-center py-12"><p class="text-slate-500 text-lg">Không tìm thấy phòng nào phù hợp.</p></div>
         </div>
 
-        <!-- NỘI DUNG TAB ADMIN -->
         <div id="content-admin" class="tab-content hidden">
             <header class="text-center mb-8">
                 <h1 class="text-3xl md:text-4xl font-bold">Bảng Điều Khiển</h1>
@@ -126,25 +123,12 @@
                 <button id="add-building-btn" class="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition-all">Thêm Tòa Nhà Mới</button>
             </div>
             <div id="admin-listings-container" class="space-y-4"></div>
-            <div class="mt-8 p-6 bg-amber-50 rounded-lg border border-amber-200">
-                 <h3 class="text-xl font-bold text-amber-800">Quy trình Lưu trữ Dữ liệu</h3>
-                 <p class="text-amber-700 mt-2">Website này hoạt động mà không cần máy chủ để tiết kiệm chi phí. Do đó, quy trình lưu dữ liệu vĩnh viễn cần bạn thực hiện một vài bước đơn giản:</p>
-                 <ol class="list-decimal list-inside mt-4 space-y-2 text-amber-900">
-                    <li>Sau khi hoàn tất việc thêm/sửa/xóa, nhấn vào nút <strong class="font-semibold">"Tải File Dữ Liệu"</strong> bên dưới.</li>
-                    <li>Một file tên là <code class="bg-amber-200 px-1 rounded">data.js</code> sẽ được tải về máy tính của bạn.</li>
-                    <li>Trên máy tính, hãy dùng file vừa tải về để <strong class="font-semibold">thay thế (ghi đè)</strong> file `data.js` cũ trong thư mục dự án.</li>
-                    <li>Cuối cùng, bạn chỉ cần <strong class="font-semibold">đẩy (push) file `data.js` đã thay đổi này lên GitHub</strong>. Website sẽ được cập nhật.</li>
-                 </ol>
-                 <button id="export-json-btn" class="mt-6 bg-amber-500 text-white font-bold py-3 px-5 rounded-lg hover:bg-amber-600 transition-all">Tải File Dữ Liệu (data.js)</button>
-            </div>
         </div>
     </div>
 
-    <!-- MODALS -->
     <div id="modal-container" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50"></div>
     <div id="form-modal-container" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-[60]"></div>
     
-    <!-- LOGIN MODAL -->
     <div id="login-modal-container" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-[70]">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm">
             <form id="login-form" class="p-8 space-y-6">
@@ -163,207 +147,325 @@
         </div>
     </div>
 
-    <script>
-    const initialData = [
-      { "id_toa_nha": "building001", "tenToaNha": "Chung Cư Mini Láng Hạ", "diaChi": "Số 123, Ngõ 50, Láng Hạ, Đống Đa, Hà Nội", "viTriMap": "https://www.google.com/maps/search/?api=1&query=21.0169,105.8194", "anhDaiDien": "https://ucarecdn.com/a9e59524-1b28-40c8-9144-54a7a8a65b32/", "danhSachPhong": [
-          { "id_phong": "p101", "tenPhong": "Phòng 101 - Ban công", "trangThai": "còn trống", "giaThue": 4500000, "dienTich": 25, "thongTinChiTiet": "Phòng đầy đủ nội thất cao cấp, có ban công thoáng mát, cửa sổ lớn. View nhìn ra công viên.", "tienIch": ["điều hòa", "nóng lạnh", "ban công", "tủ lạnh", "máy giặt"], "linkAnhVideo": ["https://ucarecdn.com/a9e59524-1b28-40c8-9144-54a7a8a65b32/","https://ucarecdn.com/7a68a554-2f22-4634-8d1e-97a935588510/"], "chiPhi": { "điện": "3.800đ/số", "nước": "100.000đ/người", "internet": "100.000đ/phòng", "dịch vụ": "200.000đ/phòng (gồm vệ sinh, an ninh)" }, "datCoc": { "soThang": 1, "ghiChu": "Thanh toán 1 tháng, cọc 1 tháng. Hợp đồng tối thiểu 1 năm." } }
-      ]}
-    ];
-    let currentData = JSON.parse(JSON.stringify(initialData));
-    let parsedBuildingData = null;
+<script>
+// =======================================================================
+// BỘ NÃO MỚI - KẾT NỐI VỚI GOOGLE SHEETS
+// =======================================================================
 
-    document.addEventListener('DOMContentLoaded', function() {
-        const UPLOADCARE_PUBLIC_KEY = '752888ab1ddb6b4723ac';
-        let editingContext = null;
-        let isLoggedIn = false;
+// !!! QUAN TRỌNG: Dán link Web App URL của bạn vào đây !!!
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxylrfjhK0dYVzKkNz1GVJAm-SXpqyolXGP7IHM3DIL5Ubvn0WpKwAVlBIyrr859wweXw/exec'; 
 
-        // --- LẤY CÁC PHẦN TỬ HTML ---
-        const loginBtn = document.getElementById('login-btn');
-        const logoutBtn = document.getElementById('logout-btn');
-        const loginModalContainer = document.getElementById('login-modal-container');
-        const loginForm = document.getElementById('login-form');
-        const loginError = document.getElementById('login-error');
-        // ... các element khác
-        const zaloInput = document.getElementById('zalo-input');
-        const parseBtn = document.getElementById('parse-btn');
-        const zaloParserPreview = document.getElementById('zalo-parser-preview');
-        const previewContent = document.getElementById('preview-content');
-        const zaloImagePreviewContainer = document.getElementById('zalo-image-preview-container');
-        const zaloUploadBtn = document.getElementById('zalo-upload-btn');
-        const addParsedBuildingBtn = document.getElementById('add-parsed-building-btn');
-        const tabHome = document.getElementById('tab-home');
-        const tabAdmin = document.getElementById('tab-admin');
-        const contentHome = document.getElementById('content-home');
-        const contentAdmin = document.getElementById('content-admin');
-        const searchInput = document.getElementById('searchInput');
-        const priceFilter = document.getElementById('priceFilter');
-        const areaFilter = document.getElementById('areaFilter');
-        const amenitiesContainer = document.getElementById('amenities-filter');
-        const listingsContainer = document.getElementById('listings-container');
-        const noResultsDiv = document.getElementById('no-results');
-        const modalContainer = document.getElementById('modal-container');
-        const adminListingsContainer = document.getElementById('admin-listings-container');
-        const addBuildingBtn = document.getElementById('add-building-btn');
-        const formModalContainer = document.getElementById('form-modal-container');
-        const exportJsonBtn = document.getElementById('export-json-btn');
+let currentData = []; // Dữ liệu sẽ được tải từ Google Sheets
+let parsedBuildingData = null;
+let isSaving = false; // Cờ để tránh lưu chồng chéo
 
-        // --- HỆ THỐNG ĐĂNG NHẬP ---
-        const ADMIN_USERNAME = 'mrpro69';
-        const ADMIN_PASSWORD = '16051984aZ';
+document.addEventListener('DOMContentLoaded', function() {
+    const UPLOADCARE_PUBLIC_KEY = '752888ab1ddb6b4723ac';
+    let editingContext = null;
+    let isLoggedIn = false;
 
-        function updateLoginUI() {
-            if (isLoggedIn) {
-                loginBtn.classList.add('hidden');
-                logoutBtn.classList.remove('hidden');
-                tabAdmin.classList.remove('hidden');
-            } else {
-                loginBtn.classList.remove('hidden');
-                logoutBtn.classList.add('hidden');
-                tabAdmin.classList.add('hidden');
-                switchTab('home'); // Tự động chuyển về trang chủ khi đăng xuất
-            }
+    // --- LẤY CÁC PHẦN TỬ HTML ---
+    const loginBtn = document.getElementById('login-btn');
+    const logoutBtn = document.getElementById('logout-btn');
+    const loginModalContainer = document.getElementById('login-modal-container');
+    const loginForm = document.getElementById('login-form');
+    const loginError = document.getElementById('login-error');
+    const zaloInput = document.getElementById('zalo-input');
+    const parseBtn = document.getElementById('parse-btn');
+    const zaloParserPreview = document.getElementById('zalo-parser-preview');
+    const previewContent = document.getElementById('preview-content');
+    const zaloImagePreviewContainer = document.getElementById('zalo-image-preview-container');
+    const zaloUploadBtn = document.getElementById('zalo-upload-btn');
+    const addParsedBuildingBtn = document.getElementById('add-parsed-building-btn');
+    const tabHome = document.getElementById('tab-home');
+    const tabAdmin = document.getElementById('tab-admin');
+    const contentHome = document.getElementById('content-home');
+    const contentAdmin = document.getElementById('content-admin');
+    const searchInput = document.getElementById('searchInput');
+    const priceFilter = document.getElementById('priceFilter');
+    const areaFilter = document.getElementById('areaFilter');
+    const amenitiesContainer = document.getElementById('amenities-filter');
+    const listingsContainer = document.getElementById('listings-container');
+    const noResultsDiv = document.getElementById('no-results');
+    const modalContainer = document.getElementById('modal-container');
+    const adminListingsContainer = document.getElementById('admin-listings-container');
+    const addBuildingBtn = document.getElementById('add-building-btn');
+    const formModalContainer = document.getElementById('form-modal-container');
+    
+    // Xóa nút và khu vực export cũ
+    const exportSection = document.querySelector('.bg-amber-50');
+    if(exportSection) exportSection.remove();
+
+
+    // --- HÀM GIAO TIẾP VỚI GOOGLE SHEETS ---
+    async function fetchData() {
+        showLoading("Đang tải dữ liệu từ Google Sheets...");
+        try {
+            const response = await fetch(SCRIPT_URL);
+            if (!response.ok) throw new Error('Network response was not ok.');
+            const data = await response.json();
+            currentData = data;
+            initializeAll();
+        } catch (error) {
+            console.error('Lỗi khi tải dữ liệu:', error);
+            alert('Không thể tải dữ liệu từ Google Sheets. Vui lòng kiểm tra lại đường link API hoặc cài đặt Google Sheets.');
+        } finally {
+            hideLoading();
         }
+    }
 
-        loginBtn.addEventListener('click', () => {
-            loginModalContainer.classList.remove('hidden');
-        });
+    async function saveData() {
+        if (isSaving) return; // Nếu đang lưu thì không làm gì cả
+        isSaving = true;
+        showLoading("Đang lưu thay đổi...");
+        try {
+            // Dùng POST để gửi dữ liệu đi, nhưng không chờ response vì no-cors
+            await fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors', // Cần thiết cho Google Apps Script khi gửi từ trình duyệt
+                headers: {
+                  'Content-Type': 'text/plain;charset=utf-8', // Dùng text/plain để tránh lỗi CORS phức tạp
+                },
+                body: JSON.stringify(currentData)
+            });
+            console.log("Yêu cầu lưu đã được gửi đi!");
+            // Bạn có thể thêm một thông báo nhỏ ở đây nếu muốn
+        } catch (error) {
+            console.error('Lỗi khi gửi yêu cầu lưu dữ liệu:', error);
+            alert('Lưu dữ liệu thất bại! Vui lòng thử lại.');
+        } finally {
+            isSaving = false;
+            // Cho phép một khoảng trễ nhỏ để Google Sheet có thời gian xử lý
+            setTimeout(() => {
+                 hideLoading();
+            }, 1500);
+        }
+    }
+    
+    function showLoading(message) {
+        let loadingDiv = document.getElementById('loading-overlay');
+        if (!loadingDiv) {
+            loadingDiv = document.createElement('div');
+            loadingDiv.id = 'loading-overlay';
+            loadingDiv.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[999]';
+            document.body.appendChild(loadingDiv);
+        }
+        loadingDiv.innerHTML = `<div class="bg-white p-4 rounded-lg shadow-xl text-center"><p class="font-semibold">${message}</p><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mt-2"></div></div>`;
+    }
 
-        logoutBtn.addEventListener('click', () => {
-            isLoggedIn = false;
+    function hideLoading() {
+        const loadingDiv = document.getElementById('loading-overlay');
+        if (loadingDiv) {
+            loadingDiv.remove();
+        }
+    }
+
+
+    // --- HỆ THỐNG ĐĂNG NHẬP (Giữ nguyên) ---
+    const ADMIN_USERNAME = 'mrpro69';
+    const ADMIN_PASSWORD = '16051984aZ';
+
+    function updateLoginUI() {
+        if (isLoggedIn) {
+            loginBtn.classList.add('hidden');
+            logoutBtn.classList.remove('hidden');
+            tabAdmin.classList.remove('hidden');
+        } else {
+            loginBtn.classList.remove('hidden');
+            logoutBtn.classList.add('hidden');
+            tabAdmin.classList.add('hidden');
+            switchTab('home'); 
+        }
+    }
+
+    loginBtn.addEventListener('click', () => {
+        loginModalContainer.classList.remove('hidden');
+    });
+    logoutBtn.addEventListener('click', () => {
+        isLoggedIn = false;
+        updateLoginUI();
+    });
+    loginModalContainer.addEventListener('click', (e) => {
+        if (e.target === loginModalContainer) loginModalContainer.classList.add('hidden');
+    });
+    loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+            isLoggedIn = true;
+            loginError.classList.add('hidden');
+            loginModalContainer.classList.add('hidden');
             updateLoginUI();
-        });
-
-        loginModalContainer.addEventListener('click', (e) => {
-            if (e.target === loginModalContainer) {
-                loginModalContainer.classList.add('hidden');
-            }
-        });
-
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-
-            if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-                isLoggedIn = true;
-                loginError.classList.add('hidden');
-                loginModalContainer.classList.add('hidden');
-                updateLoginUI();
-                switchTab('admin'); // Tự động chuyển sang tab admin khi đăng nhập thành công
-            } else {
-                loginError.classList.remove('hidden');
-            }
-        });
-
-        // --- CÔNG CỤ NHẬP NHANH TỪ ZALO ---
-        parseBtn.addEventListener('click', () => {
-            const text = zaloInput.value;
-            if (!text.trim()) { alert('Vui lòng dán nội dung Zalo vào ô.'); return; }
-            try {
-                const building = { id_toa_nha: `building_${Date.now()}`, tenToaNha: "", diaChi: "", viTriMap: "", danhSachPhong: [], tempImageLinks: [] };
-                const lines = text.split('\n').filter(line => line.trim() !== '');
-                const findLine = (keyword) => lines.find(l => l.toLowerCase().includes(keyword.toLowerCase()));
-                const getVal = (line, separator = ':') => line ? line.split(separator)[1]?.trim() : "";
-                
-                building.diaChi = getVal(findLine('Địa chỉ:')) || 'Chưa xác định';
-                building.tenToaNha = `Tòa nhà tại ${building.diaChi.split(',')[0]}`;
-                const dienTich = parseInt(findLine('Diện tích:')?.match(/(\d+)/)?.[0] || '25');
-                const thongTinChiTiet = getVal(findLine('Full nội thất')) || "Nội thất đầy đủ.";
-                const tienIch = ['điều hòa', 'nóng lạnh', 'bếp', 'tủ lạnh', 'máy giặt', 'ban công', 'thang máy'].filter(item => text.toLowerCase().includes(item));
-                
-                let chiPhi = {};
-                const phiDvLine = findLine('Phí dv:');
-                if (phiDvLine) {
-                    const feesText = getVal(phiDvLine);
-                    const normalizeFee = (str) => str ? str.replace('k', '.000đ') : '0đ';
-                    chiPhi['điện'] = normalizeFee(feesText.match(/Điện\s*([\d.]+[kK])/)?.[1]) + '/số';
-                    chiPhi['nước'] = normalizeFee(feesText.match(/Nước\s*([\d.]+[kK])/)?.[1]) + '/người';
-                    chiPhi['internet'] = normalizeFee(feesText.match(/wifi\s*([\d.]+[kK])/)?.[1]) + '/phòng';
-                    chiPhi['dịch vụ'] = normalizeFee(feesText.match(/Dịch vụ chung\s*([\d.]+[kK])/)?.[1]) + '/người';
-                }
-
-                const cocLine = findLine('Đóng');
-                let datCoc = { soThang: 1, ghiChu: getVal(cocLine, '👉') || "Hợp đồng 6-12 tháng" };
-                const cocMatch = cocLine?.match(/Đóng\s*(\d)cọc(\d)/);
-                if (cocMatch) datCoc.soThang = parseInt(cocMatch[2]);
-                
-                lines.filter(l => l.toLowerCase().includes('giá')).forEach(line => {
-                    const priceMatch = line.match(/Giá\s*-?\s*(\d+tr\d*)/);
-                    if (!priceMatch) return;
-                    const giaThue = parseFloat(priceMatch[1].replace('tr', '.')) * 1000000;
-                    const roomCodes = line.split(':')[1]?.match(/[a-zA-Z]?\d+/g) || [];
-                    roomCodes.forEach(code => {
-                        building.danhSachPhong.push({
-                            id_phong: `p_${code}_${Date.now() % 10000 + code}`, tenPhong: `Phòng ${code}`, trangThai: "còn trống",
-                            giaThue, dienTich, thongTinChiTiet, tienIch, chiPhi, datCoc, linkAnhVideo: []
-                        });
-                    });
-                });
-                
-                parsedBuildingData = building;
-                renderPreview(building);
-                zaloParserPreview.classList.remove('hidden');
-                zaloImagePreviewContainer.innerHTML = ''; // Reset ảnh
-            } catch (error) {
-                alert('Xử lý dữ liệu thất bại! Vui lòng kiểm tra lại định dạng văn bản.');
-                console.error("Parse Zalo Error:", error);
-            }
-        });
-
-        function renderPreview(building) {
-            previewContent.innerHTML = `
-                <p><strong>Tên tòa nhà:</strong> ${building.tenToaNha}</p>
-                <p><strong>Tổng số phòng sẽ thêm:</strong> ${building.danhSachPhong.length} phòng</p>`;
+            switchTab('admin'); 
+        } else {
+            loginError.classList.remove('hidden');
         }
-        
-        zaloUploadBtn.addEventListener('click', () => {
-            if (!parsedBuildingData) { alert("Vui lòng xử lý dữ liệu Zalo trước."); return; }
-            const widget = uploadcare.openDialog(null, {
-                publicKey: UPLOADCARE_PUBLIC_KEY,
-                multiple: true,
-                tabs: 'file url gdrive facebook instagram project'
-            });
-            widget.done(fileGroup => {
-                if (fileGroup) {
-                    fileGroup.promise().then(groupInfo => {
-                        groupInfo.files.forEach(file => {
-                            if (!parsedBuildingData.tempImageLinks.includes(file.cdnUrl)) {
-                                parsedBuildingData.tempImageLinks.push(file.cdnUrl);
-                                addImagePreview(zaloImagePreviewContainer, file.cdnUrl, true);
-                            }
-                        });
-                    }).catch(error => {
-                        console.error("Lỗi xử lý ảnh từ Zalo uploader:", error);
-                        alert("Có lỗi xảy ra khi xử lý ảnh, vui lòng thử lại.");
-                    });
-                }
-            });
-        });
+    });
 
-        addParsedBuildingBtn.addEventListener('click', () => {
-            if (parsedBuildingData) {
-                // Gán các link ảnh đã upload cho tất cả các phòng
-                parsedBuildingData.danhSachPhong.forEach(room => {
-                    room.linkAnhVideo = [...parsedBuildingData.tempImageLinks];
+    // --- CÔNG CỤ NHẬP NHANH TỪ ZALO (Giữ nguyên, chỉ thay đổi nút Thêm) ---
+    parseBtn.addEventListener('click', () => {
+        const text = zaloInput.value;
+        if (!text.trim()) { alert('Vui lòng dán nội dung Zalo vào ô.'); return; }
+        try {
+            const building = { id_toa_nha: `building_${Date.now()}`, tenToaNha: "", diaChi: "", viTriMap: "", danhSachPhong: [], tempImageLinks: [] };
+            const lines = text.split('\n').filter(line => line.trim() !== '');
+            const findLine = (keyword) => lines.find(l => l.toLowerCase().includes(keyword.toLowerCase()));
+            const getVal = (line, separator = ':') => line ? line.split(separator)[1]?.trim() : "";
+            
+            building.diaChi = getVal(findLine('Địa chỉ:')) || 'Chưa xác định';
+            building.tenToaNha = `Tòa nhà tại ${building.diaChi.split(',')[0] || 'Địa chỉ không rõ'}`;
+            const dienTich = parseInt(findLine('Diện tích:')?.match(/(\d+)/)?.[0] || '25');
+            const thongTinChiTiet = getVal(findLine('Full nội thất')) || "Nội thất đầy đủ.";
+            const tienIch = ['điều hòa', 'nóng lạnh', 'bếp', 'tủ lạnh', 'máy giặt', 'ban công', 'thang máy'].filter(item => text.toLowerCase().includes(item));
+            
+            let chiPhi = {};
+            const phiDvLine = findLine('Phí dv:');
+            if (phiDvLine) {
+                const feesText = getVal(phiDvLine);
+                const normalizeFee = (str) => str ? str.replace(/\./g, '').replace('k', '000') : '0';
+                chiPhi['điện'] = new Intl.NumberFormat('vi-VN').format(normalizeFee(feesText.match(/Điện\s*([\d.kK]+)/)?.[1] || 0)) + 'đ/số';
+                chiPhi['nước'] = new Intl.NumberFormat('vi-VN').format(normalizeFee(feesText.match(/Nước\s*([\d.kK]+)/)?.[1] || 0)) + 'đ/người';
+                chiPhi['internet'] = new Intl.NumberFormat('vi-VN').format(normalizeFee(feesText.match(/wifi\s*([\d.kK]+)/)?.[1] || 0)) + 'đ/phòng';
+                chiPhi['dịch vụ'] = new Intl.NumberFormat('vi-VN').format(normalizeFee(feesText.match(/Dịch vụ chung\s*([\d.kK]+)/)?.[1] || 0)) + 'đ/phòng';
+            }
+
+            const cocLine = findLine('Đóng');
+            let datCoc = { soThang: 1, ghiChu: getVal(cocLine, '👉') || "Hợp đồng 6-12 tháng" };
+            const cocMatch = cocLine?.match(/Đóng\s*(\d)cọc(\d)/);
+            if (cocMatch) datCoc.soThang = parseInt(cocMatch[2]);
+            
+            lines.filter(l => l.toLowerCase().includes('giá')).forEach(line => {
+                const priceMatch = line.match(/Giá\s*-?\s*(\d+tr\d*)/);
+                if (!priceMatch) return;
+                const giaThue = parseFloat(priceMatch[1].replace('tr', '.')) * 1000000;
+                const roomCodes = line.split(':')[1]?.match(/[a-zA-Z]?\d+/g) || [];
+                roomCodes.forEach(code => {
+                    building.danhSachPhong.push({
+                        id_phong: `p_${code}_${Date.now() % 10000 + code}`, tenPhong: `Phòng ${code}`, trangThai: "còn trống",
+                        giaThue, dienTich, thongTinChiTiet, tienIch, chiPhi, datCoc, linkAnhVideo: []
+                    });
                 });
-                // Tự động chọn ảnh đầu tiên làm ảnh đại diện
-                if (parsedBuildingData.tempImageLinks.length > 0) {
-                    parsedBuildingData.anhDaiDien = parsedBuildingData.tempImageLinks[0];
-                }
-                delete parsedBuildingData.tempImageLinks; // Xóa thuộc tính tạm
-                
-                currentData.unshift(parsedBuildingData);
-                parsedBuildingData = null;
-                zaloParserPreview.classList.add('hidden');
-                zaloInput.value = '';
-                alert('Đã thêm tòa nhà mới thành công!');
-                refreshAdminView();
-                refreshHomeView();
+            });
+            
+            parsedBuildingData = building;
+            renderPreview(building);
+            zaloParserPreview.classList.remove('hidden');
+            zaloImagePreviewContainer.innerHTML = ''; 
+        } catch (error) {
+            alert('Xử lý dữ liệu thất bại! Vui lòng kiểm tra lại định dạng văn bản.');
+            console.error("Parse Zalo Error:", error);
+        }
+    });
+
+    function renderPreview(building) {
+        previewContent.innerHTML = `<p><strong>Tên tòa nhà:</strong> ${building.tenToaNha}</p><p><strong>Tổng số phòng sẽ thêm:</strong> ${building.danhSachPhong.length} phòng</p>`;
+    }
+    
+    zaloUploadBtn.addEventListener('click', () => {
+        if (!parsedBuildingData) { alert("Vui lòng xử lý dữ liệu Zalo trước."); return; }
+        const widget = uploadcare.openDialog(null, {
+            publicKey: UPLOADCARE_PUBLIC_KEY,
+            multiple: true,
+            tabs: 'file url gdrive facebook instagram project'
+        });
+        widget.done(fileGroup => {
+            if (fileGroup) {
+                fileGroup.promise().then(groupInfo => {
+                    groupInfo.files.forEach(file => {
+                        if (!parsedBuildingData.tempImageLinks.includes(file.cdnUrl)) {
+                            parsedBuildingData.tempImageLinks.push(file.cdnUrl);
+                            addImagePreview(zaloImagePreviewContainer, file.cdnUrl, true);
+                        }
+                    });
+                });
             }
         });
+    });
 
-        // --- QUẢN LÝ THỦ CÔNG & FORM ---
-        function openFormModal(type, data = {}, context = {}) {
+    addParsedBuildingBtn.addEventListener('click', async () => {
+        if (parsedBuildingData) {
+            parsedBuildingData.danhSachPhong.forEach(room => { room.linkAnhVideo = [...parsedBuildingData.tempImageLinks]; });
+            if (parsedBuildingData.tempImageLinks.length > 0) {
+                parsedBuildingData.anhDaiDien = parsedBuildingData.tempImageLinks[0];
+            }
+            delete parsedBuildingData.tempImageLinks;
+            
+            currentData.unshift(parsedBuildingData);
+            await saveData(); // LƯU DỮ LIỆU MỚI
+            
+            parsedBuildingData = null;
+            zaloParserPreview.classList.add('hidden');
+            zaloInput.value = '';
+            alert('Đã thêm và lưu tòa nhà mới thành công!');
+            refreshAdminView();
+            refreshHomeView();
+        }
+    });
+
+    // --- QUẢN LÝ THỦ CÔNG & FORM (Thay đổi hàm submit và delete) ---
+    async function handleFormSubmit(e) {
+        e.preventDefault();
+        const data = {};
+        const fields = getFormFields(editingContext.type);
+        fields.forEach(field => {
+            const el = document.getElementById(field.id);
+            if (el) setNestedValue(data, field.id, el.value);
+        });
+
+        if (editingContext.type === 'building') {
+            if (editingContext.buildingId) {
+                const index = currentData.findIndex(b => b.id_toa_nha === editingContext.buildingId);
+                currentData[index] = { ...currentData[index], ...data };
+            } else {
+                data.id_toa_nha = `building_${Date.now()}`;
+                data.danhSachPhong = [];
+                currentData.unshift(data);
+            }
+        } else if (editingContext.type === 'room') {
+            const building = currentData.find(b => b.id_toa_nha === editingContext.buildingId);
+            if (editingContext.roomId) {
+                const index = building.danhSachPhong.findIndex(r => r.id_phong === editingContext.roomId);
+                building.danhSachPhong[index] = { ...building.danhSachPhong[index], ...data };
+            } else {
+                data.id_phong = `room_${Date.now()}`;
+                building.danhSachPhong.push(data);
+            }
+        }
+        formModalContainer.classList.add('hidden');
+        await saveData(); // LƯU DỮ LIỆU MỚI
+        refreshAdminView();
+        refreshHomeView();
+    }
+    
+    adminListingsContainer.addEventListener('click', async (e) => { 
+        const { buildingId, roomId } = e.target.dataset;
+        if (e.target.matches('.edit-building-btn')) openFormModal('building', currentData.find(b => b.id_toa_nha === buildingId), { buildingId });
+        if (e.target.matches('.delete-building-btn')) {
+            if (confirm(`Bạn chắc chắn muốn xóa tòa nhà này?`)) {
+                currentData = currentData.filter(b => b.id_toa_nha !== buildingId);
+                await saveData(); // LƯU DỮ LIỆU MỚI
+                refreshAdminView(); refreshHomeView();
+            }
+        }
+        if (e.target.matches('.add-room-btn')) openFormModal('room', {}, { buildingId });
+        if (e.target.matches('.edit-room-btn')) {
+            const room = currentData.find(b => b.id_toa_nha === buildingId).danhSachPhong.find(r => r.id_phong === roomId);
+            openFormModal('room', room, { buildingId, roomId });
+        }
+        if (e.target.matches('.delete-room-btn')) {
+             if (confirm(`Bạn chắc chắn muốn xóa phòng này?`)) {
+                const building = currentData.find(b => b.id_toa_nha === buildingId);
+                building.danhSachPhong = building.danhSachPhong.filter(r => r.id_phong !== roomId);
+                await saveData(); // LƯU DỮ LIỆU MỚI
+                refreshAdminView(); refreshHomeView();
+            }
+        }
+    });
+
+    // --- CÁC HÀM HIỂN THỊ VÀ HÀM PHỤ (Gần như giữ nguyên) ---
+    function openFormModal(type, data = {}, context = {}) {
             editingContext = { type, ...context };
             const isBuilding = type === 'building';
             const fields = getFormFields(type);
@@ -416,9 +518,6 @@
                                     }
                                 });
                                 hiddenInput.value = currentUrls.join(',');
-                            }).catch(error => {
-                                console.error("Lỗi xử lý ảnh từ form:", error);
-                                alert("Có lỗi xảy ra khi xử lý ảnh, vui lòng thử lại.");
                             });
                         }
                     });
@@ -426,177 +525,107 @@
             }
         }
 
-        function getFormFields(type) {
-            if (type === 'building') return [
-                { id: 'tenToaNha', label: 'Tên tòa nhà', type: 'text' }, { id: 'diaChi', label: 'Địa chỉ', type: 'text' }, { id: 'viTriMap', label: 'Link Google Map', type: 'text' },
-                { id: 'anhDaiDien', label: 'Ảnh đại diện', type: 'thumbnail_selector' }
-            ];
-            return [
-                { id: 'tenPhong', label: 'Tên phòng', type: 'text' }, { id: 'trangThai', label: 'Trạng thái', type: 'select', options: ['còn trống', 'đã thuê'] },
-                { id: 'giaThue', label: 'Giá thuê (VNĐ)', type: 'number' }, { id: 'dienTich', label: 'Diện tích (m²)', type: 'number' },
-                { id: 'thongTinChiTiet', label: 'Mô tả chi tiết', type: 'textarea' }, { id: 'tienIch', label: 'Tiện ích (cách nhau bởi dấu phẩy)', type: 'text' },
-                { id: 'linkAnhVideo', label: 'Ảnh & Video', type: 'uploader' },
-                { id: 'chiPhi_dien', label: 'Phí điện', type: 'text' }, { id: 'chiPhi_nuoc', label: 'Phí nước', type: 'text' },
-                { id: 'chiPhi_internet', label: 'Phí Internet', type: 'text' }, { id: 'chiPhi_dichVu', label: 'Phí dịch vụ', type: 'text' },
-                { id: 'datCoc_soThang', label: 'Cọc (số tháng)', type: 'number' }, { id: 'datCoc_ghiChu', label: 'Ghi chú cọc', type: 'text' }
-            ];
-        }
+    function getFormFields(type) {
+        if (type === 'building') return [
+            { id: 'tenToaNha', label: 'Tên tòa nhà', type: 'text' }, { id: 'diaChi', label: 'Địa chỉ', type: 'text' }, { id: 'viTriMap', label: 'Link Google Map', type: 'text' },
+            { id: 'anhDaiDien', label: 'Ảnh đại diện', type: 'thumbnail_selector' }
+        ];
+        return [
+            { id: 'tenPhong', label: 'Tên phòng', type: 'text' }, { id: 'trangThai', label: 'Trạng thái', type: 'select', options: ['còn trống', 'đã thuê'] },
+            { id: 'giaThue', label: 'Giá thuê (VNĐ)', type: 'number' }, { id: 'dienTich', label: 'Diện tích (m²)', type: 'number' },
+            { id: 'thongTinChiTiet', label: 'Mô tả chi tiết', type: 'textarea' }, { id: 'tienIch', label: 'Tiện ích (cách nhau bởi dấu phẩy)', type: 'text' },
+            { id: 'linkAnhVideo', label: 'Ảnh & Video', type: 'uploader' },
+            { id: 'chiPhi_dien', label: 'Phí điện', type: 'text' }, { id: 'chiPhi_nuoc', label: 'Phí nước', type: 'text' },
+            { id: 'chiPhi_internet', label: 'Phí Internet', type: 'text' }, { id: 'chiPhi_dichVu', label: 'Phí dịch vụ', type: 'text' },
+            { id: 'datCoc_soThang', label: 'Cọc (số tháng)', type: 'number' }, { id: 'datCoc_ghiChu', label: 'Ghi chú cọc', type: 'text' }
+        ];
+    }
 
-        function renderField(field, data) {
-            const value = getNestedValue(field.id, data);
-            switch (field.type) {
-                case 'textarea': return `<label class="block"><span class="text-slate-700">${field.label}</span><textarea id="${field.id}" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm" rows="3">${value}</textarea></label>`;
-                case 'select': return `<label class="block"><span class="text-slate-700">${field.label}</span><select id="${field.id}" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm">${field.options.map(opt => `<option value="${opt}" ${opt === value ? 'selected' : ''}>${opt.charAt(0).toUpperCase() + opt.slice(1)}</option>`).join('')}</select></label>`;
-                case 'uploader':
-                    return `<div>
-                                <span class="text-slate-700">${field.label}</span>
-                                <div id="image-preview-container" class="mt-2 flex flex-wrap gap-2 p-2 border rounded-md bg-slate-50 min-h-[80px]">
-                                    ${value.map(url => `<div class="image-preview-item w-20 h-20"><img src="${url}-/preview/100x100/" class="w-full h-full object-cover rounded-md"><span class="remove-image-btn" data-url="${url}">&times;</span></div>`).join('')}
-                                </div>
-                                <input type="hidden" id="linkAnhVideo" value="${value.join(',')}">
-                                <button type="button" id="upload-btn" class="mt-2 w-full bg-blue-100 text-blue-800 font-semibold py-2 px-4 rounded-lg hover:bg-blue-200">Thêm Ảnh/Video...</button>
-                            </div>`;
-                case 'thumbnail_selector':
-                    const allImages = data.danhSachPhong.flatMap(room => room.linkAnhVideo || []);
-                    if (allImages.length === 0) return `<div><span class="text-slate-700">${field.label}</span><p class="text-sm text-slate-500 mt-1">Tòa nhà này chưa có ảnh nào để chọn.</p><input type="hidden" id="anhDaiDien" value="${value}"></div>`;
-                    return `<div>
-                                <span class="text-slate-700">${field.label} (Nhấp để chọn)</span>
-                                <div class="mt-2 flex flex-wrap gap-2 p-2 border rounded-md bg-slate-50">
-                                    ${allImages.map(url => `<img src="${url}-/preview/100x100/" class="thumbnail-selector w-20 h-20 object-cover rounded-md ${url === value ? 'selected' : ''}" data-url="${url}">`).join('')}
-                                </div>
-                                <input type="hidden" id="anhDaiDien" value="${value}">
-                            </div>`;
-                default: return `<label class="block"><span class="text-slate-700">${field.label}</span><input type="${field.type}" id="${field.id}" value="${value}" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm"></label>`;
-            }
+    function renderField(field, data) {
+        const value = getNestedValue(field.id, data);
+        switch (field.type) {
+            case 'textarea': return `<label class="block"><span class="text-slate-700">${field.label}</span><textarea id="${field.id}" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm" rows="3">${value}</textarea></label>`;
+            case 'select': return `<label class="block"><span class="text-slate-700">${field.label}</span><select id="${field.id}" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm">${field.options.map(opt => `<option value="${opt}" ${opt === value ? 'selected' : ''}>${opt.charAt(0).toUpperCase() + opt.slice(1)}</option>`).join('')}</select></label>`;
+            case 'uploader':
+                return `<div>
+                            <span class="text-slate-700">${field.label}</span>
+                            <div id="image-preview-container" class="mt-2 flex flex-wrap gap-2 p-2 border rounded-md bg-slate-50 min-h-[80px]">
+                                ${Array.isArray(value) ? value.map(url => `<div class="image-preview-item w-20 h-20"><img src="${url}-/preview/100x100/" class="w-full h-full object-cover rounded-md"><span class="remove-image-btn" data-url="${url}">×</span></div>`).join('') : ''}
+                            </div>
+                            <input type="hidden" id="linkAnhVideo" value="${Array.isArray(value) ? value.join(',') : ''}">
+                            <button type="button" id="upload-btn" class="mt-2 w-full bg-blue-100 text-blue-800 font-semibold py-2 px-4 rounded-lg hover:bg-blue-200">Thêm Ảnh/Video...</button>
+                        </div>`;
+            case 'thumbnail_selector':
+                const allImages = (data.danhSachPhong || []).flatMap(room => room.linkAnhVideo || []);
+                if (allImages.length === 0) return `<div><span class="text-slate-700">${field.label}</span><p class="text-sm text-slate-500 mt-1">Tòa nhà này chưa có ảnh nào để chọn.</p><input type="hidden" id="anhDaiDien" value="${value}"></div>`;
+                return `<div>
+                            <span class="text-slate-700">${field.label} (Nhấp để chọn)</span>
+                            <div class="mt-2 flex flex-wrap gap-2 p-2 border rounded-md bg-slate-50">
+                                ${allImages.map(url => `<img src="${url}-/preview/100x100/" class="thumbnail-selector w-20 h-20 object-cover rounded-md ${url === value ? 'selected' : ''}" data-url="${url}">`).join('')}
+                            </div>
+                            <input type="hidden" id="anhDaiDien" value="${value}">
+                        </div>`;
+            default: return `<label class="block"><span class="text-slate-700">${field.label}</span><input type="${field.type}" id="${field.id}" value="${value}" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm"></label>`;
         }
+    }
 
-        function addImagePreview(container, url, isZaloPreview) {
-            const item = document.createElement('div');
-            item.className = 'image-preview-item w-20 h-20';
-            item.innerHTML = `<img src="${url}-/preview/100x100/" class="w-full h-full object-cover rounded-md"><span class="remove-image-btn" data-url="${url}" data-zalo="${isZaloPreview}">&times;</span>`;
-            container.appendChild(item);
-        }
+    function addImagePreview(container, url, isZaloPreview) {
+        const item = document.createElement('div');
+        item.className = 'image-preview-item w-20 h-20';
+        item.innerHTML = `<img src="${url}-/preview/100x100/" class="w-full h-full object-cover rounded-md"><span class="remove-image-btn" data-url="${url}" data-zalo="${isZaloPreview}">×</span>`;
+        container.appendChild(item);
+    }
 
-        document.addEventListener('click', e => {
-            if (e.target.classList.contains('remove-image-btn')) {
-                const urlToRemove = e.target.dataset.url;
-                const isZalo = e.target.dataset.zalo === 'true';
-                if (isZalo) {
-                    parsedBuildingData.tempImageLinks = parsedBuildingData.tempImageLinks.filter(url => url !== urlToRemove);
-                } else {
-                    const hiddenInput = document.getElementById('linkAnhVideo');
-                    let urls = hiddenInput.value.split(',');
-                    urls = urls.filter(url => url !== urlToRemove);
-                    hiddenInput.value = urls.join(',');
-                }
-                e.target.parentElement.remove();
-            }
-        });
-        
-        function getNestedValue(path, obj) {
-            const keys = path.split('_');
-            let value = obj;
-            for (let key of keys) value = value?.[key];
-            return value || (path.includes('linkAnhVideo') || path.includes('tienIch') ? [] : '');
-        }
-
-        function setNestedValue(obj, path, value) {
-            const keys = path.split('_');
-            let current = obj;
-            for (let i = 0; i < keys.length - 1; i++) {
-                current = current[keys[i]] = current[keys[i]] || {};
-            }
-            const finalKey = keys[keys.length - 1];
-            if (path === 'tienIch' || path === 'linkAnhVideo') {
-                current[finalKey] = value ? value.split(',').map(s => s.trim()).filter(Boolean) : [];
+    document.addEventListener('click', e => {
+        if (e.target.classList.contains('remove-image-btn')) {
+            const urlToRemove = e.target.dataset.url;
+            const isZalo = e.target.dataset.zalo === 'true';
+            if (isZalo) {
+                parsedBuildingData.tempImageLinks = parsedBuildingData.tempImageLinks.filter(url => url !== urlToRemove);
             } else {
-                current[finalKey] = value;
+                const hiddenInput = document.getElementById('linkAnhVideo');
+                let urls = hiddenInput.value.split(',');
+                urls = urls.filter(url => url !== urlToRemove);
+                hiddenInput.value = urls.join(',');
             }
+            e.target.parentElement.remove();
         }
-        
-        function handleFormSubmit(e) {
-            e.preventDefault();
-            const data = {};
-            const fields = getFormFields(editingContext.type);
-            fields.forEach(field => {
-                const el = document.getElementById(field.id);
-                if (el) setNestedValue(data, field.id, el.value);
-            });
+    });
+    
+    function getNestedValue(path, obj) {
+        const keys = path.split('_');
+        let value = obj;
+        for (let key of keys) value = value?.[key];
+        return value || '';
+    }
 
-            if (editingContext.type === 'building') {
-                if (editingContext.buildingId) {
-                    const index = currentData.findIndex(b => b.id_toa_nha === editingContext.buildingId);
-                    currentData[index] = { ...currentData[index], ...data };
-                } else {
-                    data.id_toa_nha = `building_${Date.now()}`;
-                    data.danhSachPhong = [];
-                    currentData.unshift(data);
-                }
-            } else if (editingContext.type === 'room') {
-                const building = currentData.find(b => b.id_toa_nha === editingContext.buildingId);
-                if (editingContext.roomId) {
-                    const index = building.danhSachPhong.findIndex(r => r.id_phong === editingContext.roomId);
-                    building.danhSachPhong[index] = { ...building.danhSachPhong[index], ...data };
-                } else {
-                    data.id_phong = `room_${Date.now()}`;
-                    building.danhSachPhong.push(data);
-                }
-            }
-            formModalContainer.classList.add('hidden');
-            refreshAdminView();
-            refreshHomeView();
+    function setNestedValue(obj, path, value) {
+        const keys = path.split('_');
+        let current = obj;
+        for (let i = 0; i < keys.length - 1; i++) {
+            current = current[keys[i]] = current[keys[i]] || {};
         }
-
-        function refreshAdminView() { 
-            adminListingsContainer.innerHTML = currentData.map(building => `
-                <div class="admin-card bg-white p-4 rounded-lg shadow border-2 border-transparent transition-all">
-                    <div class="flex justify-between items-start">
-                        <div><h3 class="text-xl font-bold">${building.tenToaNha}</h3><p class="text-sm text-slate-500">${building.diaChi}</p></div>
-                        <div class="space-x-2 flex-shrink-0 ml-4"><button class="edit-building-btn text-blue-600 hover:underline" data-building-id="${building.id_toa_nha}">Sửa</button><button class="delete-building-btn text-red-600 hover:underline" data-building-id="${building.id_toa_nha}">Xóa</button></div>
-                    </div>
-                    <div class="mt-4">
-                        <h4 class="font-semibold">Các phòng:</h4>
-                        ${building.danhSachPhong.map(room => `
-                            <div class="flex justify-between items-center p-2 bg-slate-50 rounded mt-2">
-                                <span>${room.tenPhong} - ${room.trangThai}</span>
-                                <div class="space-x-2"><button class="edit-room-btn text-sm text-blue-600 hover:underline" data-building-id="${building.id_toa_nha}" data-room-id="${room.id_phong}">Sửa</button><button class="delete-room-btn text-sm text-red-600 hover:underline" data-building-id="${building.id_toa_nha}" data-room-id="${room.id_phong}">Xóa</button></div>
-                            </div>`).join('') || '<p class="text-sm text-slate-400 p-2">Chưa có phòng nào.</p>'}
-                        <button class="add-room-btn mt-3 text-sm w-full text-center bg-slate-200 hover:bg-slate-300 py-2 rounded" data-building-id="${building.id_toa_nha}">+ Thêm phòng mới</button>
-                    </div>
-                </div>`).join('');
+        const finalKey = keys[keys.length - 1];
+        if (path === 'tienIch' || path === 'linkAnhVideo') {
+            current[finalKey] = value ? value.split(',').map(s => s.trim()).filter(Boolean) : [];
+        } else if (['giaThue', 'dienTich', 'datCoc_soThang'].includes(path)) {
+            current[finalKey] = parseFloat(value) || 0;
         }
-        adminListingsContainer.addEventListener('click', e => { 
-            const { buildingId, roomId } = e.target.dataset;
-            if (e.target.matches('.edit-building-btn')) openFormModal('building', currentData.find(b => b.id_toa_nha === buildingId), { buildingId });
-            if (e.target.matches('.delete-building-btn')) {
-                if (confirm(`Bạn chắc chắn muốn xóa tòa nhà này?`)) {
-                    currentData = currentData.filter(b => b.id_toa_nha !== buildingId);
-                    refreshAdminView(); refreshHomeView();
-                }
-            }
-            if (e.target.matches('.add-room-btn')) openFormModal('room', {}, { buildingId });
-            if (e.target.matches('.edit-room-btn')) {
-                const room = currentData.find(b => b.id_toa_nha === buildingId).danhSachPhong.find(r => r.id_phong === roomId);
-                openFormModal('room', room, { buildingId, roomId });
-            }
-            if (e.target.matches('.delete-room-btn')) {
-                 if (confirm(`Bạn chắc chắn muốn xóa phòng này?`)) {
-                    const building = currentData.find(b => b.id_toa_nha === buildingId);
-                    building.danhSachPhong = building.danhSachPhong.filter(r => r.id_phong !== roomId);
-                    refreshAdminView(); refreshHomeView();
-                }
-            }
-        });
-        const refreshHomeView = () => filterData();
-        function filterData() { 
+        else {
+            current[finalKey] = value;
+        }
+    }
+    const refreshHomeView = () => filterData();
+    function filterData() { 
             const keyword = searchInput.value.toLowerCase();
             const priceRange = priceFilter.value ? priceFilter.value.split('-').map(Number) : null;
             const areaRange = areaFilter.value ? areaFilter.value.split('-').map(Number) : null;
             const selectedAmenities = Array.from(document.querySelectorAll('.amenity-checkbox:checked')).map(cb => cb.value);
 
             const filtered = currentData.map(building => {
-                const matchingRooms = building.danhSachPhong.filter(room => {
-                    if (keyword && !`${building.tenToaNha} ${building.diaChi}`.toLowerCase().includes(keyword)) return false;
+                const matchingRooms = (building.danhSachPhong || []).filter(room => {
+                    if (room.trangThai !== 'còn trống') return false; // Chỉ hiển thị phòng còn trống
+                    if (keyword && !`${building.tenToaNha} ${building.diaChi} ${room.tenPhong}`.toLowerCase().includes(keyword)) return false;
                     if (priceRange && (room.giaThue < priceRange[0] || room.giaThue > priceRange[1])) return false;
                     if (areaRange && (room.dienTich < areaRange[0] || room.dienTich > areaRange[1])) return false;
                     if (selectedAmenities.length > 0 && !selectedAmenities.every(a => (room.tienIch || []).includes(a))) return false;
@@ -606,106 +635,58 @@
             }).filter(Boolean);
             renderListings(filtered);
         }
-        function renderListings(filteredData) { 
-            listingsContainer.innerHTML = '';
-            noResultsDiv.classList.toggle('hidden', filteredData.length > 0);
-            filteredData.forEach(building => {
-                const firstAvailableRoom = building.danhSachPhong.find(r => r.trangThai === 'còn trống' && r.linkAnhVideo && r.linkAnhVideo.length > 0);
-                const previewImage = building.anhDaiDien || firstAvailableRoom?.linkAnhVideo[0] || 'https://placehold.co/400x300/e2e8f0/64748b?text=Không+có+ảnh';
-                const isYoutube = previewImage.includes('youtube.com/embed');
+    function renderListings(filteredData) { 
+        listingsContainer.innerHTML = '';
+        noResultsDiv.classList.toggle('hidden', filteredData.length > 0);
+        filteredData.forEach(building => {
+            building.danhSachPhong.forEach(room => {
+                const previewImage = room.linkAnhVideo?.[0] || building.anhDaiDien || 'https://placehold.co/400x300/e2e8f0/64748b?text=Không+có+ảnh';
                 const card = document.createElement('div');
-                card.className = 'bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all flex flex-col';
+                card.className = 'room-card bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all flex flex-col cursor-pointer';
+                card.dataset.buildingId = building.id_toa_nha;
+                card.dataset.roomId = room.id_phong;
                 card.innerHTML = `
-                    <div class="relative">${isYoutube ? `<div class="w-full h-48 bg-black flex items-center justify-center text-white font-bold">VIDEO PREVIEW</div>` : `<img src="${previewImage.replace(/\/$/, '')}/-/preview/400x300/" alt="Ảnh tòa nhà" class="w-full h-48 object-cover">`}</div>
+                    <div class="relative"><img src="${previewImage.replace(/\/$/, '')}/-/preview/400x300/" alt="Ảnh phòng" class="w-full h-48 object-cover"></div>
                     <div class="p-4 flex-grow flex flex-col">
-                        <h3 class="text-lg font-bold">${building.tenToaNha}</h3><p class="text-sm text-slate-500 mt-1 flex-grow">${building.diaChi}</p>
-                        <p class="text-sm text-indigo-600 font-semibold mt-2">Còn ${building.danhSachPhong.filter(r => r.trangThai === 'còn trống').length} phòng trống</p>
-                    </div>
-                    <div class="bg-slate-50 max-h-48 overflow-y-auto">${building.danhSachPhong.map(room => `<div class="room-item p-3 border-t border-slate-100 ${room.trangThai === 'còn trống' ? 'cursor-pointer hover:bg-slate-50' : 'cursor-not-allowed opacity-60'}" ${room.trangThai === 'còn trống' ? `data-building-id="${building.id_toa_nha}" data-room-id="${room.id_phong}"` : ''}><div class="flex justify-between items-center"><p class="font-semibold">${room.tenPhong}</p><span class="text-xs font-medium px-2 py-1 rounded-full ${room.trangThai === 'còn trống' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-500'}">${room.trangThai}</span></div><div class="text-sm text-slate-500 mt-1"><span>${(room.giaThue / 1000000).toFixed(2).replace('.00','')} triệu/tháng</span> - <span>${room.dienTich} m²</span></div></div>`).join('')}</div>`;
+                        <h3 class="text-base font-bold truncate" title="${room.tenPhong} - ${building.tenToaNha}">${room.tenPhong}</h3>
+                        <p class="text-sm text-slate-500 mt-1 flex-grow truncate" title="${building.diaChi}">${building.diaChi}</p>
+                        <div class="flex justify-between items-center mt-2">
+                             <span class="text-lg font-bold text-indigo-600">${(room.giaThue / 1000000).toFixed(2).replace('.00','').replace('.50','.5')} tr</span>
+                             <span class="text-sm text-slate-500">${room.dienTich} m²</span>
+                        </div>
+                    </div>`;
                 listingsContainer.appendChild(card);
             });
-        }
-        function showModal(buildingId, roomId) { 
-            const building = currentData.find(b => b.id_toa_nha === buildingId);
-            const room = building.danhSachPhong.find(r => r.id_phong === roomId);
-            const modalHTML = `
-                <div id="modal-content" class="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto transform scale-95 transition-transform duration-300">
-                    <div class="p-6">
-                        <div class="flex justify-between items-start"><div><h2 class="text-2xl font-bold">${room.tenPhong}</h2><p class="text-slate-500">${building.tenToaNha}</p></div><button id="close-modal" class="text-3xl text-slate-400 hover:text-slate-600">&times;</button></div>
-                        <div class="mt-4"><div id="gallery-main" class="w-full aspect-video bg-black rounded-lg flex items-center justify-center"></div><div class="flex space-x-2 mt-2 overflow-x-auto p-1">${(room.linkAnhVideo || []).map((link, index) => `<img src="${link.replace(/\/$/, '')}/-/preview/100x100/" data-link="${link}" class="gallery-thumbnail h-16 w-24 object-cover rounded-md ${index === 0 ? 'active' : ''}">`).join('')}</div></div>
-                        <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div><h4 class="font-semibold text-lg mb-2">Thông tin cơ bản</h4><ul class="space-y-2 text-sm"><li class="flex justify-between"><span class="text-slate-600">Giá thuê:</span><span class="font-bold text-xl text-indigo-600">${new Intl.NumberFormat('vi-VN').format(room.giaThue)} đ/tháng</span></li><li class="flex justify-between"><span class="text-slate-600">Diện tích:</span><span class="font-medium">${room.dienTich} m²</span></li><li class="flex justify-between"><span class="text-slate-600">Đặt cọc:</span><span class="font-medium">${room.datCoc.soThang} tháng</span></li></ul><p class="text-xs text-slate-500 mt-2">${room.datCoc.ghiChu}</p></div>
-                            <div><h4 class="font-semibold text-lg mb-2">Chi phí khác</h4><ul class="text-sm divide-y divide-slate-200">${Object.entries(room.chiPhi).map(([k, v]) => `<li class="flex justify-between py-1"><span class="text-slate-600 capitalize">${k}:</span><span class="font-medium">${v}</span></li>`).join('')}</ul></div>
-                        </div>
-                        <div class="mt-6"><h4 class="font-semibold text-lg mb-2">Mô tả chi tiết</h4><p class="text-sm text-slate-600">${room.thongTinChiTiet}</p></div>
-                        <div class="mt-6"><h4 class="font-semibold text-lg mb-2">Tiện ích</h4><div class="flex flex-wrap gap-2">${(room.tienIch || []).map(a => `<span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-1 rounded-full">${a.charAt(0).toUpperCase() + a.slice(1)}</span>`).join('')}</div></div>
-                    </div>
-                    <div class="p-6 bg-slate-50 rounded-b-xl flex flex-col sm:flex-row gap-3"><a href="https://zalo.me/0987654321" target="_blank" class="flex-1 text-center bg-blue-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-600">Chat Zalo</a><a href="https://m.me/YourFacebookID" target="_blank" class="flex-1 text-center bg-purple-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-purple-600">Chat Messenger</a><a href="${building.viTriMap}" target="_blank" class="flex-1 text-center bg-slate-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-slate-700">Xem bản đồ</a></div>
-                </div>`;
-            modalContainer.innerHTML = modalHTML;
-            modalContainer.classList.remove('hidden');
-            setTimeout(() => modalContainer.querySelector('#modal-content').classList.remove('scale-95'), 10);
-            
-            const galleryMain = modalContainer.querySelector('#gallery-main');
-            const thumbnails = modalContainer.querySelectorAll('.gallery-thumbnail');
-            const showMedia = (link) => galleryMain.innerHTML = `<img src="${link}" class="w-full h-full object-contain">`;
-            thumbnails.forEach(thumb => thumb.addEventListener('click', () => {
-                thumbnails.forEach(t => t.classList.remove('active'));
-                thumb.classList.add('active');
-                showMedia(thumb.dataset.link);
-            }));
-            if (room.linkAnhVideo && room.linkAnhVideo.length > 0) showMedia(room.linkAnhVideo[0]);
-        }
-        
-        const initializeAll = () => { 
-            const allAmenities = new Set(currentData.flatMap(b => b.danhSachPhong.flatMap(r => r.tienIch || [])));
-            amenitiesContainer.innerHTML = Array.from(allAmenities).map(amenity => `<label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" class="amenity-checkbox rounded text-indigo-600" value="${amenity}"><span class="text-slate-600">${amenity.charAt(0).toUpperCase() + amenity.slice(1)}</span></label>`).join('');
-            refreshHomeView();
-            refreshAdminView();
-            updateLoginUI(); // Cập nhật UI đăng nhập khi tải trang
-        };
-        tabHome.addEventListener('click', () => switchTab('home'));
-        tabAdmin.addEventListener('click', () => switchTab('admin'));
-        addBuildingBtn.addEventListener('click', () => openFormModal('building'));
-        searchInput.addEventListener('input', filterData);
-        priceFilter.addEventListener('change', filterData);
-        areaFilter.addEventListener('change', filterData);
-        amenitiesContainer.addEventListener('change', filterData);
-        listingsContainer.addEventListener('click', e => {
-            const roomItem = e.target.closest('.room-item');
-            if (roomItem?.dataset.buildingId) showModal(roomItem.dataset.buildingId, roomItem.dataset.roomId);
         });
-        modalContainer.addEventListener('click', e => {
-            if (e.target === modalContainer) e.currentTarget.classList.add('hidden');
-        });
-        exportJsonBtn.addEventListener('click', () => { 
-            const dataStr = `const initialData = ${JSON.stringify(currentData, null, 4)};`;
-            const dataBlob = new Blob([dataStr], {type: "text/javascript"});
-            const url = URL.createObjectURL(dataBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = 'data.js';
-            link.click();
-            URL.revokeObjectURL(url);
-            alert("Đã tải file 'data.js'. Vui lòng dùng file này để thay thế dữ liệu trong file HTML của bạn, sau đó cập nhật lên GitHub.");
-        });
-        const switchTab = (tab) => { 
-            const isHome = tab === 'home';
-            if (!isHome && !isLoggedIn) { // Chặn truy cập admin nếu chưa đăng nhập
-                alert("Vui lòng đăng nhập để truy cập trang Admin.");
-                loginModalContainer.classList.remove('hidden');
-                return;
-            }
-            tabHome.classList.toggle('active', isHome);
-            tabAdmin.classList.toggle('active', !isHome);
-            contentHome.classList.toggle('hidden', !isHome);
-            contentAdmin.classList.toggle('hidden', isHome);
-            if(isHome) refreshHomeView(); else refreshAdminView();
-        };
+    }
 
-        // --- CHẠY LẦN ĐẦU ---
-        initializeAll();
+    function refreshAdminView() { adminListingsContainer.innerHTML = currentData.map(building => `<div class="admin-card bg-white p-4 rounded-lg shadow border-2 border-transparent transition-all"><div class="flex justify-between items-start"><div><h3 class="text-xl font-bold">${building.tenToaNha}</h3><p class="text-sm text-slate-500">${building.diaChi}</p></div><div class="space-x-2 flex-shrink-0 ml-4"><button class="edit-building-btn text-blue-600 hover:underline" data-building-id="${building.id_toa_nha}">Sửa</button><button class="delete-building-btn text-red-600 hover:underline" data-building-id="${building.id_toa_nha}">Xóa</button></div></div><div class="mt-4"><h4 class="font-semibold">Các phòng:</h4>${(building.danhSachPhong || []).map(room => `<div class="flex justify-between items-center p-2 bg-slate-50 rounded mt-2"><span>${room.tenPhong} - ${room.trangThai}</span><div class="space-x-2"><button class="edit-room-btn text-sm text-blue-600 hover:underline" data-building-id="${building.id_toa_nha}" data-room-id="${room.id_phong}">Sửa</button><button class="delete-room-btn text-sm text-red-600 hover:underline" data-building-id="${building.id_toa_nha}" data-room-id="${room.id_phong}">Xóa</button></div></div>`).join('') || '<p class="text-sm text-slate-400 p-2">Chưa có phòng nào.</p>'}<button class="add-room-btn mt-3 text-sm w-full text-center bg-slate-200 hover:bg-slate-300 py-2 rounded" data-building-id="${building.id_toa_nha}">+ Thêm phòng mới</button></div></div>`).join(''); }
+    const initializeAll = () => {  if (!currentData || currentData.length === 0) return; const allAmenities = new Set(currentData.flatMap(b => b.danhSachPhong.flatMap(r => r.tienIch || []))); amenitiesContainer.innerHTML = Array.from(allAmenities).map(amenity => `<label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" class="amenity-checkbox rounded text-indigo-600" value="${amenity}"><span class="text-slate-600">${amenity.charAt(0).toUpperCase() + amenity.slice(1)}</span></label>`).join(''); refreshHomeView(); refreshAdminView(); updateLoginUI(); };
+    tabHome.addEventListener('click', () => switchTab('home'));
+    tabAdmin.addEventListener('click', () => switchTab('admin'));
+    addBuildingBtn.addEventListener('click', () => openFormModal('building'));
+    searchInput.addEventListener('input', filterData);
+    priceFilter.addEventListener('change', filterData);
+    areaFilter.addEventListener('change', filterData);
+    amenitiesContainer.addEventListener('change', filterData);
+    listingsContainer.addEventListener('click', e => {
+        const roomCard = e.target.closest('.room-card');
+        if (roomCard?.dataset.buildingId) {
+             const building = currentData.find(b => b.id_toa_nha === roomCard.dataset.buildingId);
+             const room = building.danhSachPhong.find(r => r.id_phong === roomCard.dataset.roomId);
+             showModal(building, room);
+        }
     });
-    </script>
+    modalContainer.addEventListener('click', e => { if (e.target === modalContainer || e.target.id === 'close-modal') { const modalContent = document.getElementById('modal-content'); if (modalContent) { modalContent.classList.add('scale-95'); setTimeout(() => e.currentTarget.classList.add('hidden'), 300); } else { e.currentTarget.classList.add('hidden'); } } });
+    function showModal(building, room) { 
+            const modalHTML = `<div id="modal-content" class="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto transform scale-95 transition-transform duration-300"><div class="p-6"><div class="flex justify-between items-start"><div><h2 class="text-2xl font-bold">${room.tenPhong}</h2><p class="text-slate-500">${building.tenToaNha}</p></div><button id="close-modal" class="text-3xl text-slate-400 hover:text-slate-600">×</button></div><div class="mt-4"><div id="gallery-main" class="w-full aspect-video bg-black rounded-lg flex items-center justify-center"></div><div class="flex space-x-2 mt-2 overflow-x-auto p-1">${(room.linkAnhVideo || []).map((link, index) => `<img src="${link.replace(/\/$/, '')}/-/preview/100x100/" data-link="${link}" class="gallery-thumbnail h-16 w-24 object-cover rounded-md ${index === 0 ? 'active' : ''}">`).join('')}</div></div><div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6"><div><h4 class="font-semibold text-lg mb-2">Thông tin cơ bản</h4><ul class="space-y-2 text-sm"><li class="flex justify-between"><span class="text-slate-600">Giá thuê:</span><span class="font-bold text-xl text-indigo-600">${new Intl.NumberFormat('vi-VN').format(room.giaThue)} đ/tháng</span></li><li class="flex justify-between"><span class="text-slate-600">Diện tích:</span><span class="font-medium">${room.dienTich} m²</span></li><li class="flex justify-between"><span class="text-slate-600">Đặt cọc:</span><span class="font-medium">${room.datCoc.soThang} tháng</span></li></ul><p class="text-xs text-slate-500 mt-2">${room.datCoc.ghiChu}</p></div><div><h4 class="font-semibold text-lg mb-2">Chi phí khác</h4><ul class="text-sm divide-y divide-slate-200">${Object.entries(room.chiPhi).map(([k, v]) => `<li class="flex justify-between py-1"><span class="text-slate-600 capitalize">${k.replace('_', ' ')}:</span><span class="font-medium">${v}</span></li>`).join('')}</ul></div></div><div class="mt-6"><h4 class="font-semibold text-lg mb-2">Mô tả chi tiết</h4><p class="text-sm text-slate-600">${(room.thongTinChiTiet || "").replace(/\n/g, '<br>')}</p></div><div class="mt-6"><h4 class="font-semibold text-lg mb-2">Tiện ích</h4><div class="flex flex-wrap gap-2">${(room.tienIch || []).map(a => `<span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-1 rounded-full">${a.charAt(0).toUpperCase() + a.slice(1)}</span>`).join('')}</div></div></div><div class="p-6 bg-slate-50 rounded-b-xl flex flex-col sm:flex-row gap-3"><a href="https://zalo.me/YOUR_ZALO_NUMBER" target="_blank" class="flex-1 text-center bg-blue-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-600">Chat Zalo</a><a href="https://m.me/YOUR_FACEBOOK_ID" target="_blank" class="flex-1 text-center bg-purple-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-purple-600">Chat Messenger</a><a href="${building.viTriMap}" target="_blank" class="flex-1 text-center bg-slate-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-slate-700">Xem bản đồ</a></div></div>`;
+            modalContainer.innerHTML = modalHTML; modalContainer.classList.remove('hidden'); setTimeout(() => modalContainer.querySelector('#modal-content').classList.remove('scale-95'), 10); const galleryMain = modalContainer.querySelector('#gallery-main'); const thumbnails = modalContainer.querySelectorAll('.gallery-thumbnail'); const showMedia = (link) => { galleryMain.innerHTML = link.includes('youtube.com/embed') ? `<iframe src="${link}" frameborder="0" allowfullscreen class="w-full h-full"></iframe>` : `<img src="${link}" class="w-full h-full object-contain">`;}; thumbnails.forEach(thumb => thumb.addEventListener('click', () => { thumbnails.forEach(t => t.classList.remove('active')); thumb.classList.add('active'); showMedia(thumb.dataset.link); })); if (room.linkAnhVideo && room.linkAnhVideo.length > 0) showMedia(room.linkAnhVideo[0]); else galleryMain.innerHTML = '<p class="text-white">Không có ảnh/video.</p>';
+        }
+    const switchTab = (tab) => { const isHome = tab === 'home'; if (!isHome && !isLoggedIn) { alert("Vui lòng đăng nhập để truy cập trang Admin."); loginModalContainer.classList.remove('hidden'); return; } tabHome.classList.toggle('active', isHome); tabAdmin.classList.toggle('active', !isHome); contentHome.classList.toggle('hidden', !isHome); contentAdmin.classList.toggle('hidden', isHome); if(isHome) refreshHomeView(); else refreshAdminView(); };
+    // --- CHẠY LẦN ĐẦU ---
+    fetchData(); 
+    updateLoginUI();
+});
+</script>
 </body>
 </html>
