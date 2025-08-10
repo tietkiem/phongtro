@@ -3,436 +3,574 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tìm Kiếm Phòng Trọ</title>
+    <title>Tìm Phòng Trọ Nhanh</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
-        .transition-all { transition: all 0.3s ease-in-out; }
-        #modal-container.hidden, .tab-content.hidden, #form-modal-container.hidden, #login-modal-container.hidden { display: none; }
-        .tab-btn.active { background-color: #4f46e5; color: white; }
-        .tab-btn { background-color: #eef2ff; color: #4f46e5; }
-        .gallery-thumbnail { cursor: pointer; border: 2px solid transparent; }
-        .gallery-thumbnail.active { border-color: #4f46e5; }
-        .thumbnail-selector {
-            cursor: pointer;
-            border: 3px solid transparent;
-            transition: all 0.2s;
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+            background-color: #f0f2f5;
         }
-        .thumbnail-selector.selected {
-            border-color: #4f46e5;
-            box-shadow: 0 0 10px rgba(79, 70, 229, 0.5);
-            transform: scale(1.05);
+        .modal-backdrop { background-color: rgba(0,0,0,0.7); }
+        .listing-card { transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; }
+        .listing-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .gallery-scroll::-webkit-scrollbar { height: 8px; }
+        .gallery-scroll::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        .gallery-scroll::-webkit-scrollbar-thumb { background: #888; border-radius: 10px; }
+        .gallery-scroll::-webkit-scrollbar-thumb:hover { background: #555; }
+        .hidden { display: none; }
+        #login-view {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        #drop-zone.dragover {
+            border-color: #2563eb;
+            background-color: #eff6ff;
         }
     </style>
 </head>
-<body class="text-slate-800">
+<body class="text-gray-800">
 
-    <div class="container mx-auto p-4 md:p-8">
-        
-        <div class="flex justify-between items-center mb-8 border-b border-slate-200 pb-4">
-            <div class="text-xl font-bold text-indigo-600">PhongTro.VIP</div>
-            <div class="flex items-center space-x-2">
-                <div id="tab-container" class="flex p-1 bg-slate-100 rounded-lg">
-                    <button id="tab-home" class="tab-btn active font-semibold py-2 px-4 md:px-6 rounded-md transition-all">Trang Chủ</button>
-                    <button id="tab-admin" class="tab-btn font-semibold py-2 px-4 md:px-6 rounded-md transition-all hidden">Admin</button>
+    <!-- GIAO DIỆN ĐĂNG NHẬP (ẨN BAN ĐẦU) -->
+    <div id="login-view" class="min-h-screen flex items-center justify-center p-4 hidden">
+        <div class="w-full max-w-sm bg-white rounded-xl shadow-2xl p-8">
+            <div class="text-center mb-8">
+                <i class="fas fa-house-user text-5xl text-blue-600"></i>
+                <h2 class="mt-4 text-2xl font-bold text-gray-800">Đăng Nhập Admin</h2>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label for="username" class="block text-sm font-medium text-gray-700">Tên đăng nhập</label>
+                    <input type="text" id="username" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2">
                 </div>
-                <button id="login-btn" class="bg-emerald-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-emerald-600 transition-all">Đăng Nhập</button>
-                <button id="logout-btn" class="hidden bg-red-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-600 transition-all">Đăng Xuất</button>
-            </div>
-        </div>
-
-        <div id="content-home" class="tab-content">
-            <header class="text-center mb-8">
-                <h1 class="text-3xl md:text-4xl font-bold">Tìm Phòng Trọ Ưng Ý</h1>
-                <p class="text-slate-500 mt-2">Nền tảng tìm kiếm và cho thuê phòng trọ nhanh chóng, minh bạch.</p>
-            </header>
-            <div id="search-filters" class="bg-white p-6 rounded-xl shadow-lg mb-8">
-                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div>
-                        <label for="searchInput" class="block text-sm font-medium text-slate-700 mb-1">Địa chỉ, tên tòa nhà</label>
-                        <input type="text" id="searchInput" placeholder="VD: Cầu Giấy, Láng Hạ..." class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                    </div>
-                    <div>
-                        <label for="priceFilter" class="block text-sm font-medium text-slate-700 mb-1">Khoảng giá</label>
-                        <select id="priceFilter" class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                            <option value="">Tất cả</option>
-                            <option value="0-3000000">Dưới 3 triệu</option>
-                            <option value="3000000-5000000">3 - 5 triệu</option>
-                            <option value="5000000-7000000">5 - 7 triệu</option>
-                            <option value="7000000-999999999">Trên 7 triệu</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label for="areaFilter" class="block text-sm font-medium text-slate-700 mb-1">Diện tích (m²)</label>
-                        <select id="areaFilter" class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                            <option value="">Tất cả</option>
-                            <option value="0-20">Dưới 20 m²</option>
-                            <option value="20-30">20 - 30 m²</option>
-                            <option value="30-40">30 - 40 m²</option>
-                            <option value="40-999">Trên 40 m²</option>
-                        </select>
-                    </div>
-                    <div class="md:col-span-2 lg:col-span-4">
-                        <label class="block text-sm font-medium text-slate-700 mb-2">Tiện ích</label>
-                        <div id="amenities-filter" class="flex flex-wrap gap-x-4 gap-y-2"></div>
-                    </div>
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700">Mật khẩu</label>
+                    <input type="password" id="password" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2">
                 </div>
+                <p id="login-error" class="text-red-500 text-sm hidden">Tên đăng nhập hoặc mật khẩu không đúng.</p>
+                <button id="login-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">Đăng Nhập</button>
+                 <button id="back-to-main-from-login" class="mt-2 w-full text-center text-sm text-gray-600 hover:text-blue-600">Quay về trang chủ</button>
             </div>
-            <div id="listings-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-            <div id="no-results" class="hidden text-center py-12"><p class="text-slate-500 text-lg">Không tìm thấy phòng nào phù hợp.</p></div>
-        </div>
-
-        <div id="content-admin" class="tab-content hidden">
-            <header class="text-center mb-8">
-                <h1 class="text-3xl md:text-4xl font-bold">Bảng Điều Khiển</h1>
-                <p class="text-slate-500 mt-2">Quản lý danh sách các tòa nhà và phòng trọ.</p>
-            </header>
-            <div class="bg-white p-6 rounded-xl shadow-lg mb-8">
-                <h2 class="text-2xl font-semibold mb-4">Công cụ nhập nhanh từ Zalo</h2>
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div>
-                        <label for="zalo-input" class="block text-sm font-medium text-slate-700 mb-1">1. Dán nội dung Zalo vào đây:</label>
-                        <textarea id="zalo-input" rows="15" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="Dán toàn bộ nội dung tin nhắn..."></textarea>
-                        <button id="parse-btn" class="mt-4 w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 transition-all">Xử Lý & Xem Trước</button>
-                    </div>
-                    <div id="zalo-parser-preview" class="hidden">
-                        <h3 class="text-lg font-semibold mb-2">2. Xem trước thông tin:</h3>
-                        <div id="preview-content" class="p-4 bg-slate-50 border border-slate-200 rounded-lg text-sm mb-4"></div>
-                        
-                        <h3 class="text-lg font-semibold mb-2">3. Dán link Ảnh/Video (mỗi link một dòng):</h3>
-                        <textarea id="zalo-image-links" rows="5" class="w-full p-2 border border-slate-300 rounded-lg" placeholder="https://i.imgur.com/example1.jpg&#10;https://i.imgur.com/example2.jpg"></textarea>
-
-                        <button id="add-parsed-building-btn" class="mt-4 w-full bg-emerald-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-emerald-700 transition-all">4. Thêm Tòa Nhà Vào Hệ Thống</button>
-                    </div>
-                </div>
-            </div>
-            <div class="flex justify-between items-center my-6 pt-6 border-t">
-                <h2 class="text-2xl font-semibold">Quản lý thủ công</h2>
-                <button id="add-building-btn" class="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition-all">Thêm Tòa Nhà Mới</button>
-            </div>
-            <div id="admin-listings-container" class="space-y-4"></div>
         </div>
     </div>
 
-    <div id="modal-container" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50"></div>
-    <div id="form-modal-container" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-[60]"></div>
-    
-    <div id="login-modal-container" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-[70]">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm">
-            <form id="login-form" class="p-8 space-y-6">
-                <h2 class="text-2xl font-bold text-center">Đăng Nhập Admin</h2>
-                <div>
-                    <label for="username" class="block text-sm font-medium text-slate-700">Tên đăng nhập</label>
-                    <input type="text" id="username" class="mt-1 w-full p-2 border border-slate-300 rounded-lg" required>
+    <!-- PHẦN GIAO DIỆN CHÍNH -->
+    <div id="main-view">
+        <!-- HEADER -->
+        <header class="bg-white shadow-md sticky top-0 z-40">
+            <div class="container mx-auto px-4 py-4 flex flex-col lg:flex-row justify-between items-center gap-4">
+                <div class="text-center lg:text-left">
+                    <h1 class="text-2xl font-bold text-blue-600"><i class="fas fa-house-chimney-window mr-2"></i>Tìm Phòng Trọ</h1>
+                    <p class="text-sm text-gray-500 italic -mt-1">Tìm trọ miễn phí - An tâm lựa chọn.</p>
                 </div>
-                <div>
-                    <label for="password" class="block text-sm font-medium text-slate-700">Mật khẩu</label>
-                    <input type="password" id="password" class="mt-1 w-full p-2 border border-slate-300 rounded-lg" required>
+                <div class="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
+                    <div class="relative w-full sm:w-auto">
+                        <input type="search" id="search-input" placeholder="Tìm theo địa chỉ, mã nhà..." class="border border-gray-300 rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <label for="sort-price" class="text-sm font-medium"><i class="fas fa-dollar-sign mr-1"></i>Giá:</label>
+                        <select id="sort-price" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full">
+                            <option value="newest">Mới nhất</option>
+                            <option value="asc">Tăng dần</option>
+                            <option value="desc">Giảm dần</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <label for="filter-ward" class="text-sm font-medium"><i class="fas fa-map-marker-alt mr-1"></i>Phường:</label>
+                        <select id="filter-ward" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full">
+                            <option value="all">Tất cả</option>
+                        </select>
+                    </div>
+                     <button id="go-to-admin-btn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300 w-full sm:w-auto"><i class="fas fa-user-shield mr-2"></i>Trang Admin</button>
                 </div>
-                <p id="login-error" class="text-red-500 text-sm text-center hidden">Tên đăng nhập hoặc mật khẩu không đúng.</p>
-                <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700">Đăng Nhập</button>
-            </form>
+            </div>
+        </header>
+        <main class="container mx-auto p-4">
+            <div id="listings-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+        </main>
+    </div>
+
+    <!-- PHẦN GIAO DIỆN ADMIN (ẨN BAN ĐẦU) -->
+    <div id="admin-view" class="hidden">
+        <div class="container mx-auto p-4 sm:p-6 md:p-8">
+            <div class="max-w-6xl mx-auto bg-white rounded-xl shadow-2xl p-6">
+                <div class="flex flex-wrap justify-between items-center mb-6 border-b pb-4 gap-4">
+                    <h2 class="text-2xl font-bold text-gray-800">Trang Quản Trị</h2>
+                    <div class="flex items-center gap-4">
+                        <button id="go-to-main-btn" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300"><i class="fas fa-arrow-left mr-2"></i>Về Trang Chủ</button>
+                        <button id="logout-btn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300"><i class="fas fa-sign-out-alt mr-2"></i>Đăng xuất</button>
+                    </div>
+                </div>
+
+                <!-- CÀI ĐẶT CLOUDINARY -->
+                <div class="mb-8 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                    <h3 class="text-lg font-semibold text-purple-800 mb-2"><i class="fas fa-cloud-upload-alt mr-2"></i>Cài đặt Cloudinary (Chỉ cần làm 1 lần)</h3>
+                    <p class="text-sm text-gray-600 mb-2">Để upload ảnh, bạn cần cung cấp thông tin tài khoản Cloudinary. Xem hướng dẫn <a href="https://cloudinary.com/documentation/upload_presets" target="_blank" class="text-blue-600 underline">tại đây</a> để tạo <strong>Upload Preset (Unsigned)</strong>.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="cloudinary-cloud-name" class="block text-sm font-medium text-gray-700">Cloud Name</label>
+                            <input type="text" id="cloudinary-cloud-name" placeholder="Tên cloud của bạn" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2">
+                        </div>
+                        <div>
+                            <label for="cloudinary-upload-preset" class="block text-sm font-medium text-gray-700">Upload Preset Name</label>
+                            <input type="text" id="cloudinary-upload-preset" placeholder="Tên upload preset" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2">
+                        </div>
+                    </div>
+                    <button id="save-cloudinary-settings-btn" class="mt-3 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300"><i class="fas fa-save mr-2"></i>Lưu Cài Đặt</button>
+                </div>
+                
+                <div class="mb-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <h3 class="text-lg font-semibold text-blue-800 mb-2"><i class="fas fa-magic mr-2"></i>Công cụ Bóc tách Dữ liệu</h3>
+                    <textarea id="data-parser-input" class="w-full h-32 border-gray-300 rounded-md shadow-sm p-2 font-mono text-sm" placeholder="Dán nội dung tin đăng vào đây..."></textarea>
+                    <button id="parse-data-btn" class="mt-2 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300">Bóc tách dữ liệu</button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                    <!-- Form fields -->
+                    <div><label for="admin-code" class="block text-sm font-medium text-gray-700">Mã nhà</label><input type="text" id="admin-code" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"></div>
+                    <div><label for="admin-address" class="block text-sm font-medium text-gray-700">Địa chỉ</label><input type="text" id="admin-address" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"></div>
+                    <div><label for="admin-ward" class="block text-sm font-medium text-gray-700">Phường</label><input type="text" id="admin-ward" list="wards-datalist" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"><datalist id="wards-datalist"></datalist></div>
+                    <div><label for="admin-price" class="block text-sm font-medium text-gray-700">Giá phòng (VND)</label><input type="number" id="admin-price" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"></div>
+                    <div><label for="admin-area" class="block text-sm font-medium text-gray-700">Diện tích (m²)</label><input type="number" id="admin-area" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"></div>
+                    <div><label for="admin-wc" class="block text-sm font-medium text-gray-700">Vệ sinh</label><select id="admin-wc" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"><option>Khép kín</option><option>Chung</option></select></div>
+                    <div><label for="admin-electricity" class="block text-sm font-medium text-gray-700">Giá điện (VND/kWh)</label><input type="number" id="admin-electricity" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"></div>
+                    <div><label for="admin-water" class="block text-sm font-medium text-gray-700">Giá nước (VND/khối)</label><input type="number" id="admin-water" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"></div>
+                    <div><label for="admin-internet" class="block text-sm font-medium text-gray-700">Giá mạng (VND/phòng)</label><input type="number" id="admin-internet" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"></div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700">Ảnh phòng trọ</label>
+                        <div id="drop-zone" class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md transition-colors duration-300">
+                            <div class="space-y-1 text-center">
+                                <i class="fas fa-cloud-upload-alt text-4xl text-gray-400"></i>
+                                <div class="flex text-sm text-gray-600">
+                                    <label for="admin-images" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none">
+                                        <span>Tải lên một file</span>
+                                        <input id="admin-images" type="file" class="sr-only" multiple accept="image/*">
+                                    </label>
+                                    <p class="pl-1">hoặc kéo và thả</p>
+                                </div>
+                                <p class="text-xs text-gray-500">PNG, JPG, GIF</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="image-preview-container" class="md:col-span-2 mt-2 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 bg-gray-50 p-2 rounded-md border min-h-[80px]"></div>
+                </div>
+                <div class="mt-8 pt-5 border-t">
+                     <button id="submit-listing-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 flex items-center justify-center text-lg"><i class="fas fa-plus-circle mr-2"></i><span id="submit-btn-text">Thêm Tin Đăng Mới</span><i id="submit-spinner" class="fas fa-spinner fa-spin ml-2 hidden"></i></button>
+                </div>
+
+                <div class="mt-10 pt-6 border-t-2 border-dashed border-gray-300">
+                    <div class="p-4 bg-green-50 border border-green-300 rounded-lg">
+                        <h3 class="text-lg font-semibold text-green-800 mb-2"><i class="fas fa-cogs mr-2"></i>Công Cụ Cập Nhật Website</h3>
+                        <p class="text-sm text-gray-600 mb-2">Sau khi đã thêm tất cả các tin đăng mới, nhấn nút bên dưới để tải về file website đã được cập nhật.</p>
+                        <ol class="list-decimal list-inside text-sm space-y-1">
+                            <li>Nhấn nút <strong>"Tải về file website đã cập nhật"</strong>.</li>
+                            <li>Một file <code>index.html</code> mới sẽ được tải về máy tính.</li>
+                            <li>Trong thư mục dự án, <strong>xóa file `index.html` cũ</strong> và <strong>thay thế bằng file vừa tải về</strong>.</li>
+                            <li>Đăng (push) toàn bộ thư mục dự án lên GitHub để hoàn tất.</li>
+                        </ol>
+                        <button id="download-updated-file-btn" class="mt-3 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300"><i class="fas fa-download mr-2"></i>Tải về file website đã cập nhật</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-<script>
-// =======================================================================
-// BỘ NÃO MỚI v3.0 - PARSER THÔNG MINH HƠN, UPLOAD ẢNH BẰNG LINK
-// =======================================================================
+    <!-- MODALs -->
+    <div id="details-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden"><div class="bg-white rounded-lg shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative"><button id="close-details-modal" class="absolute top-3 right-4 text-gray-500 hover:text-gray-800 text-2xl font-bold">&times;</button><div id="details-modal-content" class="p-6"></div></div></div>
+    <div id="gallery-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden"><div class="bg-white rounded-lg shadow-2xl w-full max-w-4xl relative"><button id="close-gallery-modal" class="absolute top-2 right-3 text-white bg-black bg-opacity-50 rounded-full w-8 h-8 flex items-center justify-center text-xl z-10">&times;</button><div id="gallery-modal-content" class="p-4"><img id="main-gallery-image" src="" alt="Ảnh phòng trọ" class="w-full h-[70vh] object-contain rounded-md mb-2"><div id="thumbnail-gallery-container" class="flex gap-2 overflow-x-auto pb-2 gallery-scroll"></div></div></div></div>
 
-// !!! QUAN TRỌNG: Dán link Web App URL của bạn vào đây !!!
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxylrfjhK0dYVzKkNz1GVJAm-SXpqyolXGP7IHM3DIL5Ubvn0WpKwAVlBIyrr859wweXw/exec'; 
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DỮ LIỆU MẪU ---
+            const initialListings = [
+                { id: 'P001', code: 'CGN01', address: '123 Nguyễn Khang, Yên Hoà, Cầu Giấy', ward: 'Yên Hoà', price: 4500000, area: 30, electricity: 4000, water: 100000, internet: 100000, wc: 'Khép kín', images: ['https://res.cloudinary.com/thanglong-capital/image/upload/v1723229712/samples/landscapes/nature-mountains.jpg', 'https://res.cloudinary.com/thanglong-capital/image/upload/v1723229714/samples/landscapes/beach-boat.jpg'], timestamp: 1723229715000 },
+                { id: 'P002', code: 'DD01', address: '45 Chùa Láng, Láng Thượng, Đống Đa', ward: 'Láng Thượng', price: 3800000, area: 25, electricity: 3800, water: 30000, internet: 0, wc: 'Khép kín', images: ['https://res.cloudinary.com/thanglong-capital/image/upload/v1723229715/samples/food/dessert.jpg'], timestamp: 1723229716000 },
+                { id: 'P003', code: 'TX01', address: '210 Nguyễn Trãi, Thượng Đình, Thanh Xuân', ward: 'Thượng Đình', price: 5200000, area: 35, electricity: 4000, water: 120000, internet: 100000, wc: 'Khép kín', images: ['https://res.cloudinary.com/thanglong-capital/image/upload/v1723229711/samples/ecommerce/leather-bag-gray.jpg', 'https://res.cloudinary.com/thanglong-capital/image/upload/v1723229711/samples/ecommerce/accessories-bag.jpg'], timestamp: 1723229717000 }
+            ];
+            let listingsData = [];
+            let isAdminLoggedIn = false;
+            let uploadedFiles = [];
 
-let currentData = [];
-let parsedBuildingData = null;
-let isSaving = false;
-
-document.addEventListener('DOMContentLoaded', function() {
-    let editingContext = null;
-    let isLoggedIn = false;
-
-    // --- LẤY CÁC PHẦN TỬ HTML ---
-    const loginBtn = document.getElementById('login-btn');
-    const logoutBtn = document.getElementById('logout-btn');
-    const loginModalContainer = document.getElementById('login-modal-container');
-    const loginForm = document.getElementById('login-form');
-    const loginError = document.getElementById('login-error');
-    const zaloInput = document.getElementById('zalo-input');
-    const parseBtn = document.getElementById('parse-btn');
-    const zaloParserPreview = document.getElementById('zalo-parser-preview');
-    const previewContent = document.getElementById('preview-content');
-    const addParsedBuildingBtn = document.getElementById('add-parsed-building-btn');
-    const tabHome = document.getElementById('tab-home');
-    const tabAdmin = document.getElementById('tab-admin');
-    const contentHome = document.getElementById('content-home');
-    const contentAdmin = document.getElementById('content-admin');
-    const searchInput = document.getElementById('searchInput');
-    const priceFilter = document.getElementById('priceFilter');
-    const areaFilter = document.getElementById('areaFilter');
-    const amenitiesContainer = document.getElementById('amenities-filter');
-    const listingsContainer = document.getElementById('listings-container');
-    const noResultsDiv = document.getElementById('no-results');
-    const modalContainer = document.getElementById('modal-container');
-    const adminListingsContainer = document.getElementById('admin-listings-container');
-    const addBuildingBtn = document.getElementById('add-building-btn');
-    const formModalContainer = document.getElementById('form-modal-container');
-
-    // --- HÀM GIAO TIẾP VỚI GOOGLE SHEETS ---
-    async function fetchData() {
-        showLoading("Đang tải dữ liệu từ Google Sheets...");
-        try {
-            const response = await fetch(SCRIPT_URL);
-            if (!response.ok) throw new Error('Network response was not ok.');
-            const data = await response.json();
-            currentData = data;
-            initializeAll();
-        } catch (error) {
-            console.error('Lỗi khi tải dữ liệu:', error);
-            alert('Không thể tải dữ liệu từ Google Sheets. Vui lòng kiểm tra lại đường link API hoặc cài đặt Google Sheets.');
-        } finally {
-            hideLoading();
-        }
-    }
-
-    async function saveData() {
-        if (isSaving) return;
-        isSaving = true;
-        showLoading("Đang lưu thay đổi...");
-        try {
-            await fetch(SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify(currentData)
-            });
-            console.log("Yêu cầu lưu đã được gửi đi!");
-        } catch (error) {
-            console.error('Lỗi khi gửi yêu cầu lưu dữ liệu:', error);
-            alert('Lưu dữ liệu thất bại! Vui lòng thử lại.');
-        } finally {
-            isSaving = false;
-            setTimeout(() => { hideLoading(); }, 1500);
-        }
-    }
-    
-    function showLoading(message) {
-        let loadingDiv = document.getElementById('loading-overlay');
-        if (!loadingDiv) {
-            loadingDiv = document.createElement('div');
-            loadingDiv.id = 'loading-overlay';
-            loadingDiv.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[999]';
-            document.body.appendChild(loadingDiv);
-        }
-        loadingDiv.innerHTML = `<div class="bg-white p-4 rounded-lg shadow-xl text-center"><p class="font-semibold">${message}</p><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mt-2"></div></div>`;
-    }
-
-    function hideLoading() {
-        const loadingDiv = document.getElementById('loading-overlay');
-        if (loadingDiv) loadingDiv.remove();
-    }
-
-    // --- HỆ THỐNG ĐĂNG NHẬP ---
-    const ADMIN_USERNAME = 'mrpro69';
-    const ADMIN_PASSWORD = '16051984aZ';
-
-    function updateLoginUI() {
-        if (isLoggedIn) {
-            loginBtn.classList.add('hidden');
-            logoutBtn.classList.remove('hidden');
-            tabAdmin.classList.remove('hidden');
-        } else {
-            loginBtn.classList.remove('hidden');
-            logoutBtn.classList.add('hidden');
-            tabAdmin.classList.add('hidden');
-            switchTab('home'); 
-        }
-    }
-
-    loginBtn.addEventListener('click', () => loginModalContainer.classList.remove('hidden'));
-    logoutBtn.addEventListener('click', () => { isLoggedIn = false; updateLoginUI(); });
-    loginModalContainer.addEventListener('click', (e) => { if (e.target === loginModalContainer) loginModalContainer.classList.add('hidden'); });
-    loginForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
-        if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-            isLoggedIn = true;
-            loginError.classList.add('hidden');
-            loginModalContainer.classList.add('hidden');
-            updateLoginUI();
-            switchTab('admin'); 
-        } else {
-            loginError.classList.remove('hidden');
-        }
-    });
-
-    // --- CÔNG CỤ NHẬP NHANH TỪ ZALO (NÂNG CẤP v3.0) ---
-    parseBtn.addEventListener('click', () => {
-        const text = zaloInput.value;
-        if (!text.trim()) { alert('Vui lòng dán nội dung Zalo vào ô.'); return; }
-        
-        try {
-            const building = { id_toa_nha: `building_${Date.now()}`, tenToaNha: "", diaChi: "", viTriMap: "", danhSachPhong: [] };
-            const lines = text.split('\n').filter(line => line.trim() !== '');
-
-            const findLine = (keywords) => {
-                const lowerKeywords = keywords.map(k => k.toLowerCase());
-                return lines.find(l => lowerKeywords.some(k => l.toLowerCase().includes(k)));
+            // --- DOM ELEMENTS ---
+            const allViews = {
+                login: document.getElementById('login-view'),
+                main: document.getElementById('main-view'),
+                admin: document.getElementById('admin-view')
             };
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            const loginBtn = document.getElementById('login-btn');
+            const loginError = document.getElementById('login-error');
+            const backToMainFromLoginBtn = document.getElementById('back-to-main-from-login');
+            const grid = document.getElementById('listings-grid');
+            const searchInput = document.getElementById('search-input');
+            const sortPriceEl = document.getElementById('sort-price');
+            const filterWardEl = document.getElementById('filter-ward');
+            const detailsModal = document.getElementById('details-modal');
+            const closeDetailsModalBtn = document.getElementById('close-details-modal');
+            const detailsModalContent = document.getElementById('details-modal-content');
+            const galleryModal = document.getElementById('gallery-modal');
+            const closeGalleryModalBtn = document.getElementById('close-gallery-modal');
+            const mainGalleryImage = document.getElementById('main-gallery-image');
+            const thumbnailContainer = document.getElementById('thumbnail-gallery-container');
+            const goToAdminBtn = document.getElementById('go-to-admin-btn');
+            const goToMainBtn = document.getElementById('go-to-main-btn');
+            const logoutBtn = document.getElementById('logout-btn');
+            const dataParserInput = document.getElementById('data-parser-input');
+            const parseDataBtn = document.getElementById('parse-data-btn');
+            const adminForm = {
+                code: document.getElementById('admin-code'), address: document.getElementById('admin-address'),
+                ward: document.getElementById('admin-ward'), price: document.getElementById('admin-price'), 
+                area: document.getElementById('admin-area'), wc: document.getElementById('admin-wc'), 
+                electricity: document.getElementById('admin-electricity'), water: document.getElementById('admin-water'), 
+                internet: document.getElementById('admin-internet'), images: document.getElementById('admin-images')
+            };
+            const wardsDatalist = document.getElementById('wards-datalist');
+            const dropZone = document.getElementById('drop-zone');
+            const imagePreviewContainer = document.getElementById('image-preview-container');
+            const submitListingBtn = document.getElementById('submit-listing-btn');
+            const submitBtnText = document.getElementById('submit-btn-text');
+            const submitSpinner = document.getElementById('submit-spinner');
+            const downloadUpdatedFileBtn = document.getElementById('download-updated-file-btn');
+            const cloudinaryCloudNameInput = document.getElementById('cloudinary-cloud-name');
+            const cloudinaryUploadPresetInput = document.getElementById('cloudinary-upload-preset');
+            const saveCloudinarySettingsBtn = document.getElementById('save-cloudinary-settings-btn');
 
-            const getVal = (line, separator = ':') => line ? line.split(separator)[1]?.trim() : "";
-
-            // Lấy Tên Tòa Nhà từ "Mã"
-            const maNhaLine = findLine(['mã']);
-            const maNhaMatch = maNhaLine ? maNhaLine.match(/mã\s*(\d+)/i) : null;
-            if (maNhaMatch) {
-                building.tenToaNha = `Tòa nhà Mã ${maNhaMatch[1]}`;
+            // --- FUNCTIONS ---
+            function loadListings() {
+                const savedListings = localStorage.getItem('phongtroData');
+                listingsData = savedListings ? JSON.parse(savedListings) : initialListings;
+                if (!localStorage.getItem('phongtroData')) saveListings();
+            }
+            function saveListings() {
+                localStorage.setItem('phongtroData', JSON.stringify(listingsData));
             }
 
-            // Lấy thông tin chung
-            const diaChiLine = findLine(['🏢', 'địa chỉ']);
-            building.diaChi = getVal(diaChiLine) || 'Chưa xác định';
-            if (!building.tenToaNha) { // Fallback nếu không có Mã
-                building.tenToaNha = `Tòa nhà tại ${building.diaChi.split(',')[0] || 'Địa chỉ không rõ'}`;
+            const formatCurrency = (amount) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+
+            function renderListings(data) {
+                grid.innerHTML = '';
+                if (data.length === 0) {
+                    grid.innerHTML = `<p class="col-span-full text-center text-gray-500">Không tìm thấy phòng trọ nào phù hợp.</p>`;
+                    return;
+                }
+                data.forEach(listing => {
+                    const card = document.createElement('div');
+                    card.className = 'listing-card bg-white rounded-lg shadow-lg overflow-hidden cursor-pointer';
+                    card.setAttribute('data-id', listing.id);
+                    card.innerHTML = `
+                        <div class="relative">
+                            <img src="${listing.images[0]}" alt="Ảnh phòng trọ" class="w-full h-48 object-cover thumbnail-img" data-id="${listing.id}" onerror="this.onerror=null;this.src='https://placehold.co/600x400/cccccc/ffffff?text=Lỗi+Ảnh';">
+                            <div class="absolute top-2 right-2 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded">${listing.ward}</div>
+                        </div>
+                        <div class="p-4">
+                            <p class="font-bold text-lg text-red-500">${formatCurrency(listing.price)}/tháng</p>
+                            <p class="text-sm text-gray-600 truncate"><i class="fas fa-map-marker-alt mr-1 text-gray-400"></i>${listing.address}</p>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
             }
 
-            const dienTichLine = findLine(['⚡', 'diện tích']);
-            const dienTich = parseInt(dienTichLine?.match(/(\d+)/)?.[0] || '25');
+            function updateAndRender() {
+                let filteredData = [...listingsData];
+                const searchTerm = searchInput.value.toLowerCase().trim();
+                if (searchTerm) {
+                    filteredData = filteredData.filter(item => item.address.toLowerCase().includes(searchTerm) || item.code.toLowerCase().includes(searchTerm));
+                }
+                const selectedWard = filterWardEl.value;
+                if (selectedWard !== 'all') {
+                    filteredData = filteredData.filter(item => item.ward === selectedWard);
+                }
+                const sortBy = sortPriceEl.value;
+                if (sortBy === 'asc') filteredData.sort((a, b) => a.price - b.price);
+                else if (sortBy === 'desc') filteredData.sort((a, b) => b.price - a.price);
+                else filteredData.sort((a, b) => b.timestamp - a.timestamp);
+                renderListings(filteredData);
+            }
 
-            const noiThatLine = findLine(['💥', 'nội thất']);
-            const thongTinChiTiet = noiThatLine ? (text.substring(text.indexOf(noiThatLine)).split('🍀')[0] || '').replace(noiThatLine,'').trim() : "Nội thất đầy đủ.";
+            function showDetailsModal(listingId) {
+                const listing = listingsData.find(item => item.id === listingId);
+                if (!listing) return;
+                detailsModalContent.innerHTML = `
+                    <h2 class="text-2xl font-bold mb-2 text-blue-700">${listing.address}</h2>
+                    <p class="text-lg font-semibold text-red-600 mb-4">${formatCurrency(listing.price)}/tháng</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
+                        <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-ruler-combined mr-2"></i>Diện tích:</strong> ${listing.area} m²</div>
+                        <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-toilet mr-2"></i>Vệ sinh:</strong> ${listing.wc}</div>
+                        <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-bolt mr-2"></i>Giá điện:</strong> ${formatCurrency(listing.electricity)}/kWh</div>
+                        <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-tint mr-2"></i>Giá nước:</strong> ${listing.water > 0 ? formatCurrency(listing.water) + '/khối' : 'Miễn phí'}</div>
+                        <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-wifi mr-2"></i>Giá mạng:</strong> ${listing.internet > 0 ? formatCurrency(listing.internet) + '/phòng' : 'Miễn phí'}</div>
+                        <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-barcode mr-2"></i>Mã nhà:</strong> ${listing.code}</div>
+                    </div>
+                `;
+                detailsModal.classList.remove('hidden');
+            }
 
-            const allTextLower = text.toLowerCase();
-            const tienIch = ['điều hòa', 'nóng lạnh', 'bếp', 'tủ lạnh', 'máy giặt', 'ban công', 'thang máy', 'ko chung chủ', 'giờ giấc tự do', 'được nuôi pet'].filter(item => allTextLower.includes(item));
+            function showGalleryModal(listingId) {
+                const listing = listingsData.find(item => item.id === listingId);
+                if (!listing || listing.images.length === 0) return;
+                mainGalleryImage.src = listing.images[0];
+                thumbnailContainer.innerHTML = '';
+                listing.images.forEach((imgSrc, index) => {
+                    const thumb = document.createElement('img');
+                    thumb.src = imgSrc;
+                    thumb.className = `w-24 h-16 object-cover rounded-md cursor-pointer border-2 ${index === 0 ? 'border-blue-500' : 'border-transparent'}`;
+                    thumb.onclick = () => {
+                        mainGalleryImage.src = imgSrc;
+                        document.querySelectorAll('#thumbnail-gallery-container img').forEach(t => t.classList.remove('border-blue-500'));
+                        thumb.classList.add('border-blue-500');
+                    };
+                    thumbnailContainer.appendChild(thumb);
+                });
+                galleryModal.classList.remove('hidden');
+            }
+
+            function populateWards() {
+                const wards = [...new Set(listingsData.map(item => item.ward))].sort();
+                const currentSelection = filterWardEl.value;
+                filterWardEl.innerHTML = '<option value="all">Tất cả</option>';
+                wardsDatalist.innerHTML = '';
+                wards.forEach(ward => {
+                    const option = document.createElement('option');
+                    option.value = ward;
+                    option.textContent = ward;
+                    filterWardEl.appendChild(option.cloneNode(true));
+                    wardsDatalist.appendChild(option);
+                });
+                if (wards.includes(currentSelection)) filterWardEl.value = currentSelection;
+            }
             
-            let chiPhi = {};
-            const phiDvLine = findLine(['🍀', 'phí dv']);
-            if (phiDvLine) {
-                const feesText = text.substring(text.indexOf(phiDvLine));
-                const normalizeFee = (str) => str ? str.replace(/\./g, '').replace('k', '000') : '0';
-                const getFeeValue = (regex) => {
-                    const match = feesText.match(regex);
-                    return match ? new Intl.NumberFormat('vi-VN').format(normalizeFee(match[1])) + match[2] : 'N/A';
-                };
-                chiPhi['điện'] = getFeeValue(/điện\s*([\d.kK]+)\/(số)/i);
-                chiPhi['nước'] = getFeeValue(/nước\s*([\d.kK]+)\/(ng|người)/i);
-                chiPhi['internet'] = getFeeValue(/(wifi|mạng)\s*([\d.kK]+)\/(p|phòng)/i);
-                chiPhi['dịch vụ'] = getFeeValue(/dvụ chung\s*([\d.kK]+)\/(ng|người|phòng)/i);
+            function switchView(view) {
+                Object.values(allViews).forEach(v => v.classList.add('hidden'));
+                allViews[view].classList.remove('hidden');
+                window.scrollTo(0, 0);
             }
 
-            const cocLine = findLine(['❌', 'lưu ý', 'đóng']);
-            let datCoc = { soThang: 1, ghiChu: "Hợp đồng 6-12 tháng" };
-            if(cocLine){
-                datCoc.ghiChu = cocLine.replace(/❌|lưu ý|:/gi, '').trim();
-                const cocMatch = cocLine.match(/đóng\s*(\d)\s*cọc\s*(\d)/i);
-                if (cocMatch) datCoc.soThang = parseInt(cocMatch[2]);
-            }
-            
-            // Xử lý phòng và giá
-            const giaLines = lines.filter(l => l.toLowerCase().includes('giá'));
-            const trongLine = findLine(['⏰', 'trống']);
-            const allRoomCodes = trongLine ? (trongLine.match(/(p?\d+[a-zA-Z]?)/g) || []) : [];
-
-            if (giaLines.length > 0) {
-                if (giaLines.length === 1 && giaLines[0].includes('-')) {
-                    const pricesStr = getVal(giaLines[0]);
-                    const prices = pricesStr.match(/(\d+tr\d*)/g).map(p => parseFloat(p.replace('tr', '.')) * 1000000);
-                    allRoomCodes.forEach((code, index) => {
-                        const giaThue = prices[index] || prices[prices.length - 1];
-                        building.danhSachPhong.push({
-                            id_phong: `p_${code}_${Date.now() % 10000}`, tenPhong: `Phòng ${code}`, trangThai: "còn trống",
-                            giaThue, dienTich, thongTinChiTiet, tienIch, chiPhi, datCoc, linkAnhVideo: []
-                        });
-                    });
+            function saveCloudinarySettings() {
+                const cloudName = cloudinaryCloudNameInput.value.trim();
+                const uploadPreset = cloudinaryUploadPresetInput.value.trim();
+                if (cloudName && uploadPreset) {
+                    localStorage.setItem('cloudinarySettings', JSON.stringify({ cloudName, uploadPreset }));
+                    alert('Đã lưu cài đặt Cloudinary!');
                 } else {
-                     giaLines.forEach(line => {
-                        const priceMatch = line.match(/(\d+tr\d*)/);
-                        if (!priceMatch) return;
-                        const giaThue = parseFloat(priceMatch[1].replace('tr', '.')) * 1000000;
-                        const roomCodesOnLine = line.split(':')[1]?.match(/(p?\d+[a-zA-Z]?)/g) || [];
-                        roomCodesOnLine.forEach(code => {
-                             building.danhSachPhong.push({
-                                id_phong: `p_${code}_${Date.now() % 10000}`, tenPhong: `Phòng ${code}`, trangThai: "còn trống",
-                                giaThue, dienTich, thongTinChiTiet, tienIch, chiPhi, datCoc, linkAnhVideo: []
-                            });
-                        });
-                    });
+                    alert('Vui lòng điền đầy đủ cả Cloud Name và Upload Preset.');
+                }
+            }
+
+            function loadCloudinarySettings() {
+                const settings = JSON.parse(localStorage.getItem('cloudinarySettings'));
+                if (settings) {
+                    cloudinaryCloudNameInput.value = settings.cloudName;
+                    cloudinaryUploadPresetInput.value = settings.uploadPreset;
+                }
+            }
+
+            async function uploadToCloudinary(files) {
+                const settings = JSON.parse(localStorage.getItem('cloudinarySettings'));
+                if (!settings || !settings.cloudName || !settings.uploadPreset) {
+                    throw new Error('Chưa cài đặt Cloudinary. Vui lòng vào trang Admin để cài đặt.');
+                }
+                const { cloudName, uploadPreset } = settings;
+                const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+                
+                const uploadPromises = files.map(file => {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('upload_preset', uploadPreset);
+                    return fetch(url, {
+                        method: 'POST',
+                        body: formData
+                    }).then(response => response.json());
+                });
+
+                const results = await Promise.all(uploadPromises);
+                return results.map(result => {
+                    if (result.secure_url) {
+                        return result.secure_url;
+                    } else {
+                        throw new Error(`Upload thất bại: ${result.error.message}`);
+                    }
+                });
+            }
+            
+            async function handleAdminSubmit() {
+                const requiredFields = ['code', 'address', 'ward', 'price', 'area'];
+                for (const field of requiredFields) {
+                    if (!adminForm[field].value) { alert(`Vui lòng điền thông tin: ${adminForm[field].previousElementSibling.textContent}`); return; }
+                }
+                if (uploadedFiles.length === 0) { alert('Vui lòng chọn ít nhất một ảnh.'); return; }
+
+                submitListingBtn.disabled = true;
+                submitBtnText.textContent = 'Đang upload ảnh...';
+                submitSpinner.classList.remove('hidden');
+
+                try {
+                    const imageUrls = await uploadToCloudinary(uploadedFiles);
+                    
+                    submitBtnText.textContent = 'Đang lưu...';
+
+                    const newListing = {
+                        id: 'P' + Date.now(), timestamp: Date.now(),
+                        code: adminForm.code.value, address: adminForm.address.value,
+                        ward: adminForm.ward.value, price: parseInt(adminForm.price.value), 
+                        area: parseInt(adminForm.area.value), wc: adminForm.wc.value, 
+                        electricity: parseInt(adminForm.electricity.value) || 0,
+                        water: parseInt(adminForm.water.value) || 0, 
+                        internet: parseInt(adminForm.internet.value) || 0,
+                        images: imageUrls
+                    };
+                    listingsData.push(newListing);
+                    saveListings();
+                    populateWards();
+                    alert('Thêm tin đăng mới thành công! Dữ liệu đã được lưu tạm thời.');
+                    
+                    // Reset form
+                    Object.values(adminForm).forEach(input => { if (input.type !== 'select-one') input.value = ''; });
+                    imagePreviewContainer.innerHTML = '';
+                    dataParserInput.value = '';
+                    uploadedFiles = [];
+
+                } catch (error) {
+                    console.error("Lỗi:", error);
+                    alert(`Đã xảy ra lỗi: ${error.message}`);
+                } finally {
+                    submitListingBtn.disabled = false;
+                    submitBtnText.textContent = 'Thêm Tin Đăng Mới';
+                    submitSpinner.classList.add('hidden');
                 }
             }
             
-            if(building.danhSachPhong.length === 0){
-                throw new Error("Không tìm thấy thông tin phòng hoặc giá hợp lệ.");
+            function parseData() {
+                const text = dataParserInput.value;
+                if (!text) { alert('Vui lòng dán nội dung vào ô.'); return; }
+
+                const getVal = (regex, defaultVal = '') => (text.match(regex) || [])[1] || defaultVal;
+                const getNum = (regex, multiplier = 1) => parseInt(getVal(regex, '0').replace(/\D/g, '')) * multiplier;
+
+                adminForm.code.value = getVal(/Mã\s*(\d+)/i);
+                const address = getVal(/🏠\s*(.*)/i).trim() || getVal(/Địa chỉ:\s*(.*)/i).trim();
+                adminForm.address.value = address;
+                
+                const allWards = ["Mỹ Đình", "Yên Hoà", "Láng Thượng", "Thượng Đình", "Phú Mỹ", "Dịch Vọng", "Mai Dịch"];
+                adminForm.ward.value = allWards.find(w => address.toLowerCase().includes(w.toLowerCase())) || '';
+
+                const priceMatch = text.match(/Giá\s*:\s*([\d,tr\.\s-]+)/i);
+                if (priceMatch) {
+                    const priceStr = priceMatch[1];
+                    adminForm.price.value = (priceStr.match(/(\d[\d\.]*)tr(\d*)/i)) ? (parseInt(priceStr.replace(/\D/g, '')) * 10000) : getNum(/(\d[\d\.,]*)/, 1);
+                }
+
+                const areaMatch = text.match(/Diện tích-?\s*([\d\s-]+)m2/i);
+                if (areaMatch) {
+                    adminForm.area.value = parseInt(areaMatch[1].trim().split('-')[0]);
+                }
+                
+                adminForm.electricity.value = getNum(/Điện:\s*([\d.]+)k/i, 1000);
+                adminForm.water.value = getNum(/Nước:\s*([\d.]+)k/i, 1000);
+                adminForm.internet.value = getNum(/Mạng:\s*([\d.]+)k/i, 1000);
+
+                if (text.toLowerCase().includes('giặt riêng') || text.toLowerCase().includes('khép kín')) {
+                    adminForm.wc.value = 'Khép kín';
+                }
+                
+                alert('Bóc tách dữ liệu hoàn tất! Vui lòng kiểm tra lại thông tin và chọn ảnh.');
             }
 
-            parsedBuildingData = building;
-            renderPreview(building);
-            zaloParserPreview.classList.remove('hidden');
-            document.getElementById('zalo-image-links').value = '';
-
-        } catch (error) {
-            alert('Xử lý dữ liệu thất bại! Lỗi: ' + error.message + '. Vui lòng kiểm tra định dạng văn bản.');
-            console.error("Parse Zalo Error:", error);
-        }
-    });
-
-    function renderPreview(building) {
-        previewContent.innerHTML = `<p><strong>Tên tòa nhà:</strong> ${building.tenToaNha}</p><p><strong>Tổng số phòng sẽ thêm:</strong> ${building.danhSachPhong.length} phòng</p>`;
-    }
-    
-    addParsedBuildingBtn.addEventListener('click', async () => {
-        if (parsedBuildingData) {
-            const imageLinksText = document.getElementById('zalo-image-links').value;
-            const imageLinks = imageLinksText.split('\n').map(link => link.trim()).filter(Boolean);
-            
-            parsedBuildingData.danhSachPhong.forEach(room => { room.linkAnhVideo = [...imageLinks]; });
-            if (imageLinks.length > 0) {
-                parsedBuildingData.anhDaiDien = imageLinks[0];
+            function downloadUpdatedFile() {
+                loadListings();
+                const dataString = JSON.stringify(listingsData, null, 4);
+                const fullHtml = `<!DOCTYPE html>${document.documentElement.outerHTML}`;
+                const updatedHtml = fullHtml.replace(/const initialListings = \[[\s\S]*?\];/, `const initialListings = ${dataString};`);
+                
+                const blob = new Blob([updatedHtml], { type: 'text/html' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = 'index.html';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(a.href);
             }
+
+            function handleImageFiles(files) {
+                uploadedFiles = Array.from(files);
+                imagePreviewContainer.innerHTML = '';
+                if (uploadedFiles.length > 0) {
+                    uploadedFiles.forEach(file => {
+                        const thumb = document.createElement('img');
+                        thumb.src = URL.createObjectURL(file);
+                        thumb.className = 'w-full h-24 object-cover rounded-md';
+                        thumb.onload = () => URL.revokeObjectURL(thumb.src);
+                        imagePreviewContainer.appendChild(thumb);
+                    });
+                }
+            }
+
+            // --- EVENT LISTENERS ---
+            loginBtn.addEventListener('click', () => {
+                if (usernameInput.value === 'mrhung' && passwordInput.value === '16051984') {
+                    isAdminLoggedIn = true;
+                    switchView('admin');
+                    loadCloudinarySettings();
+                    loginError.classList.add('hidden');
+                    usernameInput.value = ''; passwordInput.value = '';
+                } else {
+                    loginError.classList.remove('hidden');
+                }
+            });
             
-            currentData.unshift(parsedBuildingData);
-            await saveData();
+            backToMainFromLoginBtn.addEventListener('click', () => switchView('main'));
+            logoutBtn.addEventListener('click', () => { isAdminLoggedIn = false; switchView('main'); });
+            goToAdminBtn.addEventListener('click', () => { isAdminLoggedIn ? switchView('admin') : switchView('login'); });
+            goToMainBtn.addEventListener('click', () => { updateAndRender(); switchView('main'); });
+
+            searchInput.addEventListener('input', updateAndRender);
+            sortPriceEl.addEventListener('change', updateAndRender);
+            filterWardEl.addEventListener('change', updateAndRender);
+
+            grid.addEventListener('click', (e) => {
+                const card = e.target.closest('.listing-card');
+                if (!card) return;
+                const listingId = card.dataset.id;
+                if (e.target.closest('.thumbnail-img')) showGalleryModal(listingId);
+                else showDetailsModal(listingId);
+            });
+
+            closeDetailsModalBtn.addEventListener('click', () => detailsModal.classList.add('hidden'));
+            closeGalleryModalBtn.addEventListener('click', () => galleryModal.classList.add('hidden'));
+            detailsModal.addEventListener('click', (e) => { if (e.target === detailsModal) detailsModal.classList.add('hidden'); });
+            galleryModal.addEventListener('click', (e) => { if (e.target === galleryModal) galleryModal.classList.add('hidden'); });
+
+            parseDataBtn.addEventListener('click', parseData);
+            saveCloudinarySettingsBtn.addEventListener('click', saveCloudinarySettings);
             
-            parsedBuildingData = null;
-            zaloParserPreview.classList.add('hidden');
-            zaloInput.value = '';
-            alert('Đã thêm và lưu tòa nhà mới thành công!');
-            refreshAdminView();
-            refreshHomeView();
-        }
-    });
-    
-    // --- QUẢN LÝ THỦ CÔNG & FORM ---
-    async function handleFormSubmit(e) { e.preventDefault(); const data = {}; const fields = getFormFields(editingContext.type); fields.forEach(field => { const el = document.getElementById(field.id); if (el) setNestedValue(data, field.id, el.value); }); if (editingContext.type === 'building') { if (editingContext.buildingId) { const index = currentData.findIndex(b => b.id_toa_nha === editingContext.buildingId); const oldBuilding = currentData[index]; data.danhSachPhong = oldBuilding.danhSachPhong; currentData[index] = { ...oldBuilding, ...data }; } else { data.id_toa_nha = `building_${Date.now()}`; data.danhSachPhong = []; currentData.unshift(data); } } else if (editingContext.type === 'room') { const building = currentData.find(b => b.id_toa_nha === editingContext.buildingId); if (editingContext.roomId) { const index = building.danhSachPhong.findIndex(r => r.id_phong === editingContext.roomId); building.danhSachPhong[index] = { ...building.danhSachPhong[index], ...data }; } else { data.id_phong = `room_${Date.now()}`; building.danhSachPhong.push(data); } } formModalContainer.classList.add('hidden'); await saveData(); refreshAdminView(); refreshHomeView(); }
-    adminListingsContainer.addEventListener('click', async (e) => { const { buildingId, roomId } = e.target.dataset; if (e.target.matches('.edit-building-btn')) openFormModal('building', currentData.find(b => b.id_toa_nha === buildingId), { buildingId }); if (e.target.matches('.delete-building-btn')) { if (confirm(`Bạn chắc chắn muốn xóa tòa nhà này?`)) { currentData = currentData.filter(b => b.id_toa_nha !== buildingId); await saveData(); refreshAdminView(); refreshHomeView(); } } if (e.target.matches('.add-room-btn')) openFormModal('room', {}, { buildingId }); if (e.target.matches('.edit-room-btn')) { const room = currentData.find(b => b.id_toa_nha === buildingId).danhSachPhong.find(r => r.id_phong === roomId); openFormModal('room', room, { buildingId, roomId }); } if (e.target.matches('.delete-room-btn')) { if (confirm(`Bạn chắc chắn muốn xóa phòng này?`)) { const building = currentData.find(b => b.id_toa_nha === buildingId); building.danhSachPhong = building.danhSachPhong.filter(r => r.id_phong !== roomId); await saveData(); refreshAdminView(); refreshHomeView(); } } });
-    
-    // --- CÁC HÀM HIỂN THỊ VÀ HÀM PHỤ ---
-    function openFormModal(type, data = {}, context = {}) { editingContext = { type, ...context }; const isBuilding = type === 'building'; const fields = getFormFields(type); const title = isBuilding ? (data.id_toa_nha ? 'Sửa Tòa Nhà' : 'Thêm Tòa Nhà') : (data.id_phong ? 'Sửa Phòng' : 'Thêm Phòng'); const formModalContent = `<div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"><form id="admin-form" class="p-6 space-y-4"><h2 class="text-2xl font-bold mb-4">${title}</h2><div id="form-fields">${fields.map(field => renderField(field, data)).join('')}</div><div class="flex justify-end space-x-3 pt-4 border-t"><button type="button" class="cancel-form-btn bg-slate-200 text-slate-800 font-bold py-2 px-4 rounded-lg hover:bg-slate-300">Hủy</button><button type="submit" class="bg-emerald-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-emerald-700">Lưu</button></div></form></div>`; formModalContainer.innerHTML = formModalContent; formModalContainer.classList.remove('hidden'); formModalContainer.querySelector('.cancel-form-btn').addEventListener('click', () => formModalContainer.classList.add('hidden')); formModalContainer.querySelector('#admin-form').addEventListener('submit', handleFormSubmit); if (type === 'building') { document.querySelectorAll('.thumbnail-selector').forEach(thumb => { thumb.addEventListener('click', e => { document.querySelectorAll('.thumbnail-selector').forEach(t => t.classList.remove('selected')); e.currentTarget.classList.add('selected'); document.getElementById('anhDaiDien').value = e.currentTarget.dataset.url; }); }); } }
-    function getFormFields(type) { if (type === 'building') return [{ id: 'tenToaNha', label: 'Tên tòa nhà', type: 'text' }, { id: 'diaChi', label: 'Địa chỉ', type: 'text' }, { id: 'viTriMap', label: 'Link Google Map', type: 'text' }, { id: 'anhDaiDien', label: 'Ảnh đại diện', type: 'thumbnail_selector' }]; return [{ id: 'tenPhong', label: 'Tên phòng', type: 'text' }, { id: 'trangThai', label: 'Trạng thái', type: 'select', options: ['còn trống', 'đã thuê'] }, { id: 'giaThue', label: 'Giá thuê (VNĐ)', type: 'number' }, { id: 'dienTich', label: 'Diện tích (m²)', type: 'number' }, { id: 'thongTinChiTiet', label: 'Mô tả chi tiết', type: 'textarea' }, { id: 'tienIch', label: 'Tiện ích (cách nhau bởi dấu phẩy)', type: 'text' }, { id: 'linkAnhVideo', label: 'Link Ảnh/Video (mỗi link một dòng)', type: 'textarea' }, { id: 'chiPhi_dien', label: 'Phí điện', type: 'text' }, { id: 'chiPhi_nuoc', label: 'Phí nước', type: 'text' }, { id: 'chiPhi_internet', label: 'Phí Internet', type: 'text' }, { id: 'chiPhi_dichVu', label: 'Phí dịch vụ', type: 'text' }, { id: 'datCoc_soThang', label: 'Cọc (số tháng)', type: 'number' }, { id: 'datCoc_ghiChu', label: 'Ghi chú cọc', type: 'text' }]; }
-    function renderField(field, data) { let value = getNestedValue(field.id, data); if (field.id === 'linkAnhVideo' && Array.isArray(value)) { value = value.join('\n'); } switch (field.type) { case 'textarea': return `<label class="block"><span class="text-slate-700">${field.label}</span><textarea id="${field.id}" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm" rows="4">${value}</textarea></label>`; case 'select': return `<label class="block"><span class="text-slate-700">${field.label}</span><select id="${field.id}" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm">${field.options.map(opt => `<option value="${opt}" ${opt === value ? 'selected' : ''}>${opt.charAt(0).toUpperCase() + opt.slice(1)}</option>`).join('')}</select></label>`; case 'thumbnail_selector': const allImages = (data.danhSachPhong || []).flatMap(room => room.linkAnhVideo || []); if (allImages.length === 0) return `<div><span class="text-slate-700">${field.label}</span><p class="text-sm text-slate-500 mt-1">Tòa nhà này chưa có ảnh nào để chọn.</p><input type="hidden" id="anhDaiDien" value="${value}"></div>`; return `<div><span class="text-slate-700">${field.label} (Nhấp để chọn)</span><div class="mt-2 flex flex-wrap gap-2 p-2 border rounded-md bg-slate-50">${allImages.map(url => `<img src="${url}" class="thumbnail-selector w-20 h-20 object-cover rounded-md ${url === value ? 'selected' : ''}" data-url="${url}">`).join('')}</div><input type="hidden" id="anhDaiDien" value="${value}"></div>`; default: return `<label class="block"><span class="text-slate-700">${field.label}</span><input type="${field.type}" id="${field.id}" value="${value}" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm"></label>`; } }
-    function getNestedValue(path, obj) { const keys = path.split('_'); let value = obj; for (let key of keys) value = value?.[key]; return value || ''; }
-    function setNestedValue(obj, path, value) { const keys = path.split('_'); let current = obj; for (let i = 0; i < keys.length - 1; i++) { current = current[keys[i]] = current[keys[i]] || {}; } const finalKey = keys[keys.length - 1]; if (path === 'linkAnhVideo') { current[finalKey] = value ? value.split('\n').map(s => s.trim()).filter(Boolean) : []; } else if (path === 'tienIch') { current[finalKey] = value ? value.split(',').map(s => s.trim()).filter(Boolean) : []; } else if (['giaThue', 'dienTich', 'datCoc_soThang'].includes(path)) { current[finalKey] = parseFloat(value) || 0; } else { current[finalKey] = value; } }
-    const refreshHomeView = () => filterData();
-    function filterData() { const keyword = searchInput.value.toLowerCase(); const priceRange = priceFilter.value ? priceFilter.value.split('-').map(Number) : null; const areaRange = areaFilter.value ? areaFilter.value.split('-').map(Number) : null; const selectedAmenities = Array.from(document.querySelectorAll('.amenity-checkbox:checked')).map(cb => cb.value); const filtered = currentData.map(building => { const matchingRooms = (building.danhSachPhong || []).filter(room => { if (room.trangThai !== 'còn trống') return false; if (keyword && !`${building.tenToaNha} ${building.diaChi} ${room.tenPhong}`.toLowerCase().includes(keyword)) return false; if (priceRange && (room.giaThue < priceRange[0] || room.giaThue > priceRange[1])) return false; if (areaRange && (room.dienTich < areaRange[0] || room.dienTich > areaRange[1])) return false; if (selectedAmenities.length > 0 && !selectedAmenities.every(a => (room.tienIch || []).includes(a))) return false; return true; }); return matchingRooms.length > 0 ? { ...building, danhSachPhong: matchingRooms } : null; }).filter(Boolean); renderListings(filtered); }
-    function renderListings(filteredData) { listingsContainer.innerHTML = ''; noResultsDiv.classList.toggle('hidden', filteredData.length > 0); filteredData.forEach(building => { building.danhSachPhong.forEach(room => { const previewImage = room.linkAnhVideo?.[0] || building.anhDaiDien || 'https://placehold.co/400x300/e2e8f0/64748b?text=Không+có+ảnh'; const card = document.createElement('div'); card.className = 'room-card bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all flex flex-col cursor-pointer'; card.dataset.buildingId = building.id_toa_nha; card.dataset.roomId = room.id_phong; card.innerHTML = `<div class="relative"><img src="${previewImage}" alt="Ảnh phòng" class="w-full h-48 object-cover"></div><div class="p-4 flex-grow flex flex-col"><h3 class="text-base font-bold truncate" title="${room.tenPhong} - ${building.tenToaNha}">${room.tenPhong}</h3><p class="text-sm text-slate-500 mt-1 flex-grow truncate" title="${building.diaChi}">${building.diaChi}</p><div class="flex justify-between items-center mt-2"><span class="text-lg font-bold text-indigo-600">${(room.giaThue / 1000000).toFixed(2).replace('.00','').replace('.50','.5')} tr</span><span class="text-sm text-slate-500">${room.dienTich} m²</span></div></div>`; listingsContainer.appendChild(card); }); }); }
-    function refreshAdminView() { adminListingsContainer.innerHTML = (currentData || []).map(building => `<div class="admin-card bg-white p-4 rounded-lg shadow border-2 border-transparent transition-all"><div class="flex justify-between items-start"><div><h3 class="text-xl font-bold">${building.tenToaNha}</h3><p class="text-sm text-slate-500">${building.diaChi}</p></div><div class="space-x-2 flex-shrink-0 ml-4"><button class="edit-building-btn text-blue-600 hover:underline" data-building-id="${building.id_toa_nha}">Sửa</button><button class="delete-building-btn text-red-600 hover:underline" data-building-id="${building.id_toa_nha}">Xóa</button></div></div><div class="mt-4"><h4 class="font-semibold">Các phòng:</h4>${(building.danhSachPhong || []).map(room => `<div class="flex justify-between items-center p-2 bg-slate-50 rounded mt-2"><span>${room.tenPhong} - ${room.trangThai}</span><div class="space-x-2"><button class="edit-room-btn text-sm text-blue-600 hover:underline" data-building-id="${building.id_toa_nha}" data-room-id="${room.id_phong}">Sửa</button><button class="delete-room-btn text-sm text-red-600 hover:underline" data-building-id="${building.id_toa_nha}" data-room-id="${room.id_phong}">Xóa</button></div></div>`).join('') || '<p class="text-sm text-slate-400 p-2">Chưa có phòng nào.</p>'}<button class="add-room-btn mt-3 text-sm w-full text-center bg-slate-200 hover:bg-slate-300 py-2 rounded" data-building-id="${building.id_toa_nha}">+ Thêm phòng mới</button></div></div>`).join(''); }
-    const initializeAll = () => {  if (!currentData || currentData.length === 0) { console.log("Không có dữ liệu để khởi tạo."); return; } const allAmenities = new Set(currentData.flatMap(b => b.danhSachPhong.flatMap(r => r.tienIch || []))); amenitiesContainer.innerHTML = Array.from(allAmenities).map(amenity => `<label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" class="amenity-checkbox rounded text-indigo-600" value="${amenity}"><span class="text-slate-600">${amenity.charAt(0).toUpperCase() + amenity.slice(1)}</span></label>`).join(''); refreshHomeView(); refreshAdminView(); updateLoginUI(); };
-    tabHome.addEventListener('click', () => switchTab('home'));
-    tabAdmin.addEventListener('click', () => switchTab('admin'));
-    addBuildingBtn.addEventListener('click', () => openFormModal('building'));
-    searchInput.addEventListener('input', filterData);
-    priceFilter.addEventListener('change', filterData);
-    areaFilter.addEventListener('change', filterData);
-    amenitiesContainer.addEventListener('change', filterData);
-    listingsContainer.addEventListener('click', e => { const roomCard = e.target.closest('.room-card'); if (roomCard?.dataset.buildingId) { const building = currentData.find(b => b.id_toa_nha === roomCard.dataset.buildingId); const room = building.danhSachPhong.find(r => r.id_phong === roomCard.dataset.roomId); showModal(building, room); } });
-    modalContainer.addEventListener('click', e => { if (e.target === modalContainer || e.target.id === 'close-modal') { const modalContent = document.getElementById('modal-content'); if (modalContent) { modalContent.classList.add('scale-95'); setTimeout(() => e.currentTarget.classList.add('hidden'), 300); } else { e.currentTarget.classList.add('hidden'); } } });
-    function showModal(building, room) { const modalHTML = `<div id="modal-content" class="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto transform scale-95 transition-transform duration-300"><div class="p-6"><div class="flex justify-between items-start"><div><h2 class="text-2xl font-bold">${room.tenPhong}</h2><p class="text-slate-500">${building.tenToaNha}</p></div><button id="close-modal" class="text-3xl text-slate-400 hover:text-slate-600">×</button></div><div class="mt-4"><div id="gallery-main" class="w-full aspect-video bg-black rounded-lg flex items-center justify-center"></div><div class="flex space-x-2 mt-2 overflow-x-auto p-1">${(room.linkAnhVideo || []).map((link, index) => `<img src="${link}" data-link="${link}" class="gallery-thumbnail h-16 w-24 object-cover rounded-md ${index === 0 ? 'active' : ''}">`).join('')}</div></div><div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6"><div><h4 class="font-semibold text-lg mb-2">Thông tin cơ bản</h4><ul class="space-y-2 text-sm"><li class="flex justify-between"><span class="text-slate-600">Giá thuê:</span><span class="font-bold text-xl text-indigo-600">${new Intl.NumberFormat('vi-VN').format(room.giaThue)} đ/tháng</span></li><li class="flex justify-between"><span class="text-slate-600">Diện tích:</span><span class="font-medium">${room.dienTich} m²</span></li><li class="flex justify-between"><span class="text-slate-600">Đặt cọc:</span><span class="font-medium">${room.datCoc.soThang} tháng</span></li></ul><p class="text-xs text-slate-500 mt-2">${room.datCoc.ghiChu}</p></div><div><h4 class="font-semibold text-lg mb-2">Chi phí khác</h4><ul class="text-sm divide-y divide-slate-200">${Object.entries(room.chiPhi).map(([k, v]) => `<li class="flex justify-between py-1"><span class="text-slate-600 capitalize">${k.replace(/_/g, ' ')}:</span><span class="font-medium">${v}</span></li>`).join('')}</ul></div></div><div class="mt-6"><h4 class="font-semibold text-lg mb-2">Mô tả chi tiết</h4><p class="text-sm text-slate-600">${(room.thongTinChiTiet || "").replace(/\n/g, '<br>')}</p></div><div class="mt-6"><h4 class="font-semibold text-lg mb-2">Tiện ích</h4><div class="flex flex-wrap gap-2">${(room.tienIch || []).map(a => `<span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-1 rounded-full">${a.charAt(0).toUpperCase() + a.slice(1)}</span>`).join('')}</div></div></div><div class="p-6 bg-slate-50 rounded-b-xl flex flex-col sm:flex-row gap-3"><a href="https://zalo.me/913238099" target="_blank" class="flex-1 text-center bg-blue-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-600">Chat Zalo</a><a href="https://m.me/nhatrohanoi25" target="_blank" class="flex-1 text-center bg-purple-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-purple-600">Chat Messenger</a><a href="${building.viTriMap}" target="_blank" class="flex-1 text-center bg-slate-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-slate-700">Xem bản đồ</a></div></div>`; modalContainer.innerHTML = modalHTML; modalContainer.classList.remove('hidden'); setTimeout(() => modalContainer.querySelector('#modal-content').classList.remove('scale-95'), 10); const galleryMain = modalContainer.querySelector('#gallery-main'); const thumbnails = modalContainer.querySelectorAll('.gallery-thumbnail'); const showMedia = (link) => { galleryMain.innerHTML = link.includes('youtube.com/embed') ? `<iframe src="${link}" frameborder="0" allowfullscreen class="w-full h-full"></iframe>` : `<img src="${link}" class="w-full h-full object-contain">`;}; thumbnails.forEach(thumb => thumb.addEventListener('click', () => { thumbnails.forEach(t => t.classList.remove('active')); thumb.classList.add('active'); showMedia(thumb.dataset.link); })); if (room.linkAnhVideo && room.linkAnhVideo.length > 0) showMedia(room.linkAnhVideo[0]); else galleryMain.innerHTML = '<p class="text-white">Không có ảnh/video.</p>'; }
-    const switchTab = (tab) => { const isHome = tab === 'home'; if (!isHome && !isLoggedIn) { alert("Vui lòng đăng nhập để truy cập trang Admin."); loginModalContainer.classList.remove('hidden'); return; } tabHome.classList.toggle('active', isHome); tabAdmin.classList.toggle('active', !isHome); contentHome.classList.toggle('hidden', !isHome); contentAdmin.classList.toggle('hidden', isHome); if(isHome) refreshHomeView(); else refreshAdminView(); };
-    
-    // --- CHẠY LẦN ĐẦU ---
-    fetchData(); 
-    updateLoginUI();
-});
-</script>
+            // Drag and drop listeners
+            dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+            dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+                if (e.dataTransfer.files) {
+                    adminForm.images.files = e.dataTransfer.files;
+                    handleImageFiles(e.dataTransfer.files);
+                }
+            });
+            adminForm.images.addEventListener('change', (e) => handleImageFiles(e.target.files));
+
+            submitListingBtn.addEventListener('click', handleAdminSubmit);
+            downloadUpdatedFileBtn.addEventListener('click', downloadUpdatedFile);
+
+            // --- KHỞI TẠO ---
+            loadListings();
+            populateWards();
+            updateAndRender();
+            switchView('main');
+        });
+    </script>
 </body>
 </html>
