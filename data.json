@@ -1,4 +1,4 @@
-  [
+[
   {
     "id": "P001",
     "code": "CGN01",
@@ -9,7 +9,9 @@
     "electricity": 4000,
     "water": 100000,
     "internet": 100000,
+    "serviceFee": 150000,
     "wc": "Khép kín",
+    "elevator": "Có",
     "images": [
       "https://res.cloudinary.com/thanglong-capital/image/upload/v1723229712/samples/landscapes/nature-mountains.jpg",
       "https://res.cloudinary.com/thanglong-capital/image/upload/v1723229714/samples/landscapes/beach-boat.jpg"
@@ -26,7 +28,9 @@
     "electricity": 3800,
     "water": 30000,
     "internet": 0,
+    "serviceFee": 100000,
     "wc": "Khép kín",
+    "elevator": "Không",
     "images": [
       "https://res.cloudinary.com/thanglong-capital/image/upload/v1723229715/samples/food/dessert.jpg"
     ],
@@ -42,7 +46,9 @@
     "electricity": 4000,
     "water": 120000,
     "internet": 100000,
+    "serviceFee": 200000,
     "wc": "Khép kín",
+    "elevator": "Có",
     "images": [
       "https://res.cloudinary.com/thanglong-capital/image/upload/v1723229711/samples/ecommerce/leather-bag-gray.jpg",
       "https://res.cloudinary.com/thanglong-capital/image/upload/v1723229711/samples/ecommerce/accessories-bag.jpg"
