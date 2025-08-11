@@ -142,6 +142,7 @@
                     <div><label for="admin-ward" class="block text-sm font-medium text-gray-700">Phường</label><input type="text" id="admin-ward" list="wards-datalist" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"><datalist id="wards-datalist"></datalist></div>
                     <div><label for="admin-price" class="block text-sm font-medium text-gray-700">Giá phòng (VND)</label><input type="number" id="admin-price" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"></div>
                     <div><label for="admin-area" class="block text-sm font-medium text-gray-700">Diện tích (m²)</label><input type="number" id="admin-area" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"></div>
+                    <div><label for="admin-elevator" class="block text-sm font-medium text-gray-700">Thang máy</label><select id="admin-elevator" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"><option>Không</option><option>Có</option></select></div>
                     <div><label for="admin-wc" class="block text-sm font-medium text-gray-700">Vệ sinh</label><select id="admin-wc" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"><option>Khép kín</option><option>Chung</option></select></div>
                     <div><label for="admin-electricity" class="block text-sm font-medium text-gray-700">Giá điện (VND/kWh)</label><input type="number" id="admin-electricity" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"></div>
                     <div><label for="admin-water" class="block text-sm font-medium text-gray-700">Giá nước (VND/khối)</label><input type="number" id="admin-water" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"></div>
@@ -226,6 +227,7 @@
                 code: document.getElementById('admin-code'), address: document.getElementById('admin-address'),
                 ward: document.getElementById('admin-ward'), price: document.getElementById('admin-price'), 
                 area: document.getElementById('admin-area'), wc: document.getElementById('admin-wc'), 
+                elevator: document.getElementById('admin-elevator'),
                 electricity: document.getElementById('admin-electricity'), water: document.getElementById('admin-water'), 
                 internet: document.getElementById('admin-internet'), images: document.getElementById('admin-images')
             };
@@ -243,24 +245,20 @@
             // --- FUNCTIONS ---
             async function loadListings() {
                 try {
-                    // Cache-busting to get the latest version from GitHub
                     const response = await fetch(`data.json?v=${new Date().getTime()}`);
-                    if (!response.ok) {
-                        throw new Error(`Network response was not ok: ${response.statusText}`);
-                    }
+                    if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
                     const data = await response.json();
                     listingsData = data;
-                    sessionListings = [...listingsData]; // Initialize session data
+                    sessionListings = JSON.parse(JSON.stringify(data)); // Deep copy for session
                     updateAndRender();
                     populateWards();
                 } catch (error) {
                     console.error('Could not fetch listings data:', error);
-                    // Fallback for local preview
                     const fallbackData = [
-                        { "id": "P_fallback_1", "code": "DEMO01", "address": "123 Đường Demo, Phường Mẫu, Quận Thử Nghiệm", "ward": "Phường Mẫu", "price": 5000000, "area": 30, "electricity": 4000, "water": 100000, "internet": 100000, "wc": "Khép kín", "images": ["https://placehold.co/800x600/a2d2ff/ffffff?text=Phòng+Mẫu"], "timestamp": 1723229715000 }
+                        { "id": "P_fallback_1", "code": "DEMO01", "address": "123 Đường Demo, Phường Mẫu, Quận Thử Nghiệm", "ward": "Phường Mẫu", "price": 5000000, "area": 30, "electricity": 4000, "water": 100000, "internet": 100000, "wc": "Khép kín", "elevator": "Có", "images": ["https://placehold.co/800x600/a2d2ff/ffffff?text=Phòng+Mẫu"], "timestamp": Date.now() }
                     ];
                     listingsData = fallbackData;
-                    sessionListings = [...listingsData];
+                    sessionListings = JSON.parse(JSON.stringify(listingsData));
                     updateAndRender();
                     populateWards();
                     grid.insertAdjacentHTML('afterbegin', `<div class="col-span-full text-center text-orange-500 bg-orange-100 p-2 rounded-md mb-4"><p><strong>Lưu ý:</strong> Không tìm thấy file <strong>data.json</strong>. Đang hiển thị dữ liệu mẫu.</p></div>`);
@@ -321,6 +319,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
                         <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-ruler-combined mr-2"></i>Diện tích:</strong> ${listing.area} m²</div>
                         <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-toilet mr-2"></i>Vệ sinh:</strong> ${listing.wc}</div>
+                        <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-elevator mr-2"></i>Thang máy:</strong> ${listing.elevator || 'Không'}</div>
                         <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-bolt mr-2"></i>Giá điện:</strong> ${formatCurrency(listing.electricity)}/kWh</div>
                         <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-tint mr-2"></i>Giá nước:</strong> ${listing.water > 0 ? formatCurrency(listing.water) + '/khối' : 'Miễn phí'}</div>
                         <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-wifi mr-2"></i>Giá mạng:</strong> ${listing.internet > 0 ? formatCurrency(listing.internet) + '/phòng' : 'Miễn phí'}</div>
@@ -433,6 +432,7 @@
                         code: adminForm.code.value, address: adminForm.address.value,
                         ward: adminForm.ward.value, price: parseInt(adminForm.price.value), 
                         area: parseInt(adminForm.area.value), wc: adminForm.wc.value, 
+                        elevator: adminForm.elevator.value,
                         electricity: parseInt(adminForm.electricity.value) || 0,
                         water: parseInt(adminForm.water.value) || 0, 
                         internet: parseInt(adminForm.internet.value) || 0,
@@ -457,39 +457,76 @@
                 }
             }
             
+            function parsePrice(priceStr) {
+                if (!priceStr) return 0;
+                priceStr = priceStr.toLowerCase().replace(/,/g, '.');
+                let price = 0;
+                if (priceStr.includes('tr')) {
+                    const parts = priceStr.split('tr');
+                    const mainPart = parseFloat(parts[0]) || 0;
+                    price = mainPart * 1000000;
+                    if (parts[1]) {
+                        const subPart = parseInt(parts[1]) || 0;
+                        price += subPart * 100000;
+                    }
+                } else {
+                    price = parseInt(priceStr.replace(/\D/g, '')) || 0;
+                }
+                return price;
+            }
+
+            function parseKNumber(kStr) {
+                if (!kStr) return 0;
+                kStr = kStr.toLowerCase().replace(/,/g, '.');
+                let value = 0;
+                if (kStr.includes('k')) {
+                    const parts = kStr.split('k');
+                    const mainPart = parseFloat(parts[0]) || 0;
+                    value = mainPart * 1000;
+                    if (parts[1]) {
+                        const subPart = parseInt(parts[1]) || 0;
+                        value += subPart * 100;
+                    }
+                } else {
+                    value = parseInt(kStr.replace(/\D/g, '')) || 0;
+                }
+                return value;
+            }
+            
             function parseData() {
                 const text = dataParserInput.value;
                 if (!text) { alert('Vui lòng dán nội dung vào ô.'); return; }
 
                 const getVal = (regex, defaultVal = '') => (text.match(regex) || [])[1] || defaultVal;
-                const getNum = (regex, multiplier = 1) => parseInt(getVal(regex, '0').replace(/\D/g, '')) * multiplier;
 
-                adminForm.code.value = getVal(/Mã\s*(\d+)/i);
-                const address = getVal(/🏠\s*(.*)/i).trim() || getVal(/Địa chỉ:\s*(.*)/i).trim();
-                adminForm.address.value = address;
+                adminForm.code.value = getVal(/Mã\s*(\S+)/i);
+                adminForm.address.value = getVal(/[🕍🏠]\s*(.*)/i).trim();
                 
-                const allWards = ["Mỹ Đình", "Yên Hoà", "Láng Thượng", "Thượng Đình", "Phú Mỹ", "Dịch Vọng", "Mai Dịch"];
+                const priceStr = getVal(/Giá\s*[-:]?\s*([^\n\r]*)/i).trim();
+                adminForm.price.value = parsePrice(priceStr);
+
+                const areaStr = getVal(/Diện tích\s*(\d+)/i);
+                adminForm.area.value = parseInt(areaStr) || 0;
+
+                const elecStr = getVal(/Điện\s*([^\s\/]+)/i);
+                adminForm.electricity.value = parseKNumber(elecStr);
+
+                const waterStr = getVal(/Nước\s*([^\s\/]+)/i);
+                adminForm.water.value = parseKNumber(waterStr);
+                
+                const internetStr = getVal(/Mạng\s*([^\s\/]+)/i) || getVal(/wifi\s*([^\s\/]+)/i);
+                adminForm.internet.value = parseKNumber(internetStr);
+                if(adminForm.internet.value === 0 && /gồm.*wifi/i.test(text.toLowerCase())){
+                    adminForm.internet.value = 100000;
+                }
+
+                adminForm.elevator.value = /thang máy/i.test(text.toLowerCase()) ? 'Có' : 'Không';
+                adminForm.wc.value = /khép kín|giặt riêng/i.test(text.toLowerCase()) ? 'Khép kín' : 'Chung';
+
+                const address = adminForm.address.value;
+                const allWards = ["Mỹ Đình", "Yên Hoà", "Láng Thượng", "Thượng Đình", "Phú Mỹ", "Dịch Vọng", "Mai Dịch", "Cầu Diễn", "Hồ Tùng Mậu"];
                 adminForm.ward.value = allWards.find(w => address.toLowerCase().includes(w.toLowerCase())) || '';
 
-                const priceMatch = text.match(/Giá\s*:\s*([\d,tr\.\s-]+)/i);
-                if (priceMatch) {
-                    const priceStr = priceMatch[1];
-                    adminForm.price.value = (priceStr.match(/(\d[\d\.]*)tr(\d*)/i)) ? (parseInt(priceStr.replace(/\D/g, '')) * 10000) : getNum(/(\d[\d\.,]*)/, 1);
-                }
-
-                const areaMatch = text.match(/Diện tích-?\s*([\d\s-]+)m2/i);
-                if (areaMatch) {
-                    adminForm.area.value = parseInt(areaMatch[1].trim().split('-')[0]);
-                }
-                
-                adminForm.electricity.value = getNum(/Điện:\s*([\d.]+)k/i, 1000);
-                adminForm.water.value = getNum(/Nước:\s*([\d.]+)k/i, 1000);
-                adminForm.internet.value = getNum(/Mạng:\s*([\d.]+)k/i, 1000);
-
-                if (text.toLowerCase().includes('giặt riêng') || text.toLowerCase().includes('khép kín')) {
-                    adminForm.wc.value = 'Khép kín';
-                }
-                
                 alert('Bóc tách dữ liệu hoàn tất! Vui lòng kiểm tra lại thông tin và chọn ảnh.');
             }
 
@@ -528,7 +565,7 @@
                     loginError.classList.add('hidden');
                     usernameInput.value = ''; passwordInput.value = '';
                 } else {
-                    loginError.classList.remove('hidden');
+                    loginError.classList.add('hidden');
                 }
             });
             
@@ -536,7 +573,6 @@
             logoutBtn.addEventListener('click', () => { isAdminLoggedIn = false; switchView('main'); });
             goToAdminBtn.addEventListener('click', () => { isAdminLoggedIn ? switchView('admin') : switchView('login'); });
             goToMainBtn.addEventListener('click', () => {
-                // When going back to main, reload the original data
                 loadListings().then(() => {
                     updateAndRender();
                     switchView('main');
