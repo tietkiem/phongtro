@@ -286,7 +286,7 @@
             const saveCloudinarySettingsBtn = document.getElementById('save-cloudinary-settings-btn');
             const adminListingsContainer = document.getElementById('admin-listings-container');
             const confirmModal = document.getElementById('confirm-modal');
-            const confirmModalOk = document.getElementById('confirm-modal-ok');
+            let confirmModalOk = document.getElementById('confirm-modal-ok');
             const confirmModalCancel = document.getElementById('confirm-modal-cancel');
             const confirmModalTitle = document.getElementById('confirm-modal-title');
             const confirmModalText = document.getElementById('confirm-modal-text');
@@ -637,7 +637,6 @@
                     adminListingsContainer.innerHTML = '<p class="text-sm text-gray-500">Chưa có tin đăng nào.</p>';
                     return;
                 }
-                // Sort by newest first
                 const sortedListings = [...sessionListings].sort((a, b) => b.timestamp - a.timestamp);
                 sortedListings.forEach(listing => {
                     const item = document.createElement('div');
@@ -655,15 +654,15 @@
                 confirmModalText.textContent = text;
                 confirmModal.classList.remove('hidden');
                 
-                // Clone and replace the OK button to remove old event listeners
+                // FIX: This ensures the 'ok' button's click event is fresh for each confirmation.
                 const newOk = confirmModalOk.cloneNode(true);
                 confirmModalOk.parentNode.replaceChild(newOk, confirmModalOk);
-                confirmModalOk = newOk; // Re-assign to the new element
+                confirmModalOk = newOk;
                 
-                confirmModalOk.onclick = () => {
+                confirmModalOk.addEventListener('click', () => {
                     onOk();
                     confirmModal.classList.add('hidden');
-                };
+                }, { once: true }); // Use { once: true } to prevent multiple fires
             }
 
             // --- EVENT LISTENERS ---
