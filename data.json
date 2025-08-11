@@ -54,5 +54,23 @@
       "https://res.cloudinary.com/thanglong-capital/image/upload/v1723229711/samples/ecommerce/accessories-bag.jpg"
     ],
     "timestamp": 1723229717000
+  },
+  {
+    "id": "P1754878671239",
+    "timestamp": 1754878671239,
+    "code": "587",
+    "address": "Ngõ 267 Hồ Tùng Mậu",
+    "ward": "Hồ Tùng Mậu",
+    "price": 4100000,
+    "area": 25,
+    "wc": "Khép kín",
+    "elevator": "Có",
+    "electricity": 3800,
+    "water": 28000,
+    "serviceFee": 250000,
+    "internet": 0,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754878666/d1xuph2q3npt4za1waak.jpg"
+    ]
   }
 ]
