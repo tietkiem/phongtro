@@ -30,6 +30,26 @@
             border-color: #2563eb;
             background-color: #eff6ff;
         }
+        .image-preview-item {
+            position: relative;
+        }
+        .delete-image-btn {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 20px;
+            height: 20px;
+            background-color: rgba(0,0,0,0.6);
+            color: white;
+            border-radius: 50%;
+            border: 1px solid white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+            line-height: 1;
+        }
     </style>
 </head>
 <body class="text-gray-800">
@@ -170,10 +190,18 @@
                      <button id="submit-listing-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 flex items-center justify-center text-lg"><i class="fas fa-plus-circle mr-2"></i><span id="submit-btn-text">Thêm Tin Đăng Mới</span><i id="submit-spinner" class="fas fa-spinner fa-spin ml-2 hidden"></i></button>
                 </div>
 
+                <!-- QUẢN LÝ TIN ĐĂNG -->
+                <div class="mt-10 pt-6 border-t-2 border-dashed border-gray-300">
+                     <h3 class="text-lg font-semibold text-gray-800 mb-2"><i class="fas fa-list-alt mr-2"></i>Quản lý Tin đăng hiện tại</h3>
+                     <div id="admin-listings-container" class="space-y-2 max-h-96 overflow-y-auto pr-2">
+                        <!-- Admin listings will be rendered here -->
+                     </div>
+                </div>
+
                 <div class="mt-10 pt-6 border-t-2 border-dashed border-gray-300">
                     <div class="p-4 bg-green-50 border border-green-300 rounded-lg">
                         <h3 class="text-lg font-semibold text-green-800 mb-2"><i class="fas fa-cogs mr-2"></i>Công Cụ Cập Nhật Website</h3>
-                        <p class="text-sm text-gray-600 mb-2">Sau khi đã thêm tất cả các tin đăng mới, nhấn nút bên dưới để tải về file dữ liệu đã được cập nhật.</p>
+                        <p class="text-sm text-gray-600 mb-2">Sau khi đã thêm/xóa tin, nhấn nút bên dưới để tải về file dữ liệu đã được cập nhật.</p>
                         <ol class="list-decimal list-inside text-sm space-y-1">
                             <li>Nhấn nút <strong>"Tải về file data.json đã cập nhật"</strong>.</li>
                             <li>Một file <code>data.json</code> mới sẽ được tải về máy tính.</li>
@@ -189,6 +217,19 @@
     <!-- MODALs -->
     <div id="details-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden"><div class="bg-white rounded-lg shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative"><button id="close-details-modal" class="absolute top-3 right-4 text-gray-500 hover:text-gray-800 text-2xl font-bold">&times;</button><div id="details-modal-content" class="p-6"></div></div></div>
     <div id="gallery-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden"><div class="bg-white rounded-lg shadow-2xl w-full max-w-4xl relative"><button id="close-gallery-modal" class="absolute top-2 right-3 text-white bg-black bg-opacity-50 rounded-full w-8 h-8 flex items-center justify-center text-xl z-10">&times;</button><div id="gallery-modal-content" class="p-4"><img id="main-gallery-image" src="" alt="Ảnh phòng trọ" class="w-full h-[70vh] object-contain rounded-md mb-2"><div id="thumbnail-gallery-container" class="flex gap-2 overflow-x-auto pb-2 gallery-scroll"></div></div></div></div>
+    
+    <!-- CUSTOM CONFIRM MODAL -->
+    <div id="confirm-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
+        <div class="bg-white rounded-lg shadow-2xl w-full max-w-sm p-6">
+            <h3 id="confirm-modal-title" class="text-lg font-bold text-gray-800">Xác nhận hành động</h3>
+            <p id="confirm-modal-text" class="text-sm text-gray-600 mt-2">Bạn có chắc chắn muốn thực hiện hành động này?</p>
+            <div class="mt-6 flex justify-end gap-3">
+                <button id="confirm-modal-cancel" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Hủy</button>
+                <button id="confirm-modal-ok" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -243,6 +284,12 @@
             const cloudinaryCloudNameInput = document.getElementById('cloudinary-cloud-name');
             const cloudinaryUploadPresetInput = document.getElementById('cloudinary-upload-preset');
             const saveCloudinarySettingsBtn = document.getElementById('save-cloudinary-settings-btn');
+            const adminListingsContainer = document.getElementById('admin-listings-container');
+            const confirmModal = document.getElementById('confirm-modal');
+            const confirmModalOk = document.getElementById('confirm-modal-ok');
+            const confirmModalCancel = document.getElementById('confirm-modal-cancel');
+            const confirmModalTitle = document.getElementById('confirm-modal-title');
+            const confirmModalText = document.getElementById('confirm-modal-text');
 
             // --- FUNCTIONS ---
             async function loadListings() {
@@ -443,7 +490,8 @@
                         images: imageUrls
                     };
                     sessionListings.push(newListing);
-                    alert('Thêm tin đăng mới thành công! Dữ liệu đã được lưu tạm thời. Hãy dùng công cụ "Tải về file data.json" để cập nhật vĩnh viễn.');
+                    renderAdminListings();
+                    alert('Thêm tin đăng mới thành công! Dữ liệu đã được lưu tạm thời.');
                     
                     // Reset form
                     Object.values(adminForm).forEach(input => { if (input.type !== 'select-one') input.value = ''; });
@@ -551,16 +599,71 @@
 
             function handleImageFiles(files) {
                 uploadedFiles = Array.from(files);
+                renderImagePreviews();
+            }
+
+            function renderImagePreviews() {
                 imagePreviewContainer.innerHTML = '';
                 if (uploadedFiles.length > 0) {
-                    uploadedFiles.forEach(file => {
+                    uploadedFiles.forEach((file, index) => {
+                        const item = document.createElement('div');
+                        item.className = 'image-preview-item';
+                        
                         const thumb = document.createElement('img');
                         thumb.src = URL.createObjectURL(file);
                         thumb.className = 'w-full h-24 object-cover rounded-md';
                         thumb.onload = () => URL.revokeObjectURL(thumb.src);
-                        imagePreviewContainer.appendChild(thumb);
+                        
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.className = 'delete-image-btn';
+                        deleteBtn.innerHTML = '&times;';
+                        deleteBtn.dataset.index = index;
+                        deleteBtn.onclick = (e) => {
+                            const idxToRemove = parseInt(e.target.dataset.index);
+                            uploadedFiles.splice(idxToRemove, 1);
+                            renderImagePreviews();
+                        };
+
+                        item.appendChild(thumb);
+                        item.appendChild(deleteBtn);
+                        imagePreviewContainer.appendChild(item);
                     });
                 }
+            }
+
+            function renderAdminListings() {
+                adminListingsContainer.innerHTML = '';
+                if (sessionListings.length === 0) {
+                    adminListingsContainer.innerHTML = '<p class="text-sm text-gray-500">Chưa có tin đăng nào.</p>';
+                    return;
+                }
+                // Sort by newest first
+                const sortedListings = [...sessionListings].sort((a, b) => b.timestamp - a.timestamp);
+                sortedListings.forEach(listing => {
+                    const item = document.createElement('div');
+                    item.className = 'flex items-center justify-between bg-gray-50 p-2 rounded-md';
+                    item.innerHTML = `
+                        <p class="text-sm text-gray-700 truncate pr-4">${listing.address} - <strong>${listing.ward}</strong></p>
+                        <button data-id="${listing.id}" class="delete-listing-btn flex-shrink-0 bg-red-500 text-white w-6 h-6 rounded-md hover:bg-red-600">&times;</button>
+                    `;
+                    adminListingsContainer.appendChild(item);
+                });
+            }
+
+            function showConfirmModal(title, text, onOk) {
+                confirmModalTitle.textContent = title;
+                confirmModalText.textContent = text;
+                confirmModal.classList.remove('hidden');
+                
+                // Clone and replace the OK button to remove old event listeners
+                const newOk = confirmModalOk.cloneNode(true);
+                confirmModalOk.parentNode.replaceChild(newOk, confirmModalOk);
+                confirmModalOk = newOk; // Re-assign to the new element
+                
+                confirmModalOk.onclick = () => {
+                    onOk();
+                    confirmModal.classList.add('hidden');
+                };
             }
 
             // --- EVENT LISTENERS ---
@@ -569,6 +672,7 @@
                     isAdminLoggedIn = true;
                     switchView('admin');
                     loadCloudinarySettings();
+                    renderAdminListings();
                     loginError.classList.add('hidden');
                     usernameInput.value = ''; passwordInput.value = '';
                 } else {
@@ -578,12 +682,18 @@
             
             backToMainFromLoginBtn.addEventListener('click', () => switchView('main'));
             logoutBtn.addEventListener('click', () => { isAdminLoggedIn = false; switchView('main'); });
-            goToAdminBtn.addEventListener('click', () => { isAdminLoggedIn ? switchView('admin') : switchView('login'); });
+            goToAdminBtn.addEventListener('click', () => {
+                if (isAdminLoggedIn) {
+                    switchView('admin');
+                    renderAdminListings();
+                } else {
+                    switchView('login');
+                }
+            });
+            
             goToMainBtn.addEventListener('click', () => {
-                loadListings().then(() => {
-                    updateAndRender();
-                    switchView('main');
-                });
+                updateAndRender();
+                switchView('main');
             });
 
             searchInput.addEventListener('input', updateAndRender);
@@ -620,6 +730,21 @@
 
             submitListingBtn.addEventListener('click', handleAdminSubmit);
             downloadDataFileBtn.addEventListener('click', downloadDataFile);
+
+            adminListingsContainer.addEventListener('click', (e) => {
+                if (e.target.classList.contains('delete-listing-btn')) {
+                    const idToDelete = e.target.dataset.id;
+                    const listingToDelete = sessionListings.find(l => l.id === idToDelete);
+                    showConfirmModal('Xác nhận xóa', `Bạn có chắc chắn muốn xóa tin đăng tại: ${listingToDelete.address}?`, () => {
+                        sessionListings = sessionListings.filter(l => l.id !== idToDelete);
+                        renderAdminListings();
+                        alert('Đã xóa tin đăng. Hãy tải file data.json mới để cập nhật vĩnh viễn.');
+                    });
+                }
+            });
+
+            confirmModalCancel.addEventListener('click', () => confirmModal.classList.add('hidden'));
+            confirmModal.addEventListener('click', (e) => { if (e.target === confirmModal) confirmModal.classList.add('hidden'); });
 
             // --- KHỞI TẠO ---
             loadListings();
