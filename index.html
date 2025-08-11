@@ -146,6 +146,7 @@
                     <div><label for="admin-wc" class="block text-sm font-medium text-gray-700">Vệ sinh</label><select id="admin-wc" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"><option>Khép kín</option><option>Chung</option></select></div>
                     <div><label for="admin-electricity" class="block text-sm font-medium text-gray-700">Giá điện (VND/kWh)</label><input type="number" id="admin-electricity" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"></div>
                     <div><label for="admin-water" class="block text-sm font-medium text-gray-700">Giá nước (VND/khối)</label><input type="number" id="admin-water" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"></div>
+                    <div><label for="admin-service-fee" class="block text-sm font-medium text-gray-700">Phí dịch vụ (VND/người)</label><input type="number" id="admin-service-fee" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"></div>
                     <div><label for="admin-internet" class="block text-sm font-medium text-gray-700">Giá mạng (VND/phòng)</label><input type="number" id="admin-internet" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"></div>
                     <div class="md:col-span-2">
                         <label class="block text-sm font-medium text-gray-700">Ảnh phòng trọ</label>
@@ -229,6 +230,7 @@
                 area: document.getElementById('admin-area'), wc: document.getElementById('admin-wc'), 
                 elevator: document.getElementById('admin-elevator'),
                 electricity: document.getElementById('admin-electricity'), water: document.getElementById('admin-water'), 
+                serviceFee: document.getElementById('admin-service-fee'),
                 internet: document.getElementById('admin-internet'), images: document.getElementById('admin-images')
             };
             const wardsDatalist = document.getElementById('wards-datalist');
@@ -255,7 +257,7 @@
                 } catch (error) {
                     console.error('Could not fetch listings data:', error);
                     const fallbackData = [
-                        { "id": "P_fallback_1", "code": "DEMO01", "address": "123 Đường Demo, Phường Mẫu, Quận Thử Nghiệm", "ward": "Phường Mẫu", "price": 5000000, "area": 30, "electricity": 4000, "water": 100000, "internet": 100000, "wc": "Khép kín", "elevator": "Có", "images": ["https://placehold.co/800x600/a2d2ff/ffffff?text=Phòng+Mẫu"], "timestamp": Date.now() }
+                        { "id": "P_fallback_1", "code": "DEMO01", "address": "123 Đường Demo, Phường Mẫu, Quận Thử Nghiệm", "ward": "Phường Mẫu", "price": 5000000, "area": 30, "electricity": 4000, "water": 100000, "internet": 100000, "serviceFee": 150000, "wc": "Khép kín", "elevator": "Có", "images": ["https://placehold.co/800x600/a2d2ff/ffffff?text=Phòng+Mẫu"], "timestamp": Date.now() }
                     ];
                     listingsData = fallbackData;
                     sessionListings = JSON.parse(JSON.stringify(listingsData));
@@ -320,6 +322,7 @@
                         <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-ruler-combined mr-2"></i>Diện tích:</strong> ${listing.area} m²</div>
                         <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-toilet mr-2"></i>Vệ sinh:</strong> ${listing.wc}</div>
                         <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-elevator mr-2"></i>Thang máy:</strong> ${listing.elevator || 'Không'}</div>
+                        <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-concierge-bell mr-2"></i>Phí dịch vụ:</strong> ${listing.serviceFee > 0 ? formatCurrency(listing.serviceFee) + '/người' : 'Miễn phí'}</div>
                         <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-bolt mr-2"></i>Giá điện:</strong> ${formatCurrency(listing.electricity)}/kWh</div>
                         <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-tint mr-2"></i>Giá nước:</strong> ${listing.water > 0 ? formatCurrency(listing.water) + '/khối' : 'Miễn phí'}</div>
                         <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-wifi mr-2"></i>Giá mạng:</strong> ${listing.internet > 0 ? formatCurrency(listing.internet) + '/phòng' : 'Miễn phí'}</div>
@@ -435,6 +438,7 @@
                         elevator: adminForm.elevator.value,
                         electricity: parseInt(adminForm.electricity.value) || 0,
                         water: parseInt(adminForm.water.value) || 0, 
+                        serviceFee: parseInt(adminForm.serviceFee.value) || 0,
                         internet: parseInt(adminForm.internet.value) || 0,
                         images: imageUrls
                     };
@@ -514,6 +518,9 @@
                 const waterStr = getVal(/Nước\s*([^\s\/]+)/i);
                 adminForm.water.value = parseKNumber(waterStr);
                 
+                const serviceFeeStr = getVal(/(?:Dịch vụ chung|dvc)[:\s]*([^\s\/]+)/i);
+                adminForm.serviceFee.value = parseKNumber(serviceFeeStr);
+
                 const internetStr = getVal(/Mạng\s*([^\s\/]+)/i) || getVal(/wifi\s*([^\s\/]+)/i);
                 adminForm.internet.value = parseKNumber(internetStr);
                 if(adminForm.internet.value === 0 && /gồm.*wifi/i.test(text.toLowerCase())){
