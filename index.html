@@ -90,7 +90,13 @@
             </div>
         </header>
         <main class="container mx-auto p-4">
-            <div id="listings-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+            <div id="listings-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <!-- Data will be loaded here by JavaScript -->
+                 <div class="col-span-full text-center text-gray-500 py-10">
+                    <i class="fas fa-spinner fa-spin text-3xl"></i>
+                    <p>Đang tải dữ liệu...</p>
+                </div>
+            </div>
         </main>
     </div>
 
@@ -165,14 +171,13 @@
                 <div class="mt-10 pt-6 border-t-2 border-dashed border-gray-300">
                     <div class="p-4 bg-green-50 border border-green-300 rounded-lg">
                         <h3 class="text-lg font-semibold text-green-800 mb-2"><i class="fas fa-cogs mr-2"></i>Công Cụ Cập Nhật Website</h3>
-                        <p class="text-sm text-gray-600 mb-2">Sau khi đã thêm tất cả các tin đăng mới, nhấn nút bên dưới để tải về file website đã được cập nhật.</p>
+                        <p class="text-sm text-gray-600 mb-2">Sau khi đã thêm tất cả các tin đăng mới, nhấn nút bên dưới để tải về file dữ liệu đã được cập nhật.</p>
                         <ol class="list-decimal list-inside text-sm space-y-1">
-                            <li>Nhấn nút <strong>"Tải về file website đã cập nhật"</strong>.</li>
-                            <li>Một file <code>index.html</code> mới sẽ được tải về máy tính.</li>
-                            <li>Trong thư mục dự án, <strong>xóa file `index.html` cũ</strong> và <strong>thay thế bằng file vừa tải về</strong>.</li>
-                            <li>Đăng (push) toàn bộ thư mục dự án lên GitHub để hoàn tất.</li>
+                            <li>Nhấn nút <strong>"Tải về file data.json đã cập nhật"</strong>.</li>
+                            <li>Một file <code>data.json</code> mới sẽ được tải về máy tính.</li>
+                            <li>Trên website GitHub, <strong>upload file `data.json` vừa tải về</strong> để thay thế file cũ.</li>
                         </ol>
-                        <button id="download-updated-file-btn" class="mt-3 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300"><i class="fas fa-download mr-2"></i>Tải về file website đã cập nhật</button>
+                        <button id="download-data-file-btn" class="mt-3 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300"><i class="fas fa-download mr-2"></i>Tải về file data.json đã cập nhật</button>
                     </div>
                 </div>
             </div>
@@ -185,13 +190,8 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // --- DỮ LIỆU MẪU ---
-            const initialListings = [
-                { id: 'P001', code: 'CGN01', address: '123 Nguyễn Khang, Yên Hoà, Cầu Giấy', ward: 'Yên Hoà', price: 4500000, area: 30, electricity: 4000, water: 100000, internet: 100000, wc: 'Khép kín', images: ['https://res.cloudinary.com/thanglong-capital/image/upload/v1723229712/samples/landscapes/nature-mountains.jpg', 'https://res.cloudinary.com/thanglong-capital/image/upload/v1723229714/samples/landscapes/beach-boat.jpg'], timestamp: 1723229715000 },
-                { id: 'P002', code: 'DD01', address: '45 Chùa Láng, Láng Thượng, Đống Đa', ward: 'Láng Thượng', price: 3800000, area: 25, electricity: 3800, water: 30000, internet: 0, wc: 'Khép kín', images: ['https://res.cloudinary.com/thanglong-capital/image/upload/v1723229715/samples/food/dessert.jpg'], timestamp: 1723229716000 },
-                { id: 'P003', code: 'TX01', address: '210 Nguyễn Trãi, Thượng Đình, Thanh Xuân', ward: 'Thượng Đình', price: 5200000, area: 35, electricity: 4000, water: 120000, internet: 100000, wc: 'Khép kín', images: ['https://res.cloudinary.com/thanglong-capital/image/upload/v1723229711/samples/ecommerce/leather-bag-gray.jpg', 'https://res.cloudinary.com/thanglong-capital/image/upload/v1723229711/samples/ecommerce/accessories-bag.jpg'], timestamp: 1723229717000 }
-            ];
-            let listingsData = [];
+            let listingsData = []; // This will be populated from data.json
+            let sessionListings = []; // For new listings added in the current session
             let isAdminLoggedIn = false;
             let uploadedFiles = [];
 
@@ -235,21 +235,38 @@
             const submitListingBtn = document.getElementById('submit-listing-btn');
             const submitBtnText = document.getElementById('submit-btn-text');
             const submitSpinner = document.getElementById('submit-spinner');
-            const downloadUpdatedFileBtn = document.getElementById('download-updated-file-btn');
+            const downloadDataFileBtn = document.getElementById('download-data-file-btn');
             const cloudinaryCloudNameInput = document.getElementById('cloudinary-cloud-name');
             const cloudinaryUploadPresetInput = document.getElementById('cloudinary-upload-preset');
             const saveCloudinarySettingsBtn = document.getElementById('save-cloudinary-settings-btn');
 
             // --- FUNCTIONS ---
-            function loadListings() {
-                const savedListings = localStorage.getItem('phongtroData');
-                listingsData = savedListings ? JSON.parse(savedListings) : initialListings;
-                if (!localStorage.getItem('phongtroData')) saveListings();
+            async function loadListings() {
+                try {
+                    // Cache-busting to get the latest version from GitHub
+                    const response = await fetch(`data.json?v=${new Date().getTime()}`);
+                    if (!response.ok) {
+                        throw new Error(`Network response was not ok: ${response.statusText}`);
+                    }
+                    const data = await response.json();
+                    listingsData = data;
+                    sessionListings = [...listingsData]; // Initialize session data
+                    updateAndRender();
+                    populateWards();
+                } catch (error) {
+                    console.error('Could not fetch listings data:', error);
+                    // Fallback for local preview
+                    const fallbackData = [
+                        { "id": "P_fallback_1", "code": "DEMO01", "address": "123 Đường Demo, Phường Mẫu, Quận Thử Nghiệm", "ward": "Phường Mẫu", "price": 5000000, "area": 30, "electricity": 4000, "water": 100000, "internet": 100000, "wc": "Khép kín", "images": ["https://placehold.co/800x600/a2d2ff/ffffff?text=Phòng+Mẫu"], "timestamp": 1723229715000 }
+                    ];
+                    listingsData = fallbackData;
+                    sessionListings = [...listingsData];
+                    updateAndRender();
+                    populateWards();
+                    grid.insertAdjacentHTML('afterbegin', `<div class="col-span-full text-center text-orange-500 bg-orange-100 p-2 rounded-md mb-4"><p><strong>Lưu ý:</strong> Không tìm thấy file <strong>data.json</strong>. Đang hiển thị dữ liệu mẫu.</p></div>`);
+                }
             }
-            function saveListings() {
-                localStorage.setItem('phongtroData', JSON.stringify(listingsData));
-            }
-
+            
             const formatCurrency = (amount) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
 
             function renderListings(data) {
@@ -277,10 +294,12 @@
             }
 
             function updateAndRender() {
-                let filteredData = [...listingsData];
+                let dataToRender = isAdminLoggedIn ? sessionListings : listingsData;
+                let filteredData = [...dataToRender];
+                
                 const searchTerm = searchInput.value.toLowerCase().trim();
                 if (searchTerm) {
-                    filteredData = filteredData.filter(item => item.address.toLowerCase().includes(searchTerm) || item.code.toLowerCase().includes(searchTerm));
+                    filteredData = filteredData.filter(item => item.address.toLowerCase().includes(searchTerm) || (item.code && item.code.toLowerCase().includes(searchTerm)));
                 }
                 const selectedWard = filterWardEl.value;
                 if (selectedWard !== 'all') {
@@ -294,7 +313,7 @@
             }
 
             function showDetailsModal(listingId) {
-                const listing = listingsData.find(item => item.id === listingId);
+                const listing = [...sessionListings, ...listingsData].find(item => item.id === listingId);
                 if (!listing) return;
                 detailsModalContent.innerHTML = `
                     <h2 class="text-2xl font-bold mb-2 text-blue-700">${listing.address}</h2>
@@ -312,7 +331,7 @@
             }
 
             function showGalleryModal(listingId) {
-                const listing = listingsData.find(item => item.id === listingId);
+                const listing = [...sessionListings, ...listingsData].find(item => item.id === listingId);
                 if (!listing || listing.images.length === 0) return;
                 mainGalleryImage.src = listing.images[0];
                 thumbnailContainer.innerHTML = '';
@@ -331,7 +350,8 @@
             }
 
             function populateWards() {
-                const wards = [...new Set(listingsData.map(item => item.ward))].sort();
+                const data = isAdminLoggedIn ? sessionListings : listingsData;
+                const wards = [...new Set(data.map(item => item.ward))].sort();
                 const currentSelection = filterWardEl.value;
                 filterWardEl.innerHTML = '<option value="all">Tất cả</option>';
                 wardsDatalist.innerHTML = '';
@@ -382,19 +402,13 @@
                     const formData = new FormData();
                     formData.append('file', file);
                     formData.append('upload_preset', uploadPreset);
-                    return fetch(url, {
-                        method: 'POST',
-                        body: formData
-                    }).then(response => response.json());
+                    return fetch(url, { method: 'POST', body: formData }).then(response => response.json());
                 });
 
                 const results = await Promise.all(uploadPromises);
                 return results.map(result => {
-                    if (result.secure_url) {
-                        return result.secure_url;
-                    } else {
-                        throw new Error(`Upload thất bại: ${result.error.message}`);
-                    }
+                    if (result.secure_url) return result.secure_url;
+                    throw new Error(`Upload thất bại: ${result.error.message}`);
                 });
             }
             
@@ -424,10 +438,8 @@
                         internet: parseInt(adminForm.internet.value) || 0,
                         images: imageUrls
                     };
-                    listingsData.push(newListing);
-                    saveListings();
-                    populateWards();
-                    alert('Thêm tin đăng mới thành công! Dữ liệu đã được lưu tạm thời.');
+                    sessionListings.push(newListing);
+                    alert('Thêm tin đăng mới thành công! Dữ liệu đã được lưu tạm thời. Hãy dùng công cụ "Tải về file data.json" để cập nhật vĩnh viễn.');
                     
                     // Reset form
                     Object.values(adminForm).forEach(input => { if (input.type !== 'select-one') input.value = ''; });
@@ -481,16 +493,12 @@
                 alert('Bóc tách dữ liệu hoàn tất! Vui lòng kiểm tra lại thông tin và chọn ảnh.');
             }
 
-            function downloadUpdatedFile() {
-                loadListings();
-                const dataString = JSON.stringify(listingsData, null, 4);
-                const fullHtml = `<!DOCTYPE html>${document.documentElement.outerHTML}`;
-                const updatedHtml = fullHtml.replace(/const initialListings = \[[\s\S]*?\];/, `const initialListings = ${dataString};`);
-                
-                const blob = new Blob([updatedHtml], { type: 'text/html' });
+            function downloadDataFile() {
+                const dataString = JSON.stringify(sessionListings, null, 2);
+                const blob = new Blob([dataString], { type: 'application/json' });
                 const a = document.createElement('a');
                 a.href = URL.createObjectURL(blob);
-                a.download = 'index.html';
+                a.download = 'data.json';
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
@@ -527,7 +535,13 @@
             backToMainFromLoginBtn.addEventListener('click', () => switchView('main'));
             logoutBtn.addEventListener('click', () => { isAdminLoggedIn = false; switchView('main'); });
             goToAdminBtn.addEventListener('click', () => { isAdminLoggedIn ? switchView('admin') : switchView('login'); });
-            goToMainBtn.addEventListener('click', () => { updateAndRender(); switchView('main'); });
+            goToMainBtn.addEventListener('click', () => {
+                // When going back to main, reload the original data
+                loadListings().then(() => {
+                    updateAndRender();
+                    switchView('main');
+                });
+            });
 
             searchInput.addEventListener('input', updateAndRender);
             sortPriceEl.addEventListener('change', updateAndRender);
@@ -549,7 +563,6 @@
             parseDataBtn.addEventListener('click', parseData);
             saveCloudinarySettingsBtn.addEventListener('click', saveCloudinarySettings);
             
-            // Drag and drop listeners
             dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
             dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
             dropZone.addEventListener('drop', (e) => {
@@ -563,12 +576,10 @@
             adminForm.images.addEventListener('change', (e) => handleImageFiles(e.target.files));
 
             submitListingBtn.addEventListener('click', handleAdminSubmit);
-            downloadUpdatedFileBtn.addEventListener('click', downloadUpdatedFile);
+            downloadDataFileBtn.addEventListener('click', downloadDataFile);
 
             // --- KHỞI TẠO ---
             loadListings();
-            populateWards();
-            updateAndRender();
             switchView('main');
         });
     </script>
