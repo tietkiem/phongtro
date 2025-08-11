@@ -359,11 +359,17 @@
                 renderListings(filteredData);
             }
 
+            function findListingById(listingId) {
+                const dataPool = isAdminLoggedIn ? sessionListings : listingsData;
+                return dataPool.find(item => item.id === listingId);
+            }
+
             function showDetailsModal(listingId) {
-                // FIX: Always search from the complete list available in the current view
-                const dataToSearch = isAdminLoggedIn ? sessionListings : listingsData;
-                const listing = dataToSearch.find(item => item.id === listingId);
-                if (!listing) return;
+                const listing = findListingById(listingId);
+                if (!listing) {
+                    console.error(`Listing with ID ${listingId} not found.`);
+                    return;
+                };
                 detailsModalContent.innerHTML = `
                     <h2 class="text-2xl font-bold mb-2 text-blue-700">${listing.address}</h2>
                     <p class="text-lg font-semibold text-red-600 mb-4">${formatCurrency(listing.price)}/tháng</p>
@@ -382,8 +388,7 @@
             }
 
             function showGalleryModal(listingId) {
-                const dataToSearch = isAdminLoggedIn ? sessionListings : listingsData;
-                const listing = dataToSearch.find(item => item.id === listingId);
+                const listing = findListingById(listingId);
                 if (!listing || listing.images.length === 0) return;
                 mainGalleryImage.src = listing.images[0];
                 thumbnailContainer.innerHTML = '';
