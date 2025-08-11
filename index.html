@@ -214,9 +214,23 @@
         </div>
     </div>
 
-    <!-- MODALs -->
-    <div id="details-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden"><div class="bg-white rounded-lg shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative"><button id="close-details-modal" class="absolute top-3 right-4 text-gray-500 hover:text-gray-800 text-2xl font-bold">&times;</button><div id="details-modal-content" class="p-6"></div></div></div>
-    <div id="gallery-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden"><div class="bg-white rounded-lg shadow-2xl w-full max-w-4xl relative"><button id="close-gallery-modal" class="absolute top-2 right-3 text-white bg-black bg-opacity-50 rounded-full w-8 h-8 flex items-center justify-center text-xl z-10">&times;</button><div id="gallery-modal-content" class="p-4"><img id="main-gallery-image" src="" alt="Ảnh phòng trọ" class="w-full h-[70vh] object-contain rounded-md mb-2"><div id="thumbnail-gallery-container" class="flex gap-2 overflow-x-auto pb-2 gallery-scroll"></div></div></div></div>
+    <!-- MODAL CHI TIẾT & ẢNH -->
+    <div id="listing-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
+        <div class="bg-white rounded-lg shadow-2xl w-full max-w-4xl max-h-[95vh] flex flex-col">
+            <button id="close-listing-modal" class="absolute top-2 right-2 text-white bg-black bg-opacity-50 rounded-full w-8 h-8 flex items-center justify-center text-xl z-20">&times;</button>
+            <div class="p-4 flex-grow overflow-y-auto">
+                <!-- Gallery Section -->
+                <div id="gallery-section" class="mb-4">
+                     <img id="main-gallery-image" src="" alt="Ảnh phòng trọ" class="w-full h-[60vh] object-contain rounded-md mb-2 bg-gray-100">
+                     <div id="thumbnail-gallery-container" class="flex gap-2 overflow-x-auto pb-2 gallery-scroll"></div>
+                </div>
+                <!-- Details Section -->
+                <div id="details-section" class="p-4 border-t">
+                    <!-- Details will be injected here -->
+                </div>
+            </div>
+        </div>
+    </div>
     
     <!-- CUSTOM CONFIRM MODAL -->
     <div id="confirm-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
@@ -253,13 +267,14 @@
             const searchInput = document.getElementById('search-input');
             const sortPriceEl = document.getElementById('sort-price');
             const filterWardEl = document.getElementById('filter-ward');
-            const detailsModal = document.getElementById('details-modal');
-            const closeDetailsModalBtn = document.getElementById('close-details-modal');
-            const detailsModalContent = document.getElementById('details-modal-content');
-            const galleryModal = document.getElementById('gallery-modal');
-            const closeGalleryModalBtn = document.getElementById('close-gallery-modal');
+            
+            // Unified Modal
+            const listingModal = document.getElementById('listing-modal');
+            const closeListingModalBtn = document.getElementById('close-listing-modal');
             const mainGalleryImage = document.getElementById('main-gallery-image');
             const thumbnailContainer = document.getElementById('thumbnail-gallery-container');
+            const detailsSection = document.getElementById('details-section');
+
             const goToAdminBtn = document.getElementById('go-to-admin-btn');
             const goToMainBtn = document.getElementById('go-to-main-btn');
             const logoutBtn = document.getElementById('logout-btn');
@@ -328,7 +343,7 @@
                     card.setAttribute('data-id', listing.id);
                     card.innerHTML = `
                         <div class="relative">
-                            <img src="${listing.images[0]}" alt="Ảnh phòng trọ" class="w-full h-48 object-cover thumbnail-img" data-id="${listing.id}" onerror="this.onerror=null;this.src='https://placehold.co/600x400/cccccc/ffffff?text=Lỗi+Ảnh';">
+                            <img src="${listing.images[0]}" alt="Ảnh phòng trọ" class="w-full h-48 object-cover" onerror="this.onerror=null;this.src='https://placehold.co/600x400/cccccc/ffffff?text=Lỗi+Ảnh';">
                             <div class="absolute top-2 right-2 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded">${listing.ward}</div>
                         </div>
                         <div class="p-4">
@@ -364,13 +379,30 @@
                 return dataPool.find(item => item.id === listingId);
             }
 
-            function showDetailsModal(listingId) {
+            function showListingModal(listingId) {
                 const listing = findListingById(listingId);
                 if (!listing) {
                     console.error(`Listing with ID ${listingId} not found.`);
                     return;
                 };
-                detailsModalContent.innerHTML = `
+
+                // Populate Gallery
+                mainGalleryImage.src = listing.images[0] || 'https://placehold.co/800x600/cccccc/ffffff?text=Không+có+ảnh';
+                thumbnailContainer.innerHTML = '';
+                listing.images.forEach((imgSrc, index) => {
+                    const thumb = document.createElement('img');
+                    thumb.src = imgSrc;
+                    thumb.className = `w-24 h-16 object-cover rounded-md cursor-pointer border-2 ${index === 0 ? 'border-blue-500' : 'border-transparent'}`;
+                    thumb.onclick = () => {
+                        mainGalleryImage.src = imgSrc;
+                        document.querySelectorAll('#thumbnail-gallery-container img').forEach(t => t.classList.remove('border-blue-500'));
+                        thumb.classList.add('border-blue-500');
+                    };
+                    thumbnailContainer.appendChild(thumb);
+                });
+
+                // Populate Details
+                detailsSection.innerHTML = `
                     <h2 class="text-2xl font-bold mb-2 text-blue-700">${listing.address}</h2>
                     <p class="text-lg font-semibold text-red-600 mb-4">${formatCurrency(listing.price)}/tháng</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
@@ -384,26 +416,7 @@
                         <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-barcode mr-2"></i>Mã nhà:</strong> ${listing.code}</div>
                     </div>
                 `;
-                detailsModal.classList.remove('hidden');
-            }
-
-            function showGalleryModal(listingId) {
-                const listing = findListingById(listingId);
-                if (!listing || listing.images.length === 0) return;
-                mainGalleryImage.src = listing.images[0];
-                thumbnailContainer.innerHTML = '';
-                listing.images.forEach((imgSrc, index) => {
-                    const thumb = document.createElement('img');
-                    thumb.src = imgSrc;
-                    thumb.className = `w-24 h-16 object-cover rounded-md cursor-pointer border-2 ${index === 0 ? 'border-blue-500' : 'border-transparent'}`;
-                    thumb.onclick = () => {
-                        mainGalleryImage.src = imgSrc;
-                        document.querySelectorAll('#thumbnail-gallery-container img').forEach(t => t.classList.remove('border-blue-500'));
-                        thumb.classList.add('border-blue-500');
-                    };
-                    thumbnailContainer.appendChild(thumb);
-                });
-                galleryModal.classList.remove('hidden');
+                listingModal.classList.remove('hidden');
             }
 
             function populateWards() {
@@ -710,14 +723,11 @@
                 const card = e.target.closest('.listing-card');
                 if (!card) return;
                 const listingId = card.dataset.id;
-                if (e.target.closest('.thumbnail-img')) showGalleryModal(listingId);
-                else showDetailsModal(listingId);
+                showListingModal(listingId);
             });
 
-            closeDetailsModalBtn.addEventListener('click', () => detailsModal.classList.add('hidden'));
-            closeGalleryModalBtn.addEventListener('click', () => galleryModal.classList.add('hidden'));
-            detailsModal.addEventListener('click', (e) => { if (e.target === detailsModal) detailsModal.classList.add('hidden'); });
-            galleryModal.addEventListener('click', (e) => { if (e.target === galleryModal) galleryModal.classList.add('hidden'); });
+            closeListingModalBtn.addEventListener('click', () => listingModal.classList.add('hidden'));
+            listingModal.addEventListener('click', (e) => { if (e.target === listingModal) listingModal.classList.add('hidden'); });
 
             parseDataBtn.addEventListener('click', parseData);
             saveCloudinarySettingsBtn.addEventListener('click', saveCloudinarySettings);
