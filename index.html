@@ -360,7 +360,9 @@
             }
 
             function showDetailsModal(listingId) {
-                const listing = [...sessionListings, ...listingsData].find(item => item.id === listingId);
+                // FIX: Always search from the complete list available in the current view
+                const dataToSearch = isAdminLoggedIn ? sessionListings : listingsData;
+                const listing = dataToSearch.find(item => item.id === listingId);
                 if (!listing) return;
                 detailsModalContent.innerHTML = `
                     <h2 class="text-2xl font-bold mb-2 text-blue-700">${listing.address}</h2>
@@ -380,7 +382,8 @@
             }
 
             function showGalleryModal(listingId) {
-                const listing = [...sessionListings, ...listingsData].find(item => item.id === listingId);
+                const dataToSearch = isAdminLoggedIn ? sessionListings : listingsData;
+                const listing = dataToSearch.find(item => item.id === listingId);
                 if (!listing || listing.images.length === 0) return;
                 mainGalleryImage.src = listing.images[0];
                 thumbnailContainer.innerHTML = '';
@@ -654,7 +657,6 @@
                 confirmModalText.textContent = text;
                 confirmModal.classList.remove('hidden');
                 
-                // FIX: This ensures the 'ok' button's click event is fresh for each confirmation.
                 const newOk = confirmModalOk.cloneNode(true);
                 confirmModalOk.parentNode.replaceChild(newOk, confirmModalOk);
                 confirmModalOk = newOk;
@@ -662,7 +664,7 @@
                 confirmModalOk.addEventListener('click', () => {
                     onOk();
                     confirmModal.classList.add('hidden');
-                }, { once: true }); // Use { once: true } to prevent multiple fires
+                }, { once: true });
             }
 
             // --- EVENT LISTENERS ---
