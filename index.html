@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-sha256/0.9.0/sha256.min.js"></script>
     <style>
         body {
             font-family: 'Be Vietnam Pro', sans-serif;
@@ -54,7 +55,6 @@
 </head>
 <body class="text-gray-800">
 
-    <!-- GIAO DIỆN ĐĂNG NHẬP (ẨN BAN ĐẦU) -->
     <div id="login-view" class="min-h-screen flex items-center justify-center p-4 hidden">
         <div class="w-full max-w-sm bg-white rounded-xl shadow-2xl p-8">
             <div class="text-center mb-8">
@@ -77,9 +77,7 @@
         </div>
     </div>
 
-    <!-- PHẦN GIAO DIỆN CHÍNH -->
     <div id="main-view">
-        <!-- HEADER -->
         <header class="bg-white shadow-md sticky top-0 z-40">
             <div class="container mx-auto px-4 py-4 flex flex-col lg:flex-row justify-between items-center gap-4">
                 <div class="text-center lg:text-left">
@@ -111,8 +109,7 @@
         </header>
         <main class="container mx-auto p-4">
             <div id="listings-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                <!-- Data will be loaded here by JavaScript -->
-                 <div class="col-span-full text-center text-gray-500 py-10">
+                <div class="col-span-full text-center text-gray-500 py-10">
                     <i class="fas fa-spinner fa-spin text-3xl"></i>
                     <p>Đang tải dữ liệu...</p>
                 </div>
@@ -120,7 +117,6 @@
         </main>
     </div>
 
-    <!-- PHẦN GIAO DIỆN ADMIN (ẨN BAN ĐẦU) -->
     <div id="admin-view" class="hidden">
         <div class="container mx-auto p-4 sm:p-6 md:p-8">
             <div class="max-w-6xl mx-auto bg-white rounded-xl shadow-2xl p-6">
@@ -132,7 +128,6 @@
                     </div>
                 </div>
 
-                <!-- CÀI ĐẶT CLOUDINARY -->
                 <div class="mb-8 p-4 bg-purple-50 border border-purple-200 rounded-lg">
                     <h3 class="text-lg font-semibold text-purple-800 mb-2"><i class="fas fa-cloud-upload-alt mr-2"></i>Cài đặt Cloudinary (Chỉ cần làm 1 lần)</h3>
                     <p class="text-sm text-gray-600 mb-2">Để upload ảnh, bạn cần cung cấp thông tin tài khoản Cloudinary. Xem hướng dẫn <a href="https://cloudinary.com/documentation/upload_presets" target="_blank" class="text-blue-600 underline">tại đây</a> để tạo <strong>Upload Preset (Unsigned)</strong>.</p>
@@ -156,18 +151,17 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                    <!-- Form fields -->
-                    <div><label for="admin-code" class="block text-sm font-medium text-gray-700">Mã nhà</label><input type="text" id="admin-code" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"></div>
-                    <div><label for="admin-address" class="block text-sm font-medium text-gray-700">Địa chỉ</label><input type="text" id="admin-address" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"></div>
-                    <div><label for="admin-ward" class="block text-sm font-medium text-gray-700">Phường</label><input type="text" id="admin-ward" list="wards-datalist" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"><datalist id="wards-datalist"></datalist></div>
-                    <div><label for="admin-price" class="block text-sm font-medium text-gray-700">Giá phòng (VND)</label><input type="number" id="admin-price" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"></div>
-                    <div><label for="admin-area" class="block text-sm font-medium text-gray-700">Diện tích (m²)</label><input type="number" id="admin-area" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"></div>
-                    <div><label for="admin-elevator" class="block text-sm font-medium text-gray-700">Thang máy</label><select id="admin-elevator" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"><option>Không</option><option>Có</option></select></div>
-                    <div><label for="admin-wc" class="block text-sm font-medium text-gray-700">Vệ sinh</label><select id="admin-wc" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"><option>Khép kín</option><option>Chung</option></select></div>
-                    <div><label for="admin-electricity" class="block text-sm font-medium text-gray-700">Giá điện (VND/kWh)</label><input type="number" id="admin-electricity" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"></div>
-                    <div><label for="admin-water" class="block text-sm font-medium text-gray-700">Giá nước (VND/khối)</label><input type="number" id="admin-water" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"></div>
-                    <div><label for="admin-service-fee" class="block text-sm font-medium text-gray-700">Phí dịch vụ (VND/người)</label><input type="number" id="admin-service-fee" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"></div>
-                    <div><label for="admin-internet" class="block text-sm font-medium text-gray-700">Giá mạng (VND/phòng)</label><input type="number" id="admin-internet" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"></div>
+                    <div><label for="admin-code" class="block text-sm font-medium text-gray-700">Mã nhà</label><input type="text" id="admin-code" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2"></div>
+                    <div><label for="admin-address" class="block text-sm font-medium text-gray-700">Địa chỉ</label><input type="text" id="admin-address" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2"></div>
+                    <div><label for="admin-ward" class="block text-sm font-medium text-gray-700">Phường</label><input type="text" id="admin-ward" list="wards-datalist" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2"><datalist id="wards-datalist"></datalist></div>
+                    <div><label for="admin-price" class="block text-sm font-medium text-gray-700">Giá phòng (VND)</label><input type="number" id="admin-price" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2"></div>
+                    <div><label for="admin-area" class="block text-sm font-medium text-gray-700">Diện tích (m²)</label><input type="number" id="admin-area" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2"></div>
+                    <div><label for="admin-elevator" class="block text-sm font-medium text-gray-700">Thang máy</label><select id="admin-elevator" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2"><option>Không</option><option>Có</option></select></div>
+                    <div><label for="admin-wc" class="block text-sm font-medium text-gray-700">Vệ sinh</label><select id="admin-wc" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2"><option>Khép kín</option><option>Chung</option></select></div>
+                    <div><label for="admin-electricity" class="block text-sm font-medium text-gray-700">Giá điện (VND/kWh)</label><input type="number" id="admin-electricity" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2"></div>
+                    <div><label for="admin-water" class="block text-sm font-medium text-gray-700">Giá nước (VND/khối)</label><input type="number" id="admin-water" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2"></div>
+                    <div><label for="admin-service-fee" class="block text-sm font-medium text-gray-700">Phí dịch vụ (VND/người)</label><input type="number" id="admin-service-fee" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2"></div>
+                    <div><label for="admin-internet" class="block text-sm font-medium text-gray-700">Giá mạng (VND/phòng)</label><input type="number" id="admin-internet" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2"></div>
                     <div class="md:col-span-2">
                         <label class="block text-sm font-medium text-gray-700">Ảnh phòng trọ</label>
                         <div id="drop-zone" class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md transition-colors duration-300">
@@ -190,12 +184,10 @@
                      <button id="submit-listing-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 flex items-center justify-center text-lg"><i class="fas fa-plus-circle mr-2"></i><span id="submit-btn-text">Thêm Tin Đăng Mới</span><i id="submit-spinner" class="fas fa-spinner fa-spin ml-2 hidden"></i></button>
                 </div>
 
-                <!-- QUẢN LÝ TIN ĐĂNG -->
                 <div class="mt-10 pt-6 border-t-2 border-dashed border-gray-300">
                      <h3 class="text-lg font-semibold text-gray-800 mb-2"><i class="fas fa-list-alt mr-2"></i>Quản lý Tin đăng hiện tại</h3>
                      <div id="admin-listings-container" class="space-y-2 max-h-96 overflow-y-auto pr-2">
-                        <!-- Admin listings will be rendered here -->
-                     </div>
+                         </div>
                 </div>
 
                 <div class="mt-10 pt-6 border-t-2 border-dashed border-gray-300">
@@ -214,25 +206,20 @@
         </div>
     </div>
 
-    <!-- MODAL CHI TIẾT & ẢNH -->
     <div id="listing-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
         <div class="bg-white rounded-lg shadow-2xl w-full max-w-4xl max-h-[95vh] flex flex-col">
             <button id="close-listing-modal" class="absolute top-2 right-2 text-white bg-black bg-opacity-50 rounded-full w-8 h-8 flex items-center justify-center text-xl z-20">&times;</button>
             <div class="p-4 flex-grow overflow-y-auto">
-                <!-- Gallery Section -->
                 <div id="gallery-section" class="mb-4">
                      <img id="main-gallery-image" src="" alt="Ảnh phòng trọ" class="w-full h-[60vh] object-contain rounded-md mb-2 bg-gray-100">
                      <div id="thumbnail-gallery-container" class="flex gap-2 overflow-x-auto pb-2 gallery-scroll"></div>
                 </div>
-                <!-- Details Section -->
                 <div id="details-section" class="p-4 border-t">
-                    <!-- Details will be injected here -->
-                </div>
+                    </div>
             </div>
         </div>
     </div>
     
-    <!-- CUSTOM CONFIRM MODAL -->
     <div id="confirm-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
         <div class="bg-white rounded-lg shadow-2xl w-full max-w-sm p-6">
             <h3 id="confirm-modal-title" class="text-lg font-bold text-gray-800">Xác nhận hành động</h3>
@@ -248,6 +235,8 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             let listingsData = []; // This will be populated from data.json
+            // NEW: Dùng Map để tối ưu tốc độ truy xuất dữ liệu
+            let listingsMap = new Map();
             let sessionListings = []; // For new listings added in the current session
             let isAdminLoggedIn = false;
             let uploadedFiles = [];
@@ -314,6 +303,8 @@
                     const data = await response.json();
                     listingsData = data;
                     sessionListings = JSON.parse(JSON.stringify(data)); // Deep copy for session
+                    // NEW: Tạo Map từ dữ liệu để tăng tốc độ truy vấn
+                    listingsMap = new Map(data.map(item => [item.id, item]));
                     updateAndRender();
                     populateWards();
                 } catch (error) {
@@ -323,6 +314,7 @@
                     ];
                     listingsData = fallbackData;
                     sessionListings = JSON.parse(JSON.stringify(listingsData));
+                    listingsMap = new Map(listingsData.map(item => [item.id, item])); // NEW
                     updateAndRender();
                     populateWards();
                     grid.insertAdjacentHTML('afterbegin', `<div class="col-span-full text-center text-orange-500 bg-orange-100 p-2 rounded-md mb-4"><p><strong>Lưu ý:</strong> Không tìm thấy file <strong>data.json</strong>. Đang hiển thị dữ liệu mẫu.</p></div>`);
@@ -374,9 +366,10 @@
                 renderListings(filteredData);
             }
 
+            // CHANGED: Tối ưu hàm tìm kiếm bằng Map
             function findListingById(listingId) {
-                const dataPool = isAdminLoggedIn ? sessionListings : listingsData;
-                return dataPool.find(item => item.id === listingId);
+                const dataPool = isAdminLoggedIn ? new Map(sessionListings.map(item => [item.id, item])) : listingsMap;
+                return dataPool.get(listingId);
             }
 
             function showListingModal(listingId) {
@@ -421,7 +414,7 @@
 
             function populateWards() {
                 const data = isAdminLoggedIn ? sessionListings : listingsData;
-                const wards = [...new Set(data.map(item => item.ward))].sort();
+                const wards = [...new Set(data.map(item => item.ward).filter(Boolean))].sort(); // Filter out null/empty wards
                 const currentSelection = filterWardEl.value;
                 filterWardEl.innerHTML = '<option value="all">Tất cả</option>';
                 wardsDatalist.innerHTML = '';
@@ -512,6 +505,7 @@
                     };
                     sessionListings.push(newListing);
                     renderAdminListings();
+                    populateWards(); // NEW: Cập nhật lại bộ lọc Phường
                     alert('Thêm tin đăng mới thành công! Dữ liệu đã được lưu tạm thời.');
                     
                     // Reset form
@@ -599,9 +593,10 @@
                 adminForm.elevator.value = /thang máy/i.test(text.toLowerCase()) ? 'Có' : 'Không';
                 adminForm.wc.value = /khép kín|giặt riêng/i.test(text.toLowerCase()) ? 'Khép kín' : 'Chung';
 
-                const address = adminForm.address.value;
-                const allWards = ["Mỹ Đình", "Yên Hoà", "Láng Thượng", "Thượng Đình", "Phú Mỹ", "Dịch Vọng", "Mai Dịch", "Cầu Diễn", "Hồ Tùng Mậu"];
-                adminForm.ward.value = allWards.find(w => address.toLowerCase().includes(w.toLowerCase())) || '';
+                // CHANGED: Tự động tìm phường từ danh sách phường hiện có
+                const address = adminForm.address.value.toLowerCase();
+                const allWards = [...new Set(sessionListings.map(item => item.ward))];
+                adminForm.ward.value = allWards.find(w => address.includes(w.toLowerCase())) || '';
 
                 alert('Bóc tách dữ liệu hoàn tất! Vui lòng kiểm tra lại thông tin và chọn ảnh.');
             }
@@ -686,8 +681,16 @@
             }
 
             // --- EVENT LISTENERS ---
+            // CHANGED: Login logic with hashed password
             loginBtn.addEventListener('click', () => {
-                if (usernameInput.value === 'mrhung' && passwordInput.value === '16051984') {
+                const ADMIN_USER = 'mrhung';
+                // This is the SHA-256 hash of the password '16051984'
+                const ADMIN_PASS_HASH = 'f6327344f6f188394231b64b192c01990135515de42e47f722a5592505505e6b';
+                
+                const enteredPass = passwordInput.value;
+                const enteredPassHash = sha256(enteredPass); // Hash the entered password
+
+                if (usernameInput.value === ADMIN_USER && enteredPassHash === ADMIN_PASS_HASH) {
                     isAdminLoggedIn = true;
                     switchView('admin');
                     loadCloudinarySettings();
@@ -695,7 +698,8 @@
                     loginError.classList.add('hidden');
                     usernameInput.value = ''; passwordInput.value = '';
                 } else {
-                    loginError.classList.add('hidden');
+                    // FIXED: Show login error message correctly
+                    loginError.classList.remove('hidden');
                 }
             });
             
@@ -754,6 +758,7 @@
                     showConfirmModal('Xác nhận xóa', `Bạn có chắc chắn muốn xóa tin đăng tại: ${listingToDelete.address}?`, () => {
                         sessionListings = sessionListings.filter(l => l.id !== idToDelete);
                         renderAdminListings();
+                        populateWards(); // NEW: Cập nhật lại bộ lọc Phường
                         alert('Đã xóa tin đăng. Hãy tải file data.json mới để cập nhật vĩnh viễn.');
                     });
                 }
