@@ -1,804 +1,1303 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tìm Phòng Trọ Nhanh</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        body {
-            font-family: 'Be Vietnam Pro', sans-serif;
-            background-color: #f0f2f5;
-        }
-        .modal-backdrop { background-color: rgba(0,0,0,0.7); }
-        .listing-card { transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; }
-        .listing-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-        }
-        .gallery-scroll::-webkit-scrollbar { height: 8px; }
-        .gallery-scroll::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
-        .gallery-scroll::-webkit-scrollbar-thumb { background: #888; border-radius: 10px; }
-        .gallery-scroll::-webkit-scrollbar-thumb:hover { background: #555; }
-        .hidden { display: none; }
-        #login-view {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        #drop-zone.dragover {
-            border-color: #2563eb;
-            background-color: #eff6ff;
-        }
-        .image-preview-item {
-            position: relative;
-        }
-        .delete-image-btn {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            width: 20px;
-            height: 20px;
-            background-color: rgba(0,0,0,0.6);
-            color: white;
-            border-radius: 50%;
-            border: 1px solid white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 12px;
-            line-height: 1;
-        }
-    </style>
-</head>
-<body class="text-gray-800">
-
-    <!-- GIAO DIỆN ĐĂNG NHẬP (ẨN BAN ĐẦU) -->
-    <div id="login-view" class="min-h-screen flex items-center justify-center p-4 hidden">
-        <div class="w-full max-w-sm bg-white rounded-xl shadow-2xl p-8">
-            <div class="text-center mb-8">
-                <i class="fas fa-house-user text-5xl text-blue-600"></i>
-                <h2 class="mt-4 text-2xl font-bold text-gray-800">Đăng Nhập Admin</h2>
-            </div>
-            <div class="space-y-4">
-                <div>
-                    <label for="username" class="block text-sm font-medium text-gray-700">Tên đăng nhập</label>
-                    <input type="text" id="username" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2">
-                </div>
-                <div>
-                    <label for="password" class="block text-sm font-medium text-gray-700">Mật khẩu</label>
-                    <input type="password" id="password" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2">
-                </div>
-                <p id="login-error" class="text-red-500 text-sm hidden">Tên đăng nhập hoặc mật khẩu không đúng.</p>
-                <button id="login-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">Đăng Nhập</button>
-                 <button id="back-to-main-from-login" class="mt-2 w-full text-center text-sm text-gray-600 hover:text-blue-600">Quay về trang chủ</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- PHẦN GIAO DIỆN CHÍNH -->
-    <div id="main-view">
-        <!-- HEADER (ĐÃ TỐI ƯU HÓA) -->
-        <header class="bg-white shadow-md sticky top-0 z-40">
-            <div class="container mx-auto px-4 py-3">
-                <div class="flex flex-wrap items-center justify-between gap-y-3">
-                    <!-- Cột 1: Logo & Title -->
-                    <div class="text-left pr-4">
-                        <h1 class="text-2xl font-bold text-blue-600"><i class="fas fa-house-chimney-window mr-2"></i>Tìm Phòng Trọ</h1>
-                        <p class="text-sm text-gray-500 italic -mt-1">Tìm trọ miễn phí - An tâm lựa chọn.</p>
-                    </div>
-
-                    <!-- Cột 2: Các nút điều khiển (sẽ linh hoạt trên mobile) -->
-                    <div class="w-full lg:w-auto flex flex-col lg:flex-row lg:items-center gap-3">
-                        <!-- Nhóm Search & Admin Button -->
-                        <div class="flex items-center gap-3">
-                            <div class="relative flex-grow">
-                                <input type="search" id="search-input" placeholder="Tìm theo địa chỉ, mã nhà..." class="border border-gray-300 rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full">
-                                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                            </div>
-                            <button id="go-to-admin-btn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300"><i class="fas fa-user-shield"></i></button>
-                        </div>
-
-                        <!-- Nhóm Filters -->
-                        <div class="grid grid-cols-2 gap-3 w-full sm:w-auto lg:flex lg:gap-2">
-                            <div class="flex items-center gap-2">
-                                <label for="sort-price" class="text-sm font-medium hidden sm:inline"><i class="fas fa-dollar-sign mr-1"></i>Giá:</label>
-                                <select id="sort-price" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full">
-                                    <option value="newest">Mới nhất</option>
-                                    <option value="asc">Giá tăng dần</option>
-                                    <option value="desc">Giá giảm dần</option>
-                                </select>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <label for="filter-ward" class="text-sm font-medium hidden sm:inline"><i class="fas fa-map-marker-alt mr-1"></i>Phường:</label>
-                                <select id="filter-ward" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full">
-                                    <option value="all">Tất cả Phường</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </header>
-        <main class="container mx-auto p-4">
-            <div id="listings-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                <!-- Spinner loading, sẽ được thay thế bằng dữ liệu hoặc thông báo lỗi -->
-                 <div class="col-span-full text-center text-gray-500 py-10">
-                    <i class="fas fa-spinner fa-spin text-3xl"></i>
-                    <p>Đang tải dữ liệu...</p>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <!-- PHẦN GIAO DIỆN ADMIN (ẨN BAN ĐẦU) -->
-    <div id="admin-view" class="hidden">
-        <div class="container mx-auto p-4 sm:p-6 md:p-8">
-            <div class="max-w-6xl mx-auto bg-white rounded-xl shadow-2xl p-6">
-                <div class="flex flex-wrap justify-between items-center mb-6 border-b pb-4 gap-4">
-                    <h2 class="text-2xl font-bold text-gray-800">Trang Quản Trị</h2>
-                    <div class="flex items-center gap-4">
-                        <button id="go-to-main-btn" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300"><i class="fas fa-arrow-left mr-2"></i>Về Trang Chủ</button>
-                        <button id="logout-btn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300"><i class="fas fa-sign-out-alt mr-2"></i>Đăng xuất</button>
-                    </div>
-                </div>
-
-                <!-- CÀI ĐẶT CLOUDINARY -->
-                <div class="mb-8 p-4 bg-purple-50 border border-purple-200 rounded-lg">
-                    <h3 class="text-lg font-semibold text-purple-800 mb-2"><i class="fas fa-cloud-upload-alt mr-2"></i>Cài đặt Cloudinary (Chỉ cần làm 1 lần)</h3>
-                    <p class="text-sm text-gray-600 mb-2">Để upload ảnh, bạn cần cung cấp thông tin tài khoản Cloudinary. Xem hướng dẫn <a href="https://cloudinary.com/documentation/upload_presets" target="_blank" class="text-blue-600 underline">tại đây</a> để tạo <strong>Upload Preset (Unsigned)</strong>.</p>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label for="cloudinary-cloud-name" class="block text-sm font-medium text-gray-700">Cloud Name</label>
-                            <input type="text" id="cloudinary-cloud-name" placeholder="Tên cloud của bạn" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2">
-                        </div>
-                        <div>
-                            <label for="cloudinary-upload-preset" class="block text-sm font-medium text-gray-700">Upload Preset Name</label>
-                            <input type="text" id="cloudinary-upload-preset" placeholder="Tên upload preset" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2">
-                        </div>
-                    </div>
-                    <button id="save-cloudinary-settings-btn" class="mt-3 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300"><i class="fas fa-save mr-2"></i>Lưu Cài Đặt</button>
-                </div>
-                
-                <div class="mb-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <h3 class="text-lg font-semibold text-blue-800 mb-2"><i class="fas fa-magic mr-2"></i>Công cụ Bóc tách Dữ liệu</h3>
-                    <textarea id="data-parser-input" class="w-full h-32 border-gray-300 rounded-md shadow-sm p-2 font-mono text-sm" placeholder="Dán nội dung tin đăng vào đây..."></textarea>
-                    <button id="parse-data-btn" class="mt-2 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300">Bóc tách dữ liệu</button>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                    <!-- Form fields -->
-                    <div><label for="admin-code" class="block text-sm font-medium text-gray-700">Mã nhà</label><input type="text" id="admin-code" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"></div>
-                    <div><label for="admin-address" class="block text-sm font-medium text-gray-700">Địa chỉ</label><input type="text" id="admin-address" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"></div>
-                    <div><label for="admin-ward" class="block text-sm font-medium text-gray-700">Phường</label><input type="text" id="admin-ward" list="wards-datalist" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"><datalist id="wards-datalist"></datalist></div>
-                    <div><label for="admin-price" class="block text-sm font-medium text-gray-700">Giá phòng (VND)</label><input type="number" id="admin-price" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"></div>
-                    <div><label for="admin-area" class="block text-sm font-medium text-gray-700">Diện tích (m²)</label><input type="number" id="admin-area" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"></div>
-                    <div><label for="admin-elevator" class="block text-sm font-medium text-gray-700">Thang máy</label><select id="admin-elevator" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"><option>Không</option><option>Có</option></select></div>
-                    <div><label for="admin-wc" class="block text-sm font-medium text-gray-700">Vệ sinh</label><select id="admin-wc" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"><option>Khép kín</option><option>Chung</option></select></div>
-                    <div><label for="admin-electricity" class="block text-sm font-medium text-gray-700">Giá điện (VND/kWh)</label><input type="number" id="admin-electricity" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"></div>
-                    <div><label for="admin-water" class="block text-sm font-medium text-gray-700">Giá nước (VND/khối)</label><input type="number" id="admin-water" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"></div>
-                    <div><label for="admin-service-fee" class="block text-sm font-medium text-gray-700">Phí dịch vụ (VND/người)</label><input type="number" id="admin-service-fee" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"></div>
-                    <div><label for="admin-internet" class="block text-sm font-medium text-gray-700">Giá mạng (VND/phòng)</label><input type="number" id="admin-internet" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"></div>
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700">Ảnh phòng trọ</label>
-                        <div id="drop-zone" class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md transition-colors duration-300">
-                            <div class="space-y-1 text-center">
-                                <i class="fas fa-cloud-upload-alt text-4xl text-gray-400"></i>
-                                <div class="flex text-sm text-gray-600">
-                                    <label for="admin-images" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none">
-                                        <span>Tải lên một file</span>
-                                        <input id="admin-images" type="file" class="sr-only" multiple accept="image/*">
-                                    </label>
-                                    <p class="pl-1">hoặc kéo và thả</p>
-                                </div>
-                                <p class="text-xs text-gray-500">PNG, JPG, GIF</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="image-preview-container" class="md:col-span-2 mt-2 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 bg-gray-50 p-2 rounded-md border min-h-[80px]"></div>
-                </div>
-                <div class="mt-8 pt-5 border-t">
-                     <button id="submit-listing-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 flex items-center justify-center text-lg"><i class="fas fa-plus-circle mr-2"></i><span id="submit-btn-text">Thêm Tin Đăng Mới</span><i id="submit-spinner" class="fas fa-spinner fa-spin ml-2 hidden"></i></button>
-                </div>
-
-                <!-- QUẢN LÝ TIN ĐĂNG -->
-                <div class="mt-10 pt-6 border-t-2 border-dashed border-gray-300">
-                     <h3 class="text-lg font-semibold text-gray-800 mb-2"><i class="fas fa-list-alt mr-2"></i>Quản lý Tin đăng hiện tại</h3>
-                     <div id="admin-listings-container" class="space-y-2 max-h-96 overflow-y-auto pr-2">
-                        <!-- Admin listings will be rendered here -->
-                     </div>
-                </div>
-
-                <div class="mt-10 pt-6 border-t-2 border-dashed border-gray-300">
-                    <div class="p-4 bg-green-50 border border-green-300 rounded-lg">
-                        <h3 class="text-lg font-semibold text-green-800 mb-2"><i class="fas fa-cogs mr-2"></i>Công Cụ Cập Nhật Website</h3>
-                        <p class="text-sm text-gray-600 mb-2">Sau khi đã thêm/xóa tin, nhấn nút bên dưới để tải về file dữ liệu đã được cập nhật.</p>
-                        <ol class="list-decimal list-inside text-sm space-y-1">
-                            <li>Nhấn nút <strong>"Tải về file data.json đã cập nhật"</strong>.</li>
-                            <li>Một file <code>data.json</code> mới sẽ được tải về máy tính.</li>
-                            <li>Trên website GitHub, <strong>upload file `data.json` vừa tải về</strong> để thay thế file cũ.</li>
-                        </ol>
-                        <button id="download-data-file-btn" class="mt-3 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300"><i class="fas fa-download mr-2"></i>Tải về file data.json đã cập nhật</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL CHI TIẾT & ẢNH -->
-    <div id="listing-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
-        <div class="bg-white rounded-lg shadow-2xl w-full max-w-4xl max-h-[95vh] flex flex-col">
-            <button id="close-listing-modal" class="absolute top-2 right-2 text-white bg-black bg-opacity-50 rounded-full w-8 h-8 flex items-center justify-center text-xl z-20">&times;</button>
-            <div class="p-4 flex-grow overflow-y-auto">
-                <!-- Gallery Section -->
-                <div id="gallery-section" class="mb-4">
-                     <img id="main-gallery-image" src="" alt="Ảnh phòng trọ" class="w-full h-[60vh] object-contain rounded-md mb-2 bg-gray-100">
-                     <div id="thumbnail-gallery-container" class="flex gap-2 overflow-x-auto pb-2 gallery-scroll"></div>
-                </div>
-                <!-- Details Section -->
-                <div id="details-section" class="p-4 border-t">
-                    <!-- Details will be injected here -->
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- CUSTOM CONFIRM MODAL -->
-    <div id="confirm-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
-        <div class="bg-white rounded-lg shadow-2xl w-full max-w-sm p-6">
-            <h3 id="confirm-modal-title" class="text-lg font-bold text-gray-800">Xác nhận hành động</h3>
-            <p id="confirm-modal-text" class="text-sm text-gray-600 mt-2">Bạn có chắc chắn muốn thực hiện hành động này?</p>
-            <div class="mt-6 flex justify-end gap-3">
-                <button id="confirm-modal-cancel" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Hủy</button>
-                <button id="confirm-modal-ok" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">Xác nhận</button>
-            </div>
-        </div>
-    </div>
-
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            let listingsData = []; // This will be populated from data.json
-            let sessionListings = []; // For new listings added in the current session
-            let isAdminLoggedIn = false;
-            let uploadedFiles = [];
-
-            // --- DOM ELEMENTS ---
-            const allViews = {
-                login: document.getElementById('login-view'),
-                main: document.getElementById('main-view'),
-                admin: document.getElementById('admin-view')
-            };
-            const usernameInput = document.getElementById('username');
-            const passwordInput = document.getElementById('password');
-            const loginBtn = document.getElementById('login-btn');
-            const loginError = document.getElementById('login-error');
-            const backToMainFromLoginBtn = document.getElementById('back-to-main-from-login');
-            const grid = document.getElementById('listings-grid');
-            const searchInput = document.getElementById('search-input');
-            const sortPriceEl = document.getElementById('sort-price');
-            const filterWardEl = document.getElementById('filter-ward');
-            
-            // Unified Modal
-            const listingModal = document.getElementById('listing-modal');
-            const closeListingModalBtn = document.getElementById('close-listing-modal');
-            const mainGalleryImage = document.getElementById('main-gallery-image');
-            const thumbnailContainer = document.getElementById('thumbnail-gallery-container');
-            const detailsSection = document.getElementById('details-section');
-
-            const goToAdminBtn = document.getElementById('go-to-admin-btn');
-            const goToMainBtn = document.getElementById('go-to-main-btn');
-            const logoutBtn = document.getElementById('logout-btn');
-            const dataParserInput = document.getElementById('data-parser-input');
-            const parseDataBtn = document.getElementById('parse-data-btn');
-            const adminForm = {
-                code: document.getElementById('admin-code'), address: document.getElementById('admin-address'),
-                ward: document.getElementById('admin-ward'), price: document.getElementById('admin-price'), 
-                area: document.getElementById('admin-area'), wc: document.getElementById('admin-wc'), 
-                elevator: document.getElementById('admin-elevator'),
-                electricity: document.getElementById('admin-electricity'), water: document.getElementById('admin-water'), 
-                serviceFee: document.getElementById('admin-service-fee'),
-                internet: document.getElementById('admin-internet'), images: document.getElementById('admin-images')
-            };
-            const wardsDatalist = document.getElementById('wards-datalist');
-            const dropZone = document.getElementById('drop-zone');
-            const imagePreviewContainer = document.getElementById('image-preview-container');
-            const submitListingBtn = document.getElementById('submit-listing-btn');
-            const submitBtnText = document.getElementById('submit-btn-text');
-            const submitSpinner = document.getElementById('submit-spinner');
-            const downloadDataFileBtn = document.getElementById('download-data-file-btn');
-            const cloudinaryCloudNameInput = document.getElementById('cloudinary-cloud-name');
-            const cloudinaryUploadPresetInput = document.getElementById('cloudinary-upload-preset');
-            const saveCloudinarySettingsBtn = document.getElementById('save-cloudinary-settings-btn');
-            const adminListingsContainer = document.getElementById('admin-listings-container');
-            const confirmModal = document.getElementById('confirm-modal');
-            let confirmModalOk = document.getElementById('confirm-modal-ok');
-            const confirmModalCancel = document.getElementById('confirm-modal-cancel');
-            const confirmModalTitle = document.getElementById('confirm-modal-title');
-            const confirmModalText = document.getElementById('confirm-modal-text');
-
-            // --- FUNCTIONS ---
-
-            /**
-             * [SỬA LỖI] Hàm loadListings được làm lại để ổn định hơn.
-             * - Thêm kiểm tra network response và định dạng dữ liệu.
-             * - Hiển thị thông báo lỗi rõ ràng ngay trên giao diện nếu có sự cố.
-             */
-            async function loadListings() {
-                try {
-                    // Thêm tham số `cache: 'no-cache'` để đảm bảo luôn lấy file mới nhất
-                    const response = await fetch('data.json', { cache: 'no-cache' });
-                    
-                    if (!response.ok) {
-                        throw new Error(`Lỗi mạng khi tải file: ${response.status} ${response.statusText}`);
-                    }
-
-                    const data = await response.json();
-
-                    // **KIỂM TRA QUAN TRỌNG**: Đảm bảo dữ liệu là một mảng (array)
-                    if (!Array.isArray(data)) {
-                        throw new Error("File data.json không phải là một danh sách (array) hợp lệ.");
-                    }
-
-                    listingsData = data;
-                    sessionListings = JSON.parse(JSON.stringify(data)); // Deep copy for session
-                    updateAndRender();
-                    populateWards();
-
-                } catch (error) {
-                    console.error('Không thể tải dữ liệu phòng trọ:', error);
-                    // Hiển thị lỗi trực tiếp trên giao diện, thay thế spinner
-                    grid.innerHTML = `
-                        <div class="col-span-full text-center text-red-600 bg-red-100 p-4 rounded-md">
-                            <h3 class="font-bold text-lg"><i class="fas fa-exclamation-triangle mr-2"></i>Đã xảy ra lỗi</h3>
-                            <p class="mt-2">Không thể tải dữ liệu từ file <code>data.json</code>.</p>
-                            <p class="text-sm text-gray-700 mt-1">Chi tiết lỗi: ${error.message}</p>
-                            <p class="text-sm text-gray-700 mt-2"><b>Gợi ý:</b> Hãy chắc chắn rằng file <code>data.json</code> tồn tại trong cùng thư mục với file <code>index.html</code> và có nội dung JSON hợp lệ.</p>
-                        </div>
-                    `;
-                }
-            }
-            
-            const formatCurrency = (amount) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
-
-            function renderListings(data) {
-                grid.innerHTML = '';
-                if (data.length === 0) {
-                    grid.innerHTML = `<p class="col-span-full text-center text-gray-500 py-10">Không tìm thấy phòng trọ nào phù hợp.</p>`;
-                    return;
-                }
-                data.forEach(listing => {
-                    const card = document.createElement('div');
-                    card.className = 'listing-card bg-white rounded-lg shadow-lg overflow-hidden cursor-pointer';
-                    card.setAttribute('data-id', listing.id);
-                    card.innerHTML = `
-                        <div class="relative">
-                            <img src="${listing.images[0]}" alt="Ảnh phòng trọ" class="w-full h-48 object-cover" onerror="this.onerror=null;this.src='https://placehold.co/600x400/cccccc/ffffff?text=Lỗi+Ảnh';">
-                            <div class="absolute top-2 right-2 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded">${listing.ward}</div>
-                        </div>
-                        <div class="p-4">
-                            <p class="font-bold text-lg text-red-500">${formatCurrency(listing.price)}/tháng</p>
-                            <p class="text-sm text-gray-600 truncate"><i class="fas fa-map-marker-alt mr-1 text-gray-400"></i>${listing.address}</p>
-                        </div>
-                    `;
-                    grid.appendChild(card);
-                });
-            }
-
-            function updateAndRender() {
-                let dataToRender = isAdminLoggedIn ? sessionListings : listingsData;
-                let filteredData = [...dataToRender];
-                
-                const searchTerm = searchInput.value.toLowerCase().trim();
-                if (searchTerm) {
-                    filteredData = filteredData.filter(item => item.address.toLowerCase().includes(searchTerm) || (item.code && item.code.toLowerCase().includes(searchTerm)));
-                }
-                const selectedWard = filterWardEl.value;
-                if (selectedWard !== 'all') {
-                    filteredData = filteredData.filter(item => item.ward === selectedWard);
-                }
-                const sortBy = sortPriceEl.value;
-                if (sortBy === 'asc') filteredData.sort((a, b) => a.price - b.price);
-                else if (sortBy === 'desc') filteredData.sort((a, b) => b.price - a.price);
-                else filteredData.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)); // Thêm kiểm tra timestamp tồn tại
-                renderListings(filteredData);
-            }
-
-            function findListingById(listingId) {
-                const dataPool = isAdminLoggedIn ? sessionListings : listingsData;
-                return dataPool.find(item => item.id === listingId);
-            }
-
-            function showListingModal(listingId) {
-                const listing = findListingById(listingId);
-                if (!listing) {
-                    console.error(`Listing with ID ${listingId} not found.`);
-                    return;
-                };
-
-                // Populate Gallery
-                mainGalleryImage.src = listing.images[0] || 'https://placehold.co/800x600/cccccc/ffffff?text=Không+có+ảnh';
-                thumbnailContainer.innerHTML = '';
-                listing.images.forEach((imgSrc, index) => {
-                    const thumb = document.createElement('img');
-                    thumb.src = imgSrc;
-                    thumb.className = `w-24 h-16 object-cover rounded-md cursor-pointer border-2 ${index === 0 ? 'border-blue-500' : 'border-transparent'}`;
-                    thumb.onclick = () => {
-                        mainGalleryImage.src = imgSrc;
-                        document.querySelectorAll('#thumbnail-gallery-container img').forEach(t => t.classList.remove('border-blue-500'));
-                        thumb.classList.add('border-blue-500');
-                    };
-                    thumbnailContainer.appendChild(thumb);
-                });
-
-                // Populate Details
-                detailsSection.innerHTML = `
-                    <h2 class="text-2xl font-bold mb-2 text-blue-700">${listing.address}</h2>
-                    <p class="text-lg font-semibold text-red-600 mb-4">${formatCurrency(listing.price)}/tháng</p>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
-                        <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-ruler-combined mr-2"></i>Diện tích:</strong> ${listing.area} m²</div>
-                        <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-toilet mr-2"></i>Vệ sinh:</strong> ${listing.wc}</div>
-                        <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-elevator mr-2"></i>Thang máy:</strong> ${listing.elevator || 'Không'}</div>
-                        <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-concierge-bell mr-2"></i>Phí dịch vụ:</strong> ${listing.serviceFee > 0 ? formatCurrency(listing.serviceFee) + '/người' : 'Miễn phí'}</div>
-                        <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-bolt mr-2"></i>Giá điện:</strong> ${formatCurrency(listing.electricity)}/kWh</div>
-                        <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-tint mr-2"></i>Giá nước:</strong> ${listing.water > 0 ? formatCurrency(listing.water) + '/khối' : 'Miễn phí'}</div>
-                        <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-wifi mr-2"></i>Giá mạng:</strong> ${listing.internet > 0 ? formatCurrency(listing.internet) + '/phòng' : 'Miễn phí'}</div>
-                        <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-barcode mr-2"></i>Mã nhà:</strong> ${listing.code}</div>
-                    </div>
-                `;
-                listingModal.classList.remove('hidden');
-            }
-
-            function populateWards() {
-                const data = isAdminLoggedIn ? sessionListings : listingsData;
-                if (!Array.isArray(data)) return; // Thêm kiểm tra an toàn
-                const wards = [...new Set(data.map(item => item.ward))].sort();
-                const currentSelection = filterWardEl.value;
-                filterWardEl.innerHTML = '<option value="all">Tất cả Phường</option>';
-                wardsDatalist.innerHTML = '';
-                wards.forEach(ward => {
-                    const option = document.createElement('option');
-                    option.value = ward;
-                    option.textContent = ward;
-                    filterWardEl.appendChild(option.cloneNode(true));
-                    wardsDatalist.appendChild(option);
-                });
-                if (wards.includes(currentSelection)) filterWardEl.value = currentSelection;
-            }
-            
-            function switchView(view) {
-                Object.values(allViews).forEach(v => v.classList.add('hidden'));
-                allViews[view].classList.remove('hidden');
-                window.scrollTo(0, 0);
-            }
-
-            function saveCloudinarySettings() {
-                const cloudName = cloudinaryCloudNameInput.value.trim();
-                const uploadPreset = cloudinaryUploadPresetInput.value.trim();
-                if (cloudName && uploadPreset) {
-                    localStorage.setItem('cloudinarySettings', JSON.stringify({ cloudName, uploadPreset }));
-                    alert('Đã lưu cài đặt Cloudinary!');
-                } else {
-                    alert('Vui lòng điền đầy đủ cả Cloud Name và Upload Preset.');
-                }
-            }
-
-            function loadCloudinarySettings() {
-                const settings = JSON.parse(localStorage.getItem('cloudinarySettings'));
-                if (settings) {
-                    cloudinaryCloudNameInput.value = settings.cloudName;
-                    cloudinaryUploadPresetInput.value = settings.uploadPreset;
-                }
-            }
-
-            async function uploadToCloudinary(files) {
-                const settings = JSON.parse(localStorage.getItem('cloudinarySettings'));
-                if (!settings || !settings.cloudName || !settings.uploadPreset) {
-                    throw new Error('Chưa cài đặt Cloudinary. Vui lòng vào trang Admin để cài đặt.');
-                }
-                const { cloudName, uploadPreset } = settings;
-                const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
-                
-                const uploadPromises = files.map(file => {
-                    const formData = new FormData();
-                    formData.append('file', file);
-                    formData.append('upload_preset', uploadPreset);
-                    return fetch(url, { method: 'POST', body: formData }).then(response => response.json());
-                });
-
-                const results = await Promise.all(uploadPromises);
-                return results.map(result => {
-                    if (result.secure_url) return result.secure_url;
-                    throw new Error(`Upload thất bại: ${result.error.message}`);
-                });
-            }
-            
-            async function handleAdminSubmit() {
-                const requiredFields = ['code', 'address', 'ward', 'price', 'area'];
-                for (const field of requiredFields) {
-                    if (!adminForm[field].value) { alert(`Vui lòng điền thông tin: ${adminForm[field].previousElementSibling.textContent}`); return; }
-                }
-                if (uploadedFiles.length === 0) { alert('Vui lòng chọn ít nhất một ảnh.'); return; }
-
-                submitListingBtn.disabled = true;
-                submitBtnText.textContent = 'Đang upload ảnh...';
-                submitSpinner.classList.remove('hidden');
-
-                try {
-                    const imageUrls = await uploadToCloudinary(uploadedFiles);
-                    
-                    submitBtnText.textContent = 'Đang lưu...';
-
-                    const newListing = {
-                        id: 'P' + Date.now(), timestamp: Date.now(),
-                        code: adminForm.code.value, address: adminForm.address.value,
-                        ward: adminForm.ward.value, price: parseInt(adminForm.price.value), 
-                        area: parseInt(adminForm.area.value), wc: adminForm.wc.value, 
-                        elevator: adminForm.elevator.value,
-                        electricity: parseInt(adminForm.electricity.value) || 0,
-                        water: parseInt(adminForm.water.value) || 0, 
-                        serviceFee: parseInt(adminForm.serviceFee.value) || 0,
-                        internet: parseInt(adminForm.internet.value) || 0,
-                        images: imageUrls
-                    };
-                    sessionListings.push(newListing);
-                    renderAdminListings();
-                    alert('Thêm tin đăng mới thành công! Dữ liệu đã được lưu tạm thời.');
-                    
-                    // Reset form
-                    Object.values(adminForm).forEach(input => { if (input.type !== 'select-one') input.value = ''; });
-                    imagePreviewContainer.innerHTML = '';
-                    dataParserInput.value = '';
-                    uploadedFiles = [];
-
-                } catch (error) {
-                    console.error("Lỗi:", error);
-                    alert(`Đã xảy ra lỗi: ${error.message}`);
-                } finally {
-                    submitListingBtn.disabled = false;
-                    submitBtnText.textContent = 'Thêm Tin Đăng Mới';
-                    submitSpinner.classList.add('hidden');
-                }
-            }
-            
-            function parsePrice(priceStr) {
-                if (!priceStr) return 0;
-                priceStr = priceStr.toLowerCase().replace(/,/g, '.');
-                let price = 0;
-                if (priceStr.includes('tr')) {
-                    const parts = priceStr.split('tr');
-                    const mainPart = parseFloat(parts[0]) || 0;
-                    price = mainPart * 1000000;
-                    if (parts[1]) {
-                        const subPart = parseInt(parts[1]) || 0;
-                        price += subPart * 100000;
-                    }
-                } else {
-                    price = parseInt(priceStr.replace(/\D/g, '')) || 0;
-                }
-                return price;
-            }
-
-            function parseKNumber(kStr) {
-                if (!kStr) return 0;
-                kStr = kStr.toLowerCase().replace(/,/g, '.');
-                let value = 0;
-                if (kStr.includes('k')) {
-                    const parts = kStr.split('k');
-                    const mainPart = parseFloat(parts[0]) || 0;
-                    value = mainPart * 1000;
-                    if (parts[1]) {
-                        const subPart = parseInt(parts[1]) || 0;
-                        value += subPart * 100;
-                    }
-                } else {
-                    value = parseInt(kStr.replace(/\D/g, '')) || 0;
-                }
-                return value;
-            }
-            
-            function parseData() {
-                const text = dataParserInput.value;
-                if (!text) { alert('Vui lòng dán nội dung vào ô.'); return; }
-
-                const getVal = (regex, defaultVal = '') => (text.match(regex) || [])[1] || defaultVal;
-
-                adminForm.code.value = getVal(/Mã\s*(\S+)/i);
-                adminForm.address.value = getVal(/[🕍🏠]\s*(.*)/i).trim();
-                
-                const priceStr = getVal(/Giá\s*[-:]?\s*([^\n\r]*)/i).trim();
-                adminForm.price.value = parsePrice(priceStr);
-
-                const areaStr = getVal(/Diện tích\s*(\d+)/i);
-                adminForm.area.value = parseInt(areaStr) || 0;
-
-                const elecStr = getVal(/Điện\s*([^\s\/]+)/i);
-                adminForm.electricity.value = parseKNumber(elecStr);
-
-                const waterStr = getVal(/Nước\s*([^\s\/]+)/i);
-                adminForm.water.value = parseKNumber(waterStr);
-                
-                const serviceFeeStr = getVal(/(?:Dịch vụ chung|dvc)[:\s]*([^\s\/]+)/i);
-                adminForm.serviceFee.value = parseKNumber(serviceFeeStr);
-
-                const internetStr = getVal(/Mạng\s*([^\s\/]+)/i) || getVal(/wifi\s*([^\s\/]+)/i);
-                adminForm.internet.value = parseKNumber(internetStr);
-                if(adminForm.internet.value === 0 && /gồm.*wifi/i.test(text.toLowerCase())){
-                    adminForm.internet.value = 100000;
-                }
-
-                adminForm.elevator.value = /thang máy/i.test(text.toLowerCase()) ? 'Có' : 'Không';
-                adminForm.wc.value = /khép kín|giặt riêng/i.test(text.toLowerCase()) ? 'Khép kín' : 'Chung';
-
-                const address = adminForm.address.value;
-                const allWards = ["Mỹ Đình", "Yên Hoà", "Láng Thượng", "Thượng Đình", "Phú Mỹ", "Dịch Vọng", "Mai Dịch", "Cầu Diễn", "Hồ Tùng Mậu"];
-                adminForm.ward.value = allWards.find(w => address.toLowerCase().includes(w.toLowerCase())) || '';
-
-                alert('Bóc tách dữ liệu hoàn tất! Vui lòng kiểm tra lại thông tin và chọn ảnh.');
-            }
-
-            function downloadDataFile() {
-                const dataString = JSON.stringify(sessionListings, null, 2);
-                const blob = new Blob([dataString], { type: 'application/json' });
-                const a = document.createElement('a');
-                a.href = URL.createObjectURL(blob);
-                a.download = 'data.json';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(a.href);
-            }
-
-            function handleImageFiles(files) {
-                uploadedFiles = Array.from(files);
-                renderImagePreviews();
-            }
-
-            function renderImagePreviews() {
-                imagePreviewContainer.innerHTML = '';
-                if (uploadedFiles.length > 0) {
-                    uploadedFiles.forEach((file, index) => {
-                        const item = document.createElement('div');
-                        item.className = 'image-preview-item';
-                        
-                        const thumb = document.createElement('img');
-                        thumb.src = URL.createObjectURL(file);
-                        thumb.className = 'w-full h-24 object-cover rounded-md';
-                        thumb.onload = () => URL.revokeObjectURL(thumb.src);
-                        
-                        const deleteBtn = document.createElement('button');
-                        deleteBtn.className = 'delete-image-btn';
-                        deleteBtn.innerHTML = '&times;';
-                        deleteBtn.dataset.index = index;
-                        deleteBtn.onclick = (e) => {
-                            const idxToRemove = parseInt(e.target.dataset.index);
-                            uploadedFiles.splice(idxToRemove, 1);
-                            renderImagePreviews();
-                        };
-
-                        item.appendChild(thumb);
-                        item.appendChild(deleteBtn);
-                        imagePreviewContainer.appendChild(item);
-                    });
-                }
-            }
-
-            function renderAdminListings() {
-                adminListingsContainer.innerHTML = '';
-                if (sessionListings.length === 0) {
-                    adminListingsContainer.innerHTML = '<p class="text-sm text-gray-500">Chưa có tin đăng nào.</p>';
-                    return;
-                }
-                const sortedListings = [...sessionListings].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-                sortedListings.forEach(listing => {
-                    const item = document.createElement('div');
-                    item.className = 'flex items-center justify-between bg-gray-50 p-2 rounded-md';
-                    item.innerHTML = `
-                        <p class="text-sm text-gray-700 truncate pr-4">${listing.address} - <strong>${listing.ward}</strong></p>
-                        <button data-id="${listing.id}" class="delete-listing-btn flex-shrink-0 bg-red-500 text-white w-6 h-6 rounded-md hover:bg-red-600">&times;</button>
-                    `;
-                    adminListingsContainer.appendChild(item);
-                });
-            }
-
-            function showConfirmModal(title, text, onOk) {
-                confirmModalTitle.textContent = title;
-                confirmModalText.textContent = text;
-                confirmModal.classList.remove('hidden');
-                
-                const newOk = confirmModalOk.cloneNode(true);
-                confirmModalOk.parentNode.replaceChild(newOk, confirmModalOk);
-                confirmModalOk = newOk;
-                
-                confirmModalOk.addEventListener('click', () => {
-                    onOk();
-                    confirmModal.classList.add('hidden');
-                }, { once: true });
-            }
-
-            // --- EVENT LISTENERS ---
-            loginBtn.addEventListener('click', () => {
-                loginError.classList.add('hidden'); // Ẩn lỗi trước khi thử đăng nhập
-                if (usernameInput.value === 'mrhung' && passwordInput.value === '16051984') {
-                    isAdminLoggedIn = true;
-                    switchView('admin');
-                    loadCloudinarySettings();
-                    renderAdminListings();
-                    usernameInput.value = ''; passwordInput.value = '';
-                } else {
-                    // [SỬA LỖI] Hiển thị thông báo lỗi khi đăng nhập sai
-                    loginError.classList.remove('hidden');
-                }
-            });
-            
-            backToMainFromLoginBtn.addEventListener('click', () => switchView('main'));
-            logoutBtn.addEventListener('click', () => { isAdminLoggedIn = false; switchView('main'); });
-            goToAdminBtn.addEventListener('click', () => {
-                if (isAdminLoggedIn) {
-                    switchView('admin');
-                    renderAdminListings();
-                } else {
-                    switchView('login');
-                }
-            });
-            
-            goToMainBtn.addEventListener('click', () => {
-                updateAndRender();
-                switchView('main');
-            });
-
-            searchInput.addEventListener('input', updateAndRender);
-            sortPriceEl.addEventListener('change', updateAndRender);
-            filterWardEl.addEventListener('change', updateAndRender);
-
-            grid.addEventListener('click', (e) => {
-                const card = e.target.closest('.listing-card');
-                if (!card) return;
-                const listingId = card.dataset.id;
-                showListingModal(listingId);
-            });
-
-            closeListingModalBtn.addEventListener('click', () => listingModal.classList.add('hidden'));
-            listingModal.addEventListener('click', (e) => { if (e.target === listingModal) listingModal.classList.add('hidden'); });
-
-            parseDataBtn.addEventListener('click', parseData);
-            saveCloudinarySettingsBtn.addEventListener('click', saveCloudinarySettings);
-            
-            dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
-            dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-            dropZone.addEventListener('drop', (e) => {
-                e.preventDefault();
-                dropZone.classList.remove('dragover');
-                if (e.dataTransfer.files) {
-                    adminForm.images.files = e.dataTransfer.files;
-                    handleImageFiles(e.dataTransfer.files);
-                }
-            });
-            adminForm.images.addEventListener('change', (e) => handleImageFiles(e.target.files));
-
-            submitListingBtn.addEventListener('click', handleAdminSubmit);
-            downloadDataFileBtn.addEventListener('click', downloadDataFile);
-
-            adminListingsContainer.addEventListener('click', (e) => {
-                if (e.target.classList.contains('delete-listing-btn')) {
-                    const idToDelete = e.target.dataset.id;
-                    const listingToDelete = sessionListings.find(l => l.id === idToDelete);
-                    showConfirmModal('Xác nhận xóa', `Bạn có chắc chắn muốn xóa tin đăng tại: ${listingToDelete.address}?`, () => {
-                        sessionListings = sessionListings.filter(l => l.id !== idToDelete);
-                        renderAdminListings();
-                        alert('Đã xóa tin đăng. Hãy tải file data.json mới để cập nhật vĩnh viễn.');
-                    });
-                }
-            });
-
-            confirmModalCancel.addEventListener('click', () => confirmModal.classList.add('hidden'));
-            confirmModal.addEventListener('click', (e) => { if (e.target === confirmModal) confirmModal.classList.add('hidden'); });
-
-            // --- KHỞI TẠO ---
-            loadListings();
-            switchView('main');
-        });
-    </script>
-</body>
-</html>
+[
+  {
+    "id": "P1754880349276",
+    "timestamp": 1754880349276,
+    "code": "587",
+    "address": "\udd4d Ngõ 267 Hồ Tùng Mậu",
+    "ward": "Hồ Tùng Mậu",
+    "price": 4100000,
+    "area": 25,
+    "wc": "Chung",
+    "elevator": "Có",
+    "electricity": 3800,
+    "water": 28000,
+    "serviceFee": 250000,
+    "internet": 0,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754880343/ltatkiniqnxgvy1kdugv.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754880343/lpazbfkqht6lh25ghe8f.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754880344/nvnyo75e8dj7p8altgti.jpg"
+    ]
+  },
+  {
+    "id": "P1754880514584",
+    "timestamp": 1754880514584,
+    "code": "153",
+    "address": "\udfe0Địa chỉ : Ngõ 27 Lai xá - Kim Chung",
+    "ward": "Hoài Đức",
+    "price": 3200000,
+    "area": 0,
+    "wc": "Khép kín",
+    "elevator": "Không",
+    "electricity": 0,
+    "water": 35000,
+    "serviceFee": 190000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754880507/grp7x7xx3kmhqscjjlbm.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754880509/vo4ofork4om2s7bofw9h.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754880507/wbmzsweym5pmndxui9oh.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754880508/etqyst7lnsityrovrlxq.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754880508/rkinegl7gy3scc0ft10b.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754880508/ab5s6bzeearwu6r75n7p.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754880508/sxl2vhuzy9ks4nf5iujw.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754880509/r8ohvh1dqorsrifhj6ot.jpg"
+    ]
+  },
+  {
+    "id": "P1754880578450",
+    "timestamp": 1754880578450,
+    "code": "152",
+    "address": "Ngõ 259 Yên Hòa, Cầu Giấy",
+    "ward": "Cầu Giấy",
+    "price": 4500000,
+    "area": 0,
+    "wc": "Khép kín",
+    "elevator": "Có",
+    "electricity": 3800,
+    "water": 30000,
+    "serviceFee": 150000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754880569/lfe0zvigyca6h3qh1p8m.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754880569/am06bchyc0oyagslrapq.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754880571/qcfpfowmoh391wjspbsi.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754880573/qe1ey0eiasciichvkqt2.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754880568/vmkieeyare1tthjwthic.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754880569/ljbqlc9lnhyut1mifwb8.jpg"
+    ]
+  },
+  {
+    "id": "P1754880702275",
+    "timestamp": 1754880702275,
+    "code": "155",
+    "address": "\udfe0 155 Phương Canh - Nam Từ Liêm",
+    "ward": "Nam Từ Liêm",
+    "price": 3900000,
+    "area": 0,
+    "wc": "Khép kín",
+    "elevator": "Có",
+    "electricity": 3800,
+    "water": 30000,
+    "serviceFee": 180000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754880696/qvducr7ult0pgiltljpa.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754880694/sttpbm83pweuxnaaumxc.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754880694/fohk7aotyvxx70riw8ds.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754880697/mmzovinvmfqpbibb8r40.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754880695/acguta90l2gndzt6ynru.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754880695/dvx7b2asp1qnb0atid8b.jpg"
+    ]
+  },
+  {
+    "id": "P1754880790546",
+    "timestamp": 1754880790546,
+    "code": "152",
+    "address": "\udfe0 223 Phương Canh - Nam Từ Liêm",
+    "ward": "Nam Từ Liêm",
+    "price": 3500000,
+    "area": 32,
+    "wc": "Khép kín",
+    "elevator": "Có",
+    "electricity": 3800,
+    "water": 30000,
+    "serviceFee": 180000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754880784/mnicir6iu7b5whyh5bcy.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754880785/ubo7slnpqoonekglfmwy.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754880784/fvukgjosc2g0ir5p1ooa.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754880784/wl1xnmm5fy0myrdbldbr.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754880785/wqds0omrxahh8fo3szbd.jpg"
+    ]
+  },
+  {
+    "id": "P1754880902529",
+    "timestamp": 1754880902529,
+    "code": "152)",
+    "address": "41 Ngõ 123 Xuân Phương",
+    "ward": "Nam Từ Liêm",
+    "price": 4000000,
+    "area": 0,
+    "wc": "Khép kín",
+    "elevator": "Có",
+    "electricity": 3800,
+    "water": 30000,
+    "serviceFee": 150000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754880896/sigjgnzuu0aolg2ywy77.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754880896/o45byvjswuydowblpqen.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754880896/wnsfr5bcmtdboldjmnkh.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754880897/dmvevm26tego3grwbd4p.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754880895/x5iksf5kl7jpxmyhkawm.jpg"
+    ]
+  },
+  {
+    "id": "P1754966767608",
+    "timestamp": 1754966767608,
+    "code": "596",
+    "address": "Ngách 16 Ngõ 5 Tân Triều ",
+    "ward": "Thanh Liệt",
+    "price": 3200000,
+    "area": 20,
+    "wc": "Khép kín",
+    "elevator": "Có",
+    "electricity": 4000,
+    "water": 30000,
+    "serviceFee": 150000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754966761/vufyoxjwivm9i3yhrbuh.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754966761/wdirznusfisi7x5cead9.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754966761/vhn6oxtraqoumntcitvt.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754966761/zuqvrb8itzne6cqxxump.jpg"
+    ]
+  },
+  {
+    "id": "P1754966838445",
+    "timestamp": 1754966838445,
+    "code": "939",
+    "address": "32/101/9 phố Đỗ Hữu Dục",
+    "ward": "Nam Từ Liêm",
+    "price": 4100000,
+    "area": 30,
+    "wc": "Khép kín",
+    "elevator": "Có",
+    "electricity": 4000,
+    "water": 100000,
+    "serviceFee": 150000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754966832/ackyb6uzczg9mbca3yv6.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754966831/b4qiapa9tem3m204mg47.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754966832/xpnkanykikjifona66kt.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754966832/qkudmmjbsbthqxjtozjm.jpg"
+    ]
+  },
+  {
+    "id": "P1754966889118",
+    "timestamp": 1754966889118,
+    "code": "836",
+    "address": "\udfe0 Ngõ 8 Lê Quang Đạo",
+    "ward": "Nam Từ Liêm",
+    "price": 5700000,
+    "area": 32,
+    "wc": "Chung",
+    "elevator": "Có",
+    "electricity": 3700,
+    "water": 35000,
+    "serviceFee": 200000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754966883/ohm2jwttqngau1dmipnl.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754966880/pc0ma1u2kggd7rjxdcz9.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754966881/dngjuellavgejldy0ahc.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754966882/vftnxcn4svchf0jbtzph.jpg"
+    ]
+  },
+  {
+    "id": "P1754966959985",
+    "timestamp": 1754966959985,
+    "code": "885",
+    "address": "\udfe0 Ngách 31 Ngõ 136 Cầu Diễn - Nam Từ Liêm",
+    "ward": "Cầu Diễn",
+    "price": 88000000,
+    "area": 27,
+    "wc": "Khép kín",
+    "elevator": "Có",
+    "electricity": 3800,
+    "water": 35000,
+    "serviceFee": 150000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754966952/cmqswzwc4c43lpinegr6.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754966952/kqg5iaj0rc8abouzuemt.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754966951/daijplmutgcrkernumjy.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754966949/kxcsphnfzqmobfdnzqav.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754966950/hxhizsqrrbhkfncyic2o.jpg"
+    ]
+  },
+  {
+    "id": "P1754967063009",
+    "timestamp": 1754967063009,
+    "code": "141",
+    "address": "\udfe0 Ngõ 60/40 Nguyễn Đạo AN",
+    "ward": "Bắc Từ Liêm",
+    "price": 79000000,
+    "area": 46,
+    "wc": "Khép kín",
+    "elevator": "Có",
+    "electricity": 3800,
+    "water": 35000,
+    "serviceFee": 150000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967053/qpkbjhx7byhgamyclmc7.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967053/io0xpoiz6zv58wnnhpsh.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967056/cphfgfspariagbovhtcf.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967054/rlx2i6i9pcmpi0aw6whv.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967055/suyfn3kwvyhobn7oe1rx.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967052/praxbcbn9rpiwrxnhnw7.jpg"
+    ]
+  },
+  {
+    "id": "P1754967340802",
+    "timestamp": 1754967340802,
+    "code": "715",
+    "address": "\udfe0 Ngõ 371 La Thành - ( có thể đi vào từ ngõ 5 Láng hạ)",
+    "ward": "Đống Đa",
+    "price": 4500000,
+    "area": 30,
+    "wc": "Khép kín",
+    "elevator": "Không",
+    "electricity": 3800,
+    "water": 35000,
+    "serviceFee": 100000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967332/cj35c5sh4oscs2mdyafi.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967332/hj4tux7exstizcwmrdav.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967332/gpnkydxlp98ufgn3lbc1.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967335/yv00wsye444xsmiczljx.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967335/oxoetuejuafmjvvaqqgb.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967334/n02ehhdscutojdluwtlf.jpg"
+    ]
+  },
+  {
+    "id": "P1754967471428",
+    "timestamp": 1754967471428,
+    "code": "324",
+    "address": "\udfe0 Ngõ 58 Đào Tấn - Cống Vị",
+    "ward": "Ba Đình",
+    "price": 7600000,
+    "area": 45,
+    "wc": "Khép kín",
+    "elevator": "Có",
+    "electricity": 4000,
+    "water": 0,
+    "serviceFee": 150000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967463/cdtqt6gqfbl8ltcbpox8.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967461/tcagzhgqjimg5akhj6cr.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967459/civl2rtg0a5hozdrle3b.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967462/rtbajnsnfgibos3iwvev.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967463/ucb0cwkyynshdjyld6uk.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967463/sadglcrtdffu8vnhde5a.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967461/duohsn3xwo09z1apwiha.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967464/jpca9nff1oqji7p81gh9.jpg"
+    ]
+  },
+  {
+    "id": "P1754967527258",
+    "timestamp": 1754967527258,
+    "code": "324",
+    "address": "\udfe0 1194 Láng - Phường Láng Thượng",
+    "ward": "Láng Thượng",
+    "price": 7500000,
+    "area": 40,
+    "wc": "Chung",
+    "elevator": "Có",
+    "electricity": 4000,
+    "water": 0,
+    "serviceFee": 150000,
+    "internet": 10000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967517/rer2dxf1shx8fkvrymn9.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967518/qxxbpc0c96hvf7qvocay.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967518/xcewyuerojzuyq9yfaxi.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967521/rmm5dbiwfso5imednxt1.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967518/ghjkp18dojt2pfhaknld.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967520/dfaz3meevlxb36wqnntt.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967518/lwpsud1fkhuvyty1gb1c.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967519/vkp59uqoadvb49gxm50a.jpg"
+    ]
+  },
+  {
+    "id": "P1754967586097",
+    "timestamp": 1754967586097,
+    "code": "599",
+    "address": "Ngõ 51 Tương Mai",
+    "ward": "Hai Bà Trung",
+    "price": 4300000,
+    "area": 28,
+    "wc": "Khép kín",
+    "elevator": "Có",
+    "electricity": 3800,
+    "water": 120000,
+    "serviceFee": 140000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967580/yv019wemvimnvjjalid4.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967578/awgpdsyi5nx7kckyqkbl.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967578/d48tvqvfofrft7vdweke.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967579/xsnkxabw8dunuazzuboi.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967579/inq006maipfhfczfj2wu.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967579/idcaxy36f9yox7qwsesb.jpg"
+    ]
+  },
+  {
+    "id": "P1754967637225",
+    "timestamp": 1754967637225,
+    "code": "599",
+    "address": "\udfe0Địa chỉ: 106A Ngõ 381 Nguyễn Khang",
+    "ward": "Cầu Giấy",
+    "price": 4400000,
+    "area": 30,
+    "wc": "Khép kín",
+    "elevator": "Không",
+    "electricity": 4000,
+    "water": 100000,
+    "serviceFee": 135000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967630/edkkkibz9yahdefkazeu.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967629/g2rlwobwfvrsitqge0hg.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967628/egnd56m7b6npnbsnlof0.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967631/mqredywvhkebt1oujzxu.jpg"
+    ]
+  },
+  {
+    "id": "P1754967706584",
+    "timestamp": 1754967706584,
+    "code": "599",
+    "address": "\udd37Địa chỉ : Ngõ 155 Đặng Tiến Đông ",
+    "ward": "Đống Đa",
+    "price": 7500000,
+    "area": 40,
+    "wc": "Khép kín",
+    "elevator": "Có",
+    "electricity": 3800,
+    "water": 35,
+    "serviceFee": 120000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967699/ks6uzvd3cbiq7bbwdjnc.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967699/mczwihvt9lwvd8n5yao3.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967699/tlzuiv4h5ep7c72dmae4.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967699/ngwhvftnufj4amizhd8q.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967700/pt7pipwi7o88gexh18qr.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967700/asmn2l9pnsljo12ckrgw.jpg"
+    ]
+  },
+  {
+    "id": "P1754967756208",
+    "timestamp": 1754967756208,
+    "code": "599",
+    "address": "\udfe0Địa chỉ : 35A ngõ 205/157 Xuân Đỉnh",
+    "ward": "xuân đỉnh",
+    "price": 4800000,
+    "area": 35,
+    "wc": "Khép kín",
+    "elevator": "Có",
+    "electricity": 3900,
+    "water": 120000,
+    "serviceFee": 140000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967750/yyc88ys6gvnktyy7th9x.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967748/yfw1a1ral59skvm7p0hl.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967747/dna9v1gjosappmahey44.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967748/npgfvufka8drju5phwfa.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967748/ge0gzwdafmk1n9or3nmd.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967748/nshes0im8adb3afgpm3v.jpg"
+    ]
+  },
+  {
+    "id": "P1754967838310",
+    "timestamp": 1754967838310,
+    "code": "729",
+    "address": "Ngách 43 .98.14Trung kính",
+    "ward": "Cầu Giấy",
+    "price": 8300000,
+    "area": 35,
+    "wc": "Khép kín",
+    "elevator": "Có",
+    "electricity": 3800,
+    "water": 35000,
+    "serviceFee": 200000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967830/pcauxk8jhtcqz00njhyk.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967829/enyarimprw39xaxgbvkl.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967829/tvtxkuftztz8xfqajcpw.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967832/je7t7rm0jqnwgpbjh9fv.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967831/uua3lefw41y8p68kzlvq.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967831/v9ygygjpxirmtpbgvrqj.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967830/obpwejehhlbs4wqp2v2x.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967831/cv6evcvrmcwloqujw3p9.jpg"
+    ]
+  },
+  {
+    "id": "P1754967916383",
+    "timestamp": 1754967916383,
+    "code": "978",
+    "address": "\udfe0 Địa chỉ : Ngõ 20 Hồ Tùng Mậu",
+    "ward": "Mai Dịch",
+    "price": 5500000,
+    "area": 30,
+    "wc": "Khép kín",
+    "elevator": "Không",
+    "electricity": 3800,
+    "water": 28000,
+    "serviceFee": 200000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967910/lrfwf4xkll2rwb5qfcmy.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967908/dyr4i3yf5kikgbjgurib.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967908/s8y9yrzjkvzta4nmwipf.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967908/hq2tbguiu9l9hgdjuxbg.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967909/rk8ndvry0rd5irebqvbt.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967910/h9avg70eervvj0ajuxdx.jpg"
+    ]
+  },
+  {
+    "id": "P1754967976565",
+    "timestamp": 1754967976565,
+    "code": "912",
+    "address": "\udfe0 Địa chỉ: Ngách 5 Ngõ 94 Hồ Tùng Mậu",
+    "ward": "Hồ Tùng Mậu",
+    "price": 5400000,
+    "area": 35,
+    "wc": "Khép kín",
+    "elevator": "Có",
+    "electricity": 4000,
+    "water": 30000,
+    "serviceFee": 200000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967968/fdyiqgj0vdbcjukbxxk8.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967967/iqbzngosr2ygo7ccdz0e.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967965/n1l55boabzosldq0nine.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967970/dy6p5sscsz8bqtwj3oiv.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967966/khijllpe0ozno2unmf2q.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967966/ughhtomdkcps2rohxmey.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967966/qpd9zfmfsmobj5mjllis.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967968/rpztl5tp1b1walc3oujg.jpg"
+    ]
+  },
+  {
+    "id": "P1754968067797",
+    "timestamp": 1754968067798,
+    "code": "801",
+    "address": "\udfe0 Ngách 23 Ngõ 304 Hồ Tùng Mậu",
+    "ward": "phú diễn",
+    "price": 5200000,
+    "area": 30,
+    "wc": "Khép kín",
+    "elevator": "Có",
+    "electricity": 3800,
+    "water": 30000,
+    "serviceFee": 100000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754968060/cb3jhj9zxiqx6r3apkxh.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754968059/fswsyzmapl0vnucpnylu.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754968059/b6hvpirbqu9sbhwrirje.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754968060/nxb9dz563ugdkp9z7v7e.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754968059/mq7d3lsjwgxnnggvm7nz.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754968062/psf5zmr87xwzr7w0n9sk.jpg"
+    ]
+  },
+  {
+    "id": "P1754968130593",
+    "timestamp": 1754968130593,
+    "code": "178",
+    "address": "Ngõ 155 Cự Lộc",
+    "ward": "Thanh Xuân",
+    "price": 4700000,
+    "area": 25,
+    "wc": "Khép kín",
+    "elevator": "Có",
+    "electricity": 0,
+    "water": 30000,
+    "serviceFee": 120000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754968124/blwrfow4pyfpxlfqboqw.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754968123/g5vxmcsbooy29vsrevil.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754968123/v1hrvgrp122zxzda9v0r.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754968122/rmpwtzqgvbi1j28wzjxl.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754968122/bilcaumhr8x7xxf8eko6.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754968123/yttxzeoyt9gkm8nczy9d.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754968124/vqmfgyvzvx7qw03g4mq0.jpg"
+    ]
+  },
+  {
+    "id": "P1754968209025",
+    "timestamp": 1754968209025,
+    "code": "1002",
+    "address": "Ngách 63/64 Ngõ 1194 Đường Láng",
+    "ward": " Đống Đa",
+    "price": 4400000,
+    "area": 35,
+    "wc": "Khép kín",
+    "elevator": "Có",
+    "electricity": 4000,
+    "water": 25000,
+    "serviceFee": 150000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754968197/djhysmevzvvmlxwj8ymz.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754968195/d3e6omp0bruulv7ald7l.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754968197/rlzttfnaqzrvcimvysvn.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754968198/rhlgram59pzmv2lvhcmm.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754968196/tzwgqkpv8xufnjxgprwi.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754968199/l1kuq31utmcrbpxaicio.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754968197/eeaddnjo1gmvtccyorlc.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754968200/xtljo5g0j5mfusqfmjj1.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754968199/avuy7mldh96rjfp7qcsb.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754968199/ilpbodb7wd8frnerjzkx.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754968199/wszgvlkkphwt8yb2bsvp.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754968200/qc4dvwkjp8jglalcc6i2.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754968202/hmopdyupw4eyxju0n40u.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754968203/edl7ckn0jxs1skxbvsnx.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754968201/zjzl8igap0y1uv1gimj9.jpg"
+    ]
+  },
+  {
+    "id": "P1754968273129",
+    "timestamp": 1754968273129,
+    "code": "1166",
+    "address": "\udfe0 Địa chỉ : 1 Trần Quý Kiên",
+    "ward": "Cầu Giấy",
+    "price": 6000000,
+    "area": 25,
+    "wc": "Khép kín",
+    "elevator": "Có",
+    "electricity": 4000,
+    "water": 35000,
+    "serviceFee": 150000,
+    "internet": 50000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754968264/tllotc7xybhnvhss6pza.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754968266/oybq2zr8brkaeksw2y3s.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754968264/hn7ffcao7qzggudtf3oj.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754968264/lwf3ivfkrpbmuidc9efw.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754968265/fdzmvgab5l8j8z1zo9q1.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754968267/nrczgxam7mcloz1piw97.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754968265/j44fnqvpgk5xsjm2guii.jpg"
+    ]
+  },
+  {
+    "id": "P1754968325651",
+    "timestamp": 1754968325651,
+    "code": "1164",
+    "address": "\udfe1 Địa Chỉ : 66C Phố Hoàng Sâm - Hoàng Quốc Việt",
+    "ward": "Cầu Giấy",
+    "price": 4500000,
+    "area": 27,
+    "wc": "Khép kín",
+    "elevator": "Có",
+    "electricity": 3900,
+    "water": 35000,
+    "serviceFee": 300000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754968317/fuessl1cvbudsoclonss.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754968319/my4mc4hzmlf0jt05yldf.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754968316/tjccuyutnqkamcdmyj18.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754968318/g926bnp0d1cs7kcp2lzn.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754968318/hbz7roqz5udrs5cmbl3t.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754968319/ryza0kw2913pn2ao1ywg.jpg"
+    ]
+  },
+  {
+    "id": "P1754982783917",
+    "timestamp": 1754982783917,
+    "code": "882",
+    "address": "Ngõ 201 đường Cổ Nhuế",
+    "ward": "Đông Ngạc",
+    "price": 4500000,
+    "area": 35,
+    "wc": "Khép kín",
+    "elevator": "Có",
+    "electricity": 3800,
+    "water": 33000,
+    "serviceFee": 180000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754982774/fmiw0hn4tfgg2kzukjil.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754982778/ctfiuopv0orvnhfqlizo.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754982775/grqhfdmepvcxyxtemnwp.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754982776/vkwur6kvkiehmm0t3ha5.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754982777/wyqmmgp6l3tqiuocw3sg.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754982774/pduhk1ocmextnkwizz5a.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754982772/jaohuoh02x9kg4dkiwms.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754982773/bkaxeclv10w0jn6zpxtt.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754982773/yj2659rmq2fofv3dqsgy.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754982775/lemh7lkmrazlng2ohzir.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754982774/g9ckacpnd0fxyo2f3ywb.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754982776/clva1yq69cclbt5loigm.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754982775/xn8ks32ciwrhtjcjzzrk.jpg"
+    ]
+  },
+  {
+    "id": "P1754982899598",
+    "timestamp": 1754982899598,
+    "code": "912",
+    "address": "\udfe0 48  Lai Xá - Kim Chung",
+    "ward": "Hoài Đức",
+    "price": 3500000,
+    "area": 25,
+    "wc": "Khép kín",
+    "elevator": "Có",
+    "electricity": 3800,
+    "water": 100000,
+    "serviceFee": 150000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754982891/dqpizgi16cwna2ohapjv.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754982891/zn22pdy8baj1aag86fnj.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754982890/rrmpswpmedt75j7n1yws.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754982893/g1xkrwcuyjcy1qtaonkq.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754982891/cscvfu0hmqagtvhpqfp7.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754982892/pvpgd9akhglnoi9fov6j.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754982891/nfala7apjt9txp8ltwpu.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754982892/ia8bqtx1ut8yytrjbfrr.jpg"
+    ]
+  },
+  {
+    "id": "P1754983021561",
+    "timestamp": 1754983021561,
+    "code": "1087",
+    "address": "Ngõ 271 Yên Hòa",
+    "ward": "Cầu Giấy",
+    "price": 6000000,
+    "area": 45,
+    "wc": "Khép kín",
+    "elevator": "Không",
+    "electricity": 3900,
+    "water": 130,
+    "serviceFee": 100000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983004/i5ici8go27icdvxvudbj.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983008/fqzmvyileaunhfxhmgjg.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983004/vskkketicnz0icrmsdin.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983014/kyvcxxtutqvrjzif6ss0.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983007/antfgda0wkarjf8k5rtf.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983009/rmoehif2ogv1h8smegj9.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983006/p3hhqcojyzsjewvatcri.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983006/waihm9bvoupxdevci5kk.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983008/iree1r3dy04utbojallm.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983009/lv3twesamsm5zpxptho8.jpg"
+    ]
+  },
+  {
+    "id": "P1754983100496",
+    "timestamp": 1754983100496,
+    "code": "276",
+    "address": " Ngõ 101/12 Phú Đô",
+    "ward": "Mỹ Đình",
+    "price": 4000000,
+    "area": 0,
+    "wc": "Khép kín",
+    "elevator": "Không",
+    "electricity": 3800,
+    "water": 28000,
+    "serviceFee": 100000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983091/gxutftlxcocpkgxmyvs1.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983090/mfsp4kjbtssems0iobvr.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983092/xdcx7er4miqfncqhqoa0.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983094/u4c7mdrmfos8wupyyy7q.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983093/zr4depwvvhgw737ofgbo.jpg"
+    ]
+  },
+  {
+    "id": "P1754983190965",
+    "timestamp": 1754983190965,
+    "code": "346",
+    "address": "\udfe0 Ngách 96 - Ngõ 32 Đỗ Đức Dục",
+    "ward": "Nam Từ Liêm",
+    "price": 4200000,
+    "area": 30,
+    "wc": "Khép kín",
+    "elevator": "Không",
+    "electricity": 3800,
+    "water": 100000,
+    "serviceFee": 100000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983184/im3kkq0onpm6eie4n8wx.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983184/xywv61rs9kmq3figmowf.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983183/e2uf3tcvtsya4dmx3jdq.jpg"
+    ]
+  },
+  {
+    "id": "P1754983358087",
+    "timestamp": 1754983358087,
+    "code": "346",
+    "address": "\udfe0Ngõ 275 Quan Nhân - Thanh Xuân",
+    "ward": "Nhân Chính",
+    "price": 4500000,
+    "area": 30,
+    "wc": "Khép kín",
+    "elevator": "Không",
+    "electricity": 4000,
+    "water": 150000,
+    "serviceFee": 150000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983350/ogtutki4cm2ckmoqgfk8.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983351/ppuvstiwxrzemmqbpzok.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983351/smay3n3s3ee9wwqsbgqi.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983351/vzybfkjr6j2puicer7uw.jpg"
+    ]
+  },
+  {
+    "id": "P1754983431447",
+    "timestamp": 1754983431447,
+    "code": "258",
+    "address": "\udfe0  89A LÊ ĐỨC THỌ - NamTừ Liêm",
+    "ward": "Nam Từ Liêm",
+    "price": 4700000,
+    "area": 30,
+    "wc": "Khép kín",
+    "elevator": "Có",
+    "electricity": 4000,
+    "water": 35000,
+    "serviceFee": 130000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983424/yhfpri5tfmjiid2djky1.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983425/rulhptk3m1llw4esuzkk.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983423/ofejrqacrla7u7mbdndv.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983424/c9z2m35mpyssccrucmqb.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983423/hrpupbabp3hsvl1klpou.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983423/wfjwgjeyxxggnkfw1pfu.jpg"
+    ]
+  },
+  {
+    "id": "P1754983497773",
+    "timestamp": 1754983497774,
+    "code": "258",
+    "address": "\udfe1 Ngõ 106/5 Hoàng Quốc Việt- Ô tô con vào đến tận nhà. Ngõ thông, gần chợ Nghĩa Tân.",
+    "ward": "Cầu Giấy",
+    "price": 6500000,
+    "area": 28,
+    "wc": "Khép kín",
+    "elevator": "Có",
+    "electricity": 4000,
+    "water": 35000,
+    "serviceFee": 130000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983487/i5k3qijttec2dkwodevp.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983488/b6xgue2mgzrnvya3eqfn.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983490/eeerpjuquvbaiivyng3p.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983488/b2jdd0clnldu6x9bzcjw.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983488/ak7ktxtm733vrvkvethb.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983489/mf2bjjghyvm6vkrzzpyy.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983489/zprfpdkejcutgoxm7kzk.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983489/uvd6lnigsevbixfmkax7.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983491/eljtglm6fexww08xxjbb.jpg"
+    ]
+  },
+  {
+    "id": "P1754983591592",
+    "timestamp": 1754983591592,
+    "code": "903",
+    "address": "\udfe0 51 Nguyễn Hoàng ",
+    "ward": "Mỹ Đình",
+    "price": 4500000,
+    "area": 28,
+    "wc": "Khép kín",
+    "elevator": "Có",
+    "electricity": 4000,
+    "water": 100000,
+    "serviceFee": 100000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983568/msg2qsszbnvskrcnpym2.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983569/kpfpdwftnys3otbvonne.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983570/ckqepcq67veh1wbj0gmp.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983568/nsv8i8mouzlpzur3qaip.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983585/bsvg7kqja9ck6n2kjkos.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983571/fqcptu5t1rm12cenhzx0.jpg"
+    ]
+  },
+  {
+    "id": "P1754983707457",
+    "timestamp": 1754983707457,
+    "code": "205",
+    "address": "\udfe0 Ngách 12 Ngõ 58 Nguyễn Khánh Toàn - Cầu Giấy",
+    "ward": "Cầu Giấy",
+    "price": 5800000,
+    "area": 35,
+    "wc": "Khép kín",
+    "elevator": "Có",
+    "electricity": 4000,
+    "water": 120000,
+    "serviceFee": 130000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983700/cqflzhy8e62ouuqbatna.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983701/nrddzuntglby2yyilmke.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983699/ayywuvzm4hynvfpbez6w.jpg"
+    ]
+  },
+  {
+    "id": "P1754983812980",
+    "timestamp": 1754983812980,
+    "code": "1033",
+    "address": "\udfe0 Ngõ 98 Võ Chí Công, một nhà ra mặt Phố Võ Chí Công còn các",
+    "ward": "Phú Thượng",
+    "price": 4500000,
+    "area": 28,
+    "wc": "Khép kín",
+    "elevator": "Có",
+    "electricity": 38,
+    "water": 30000,
+    "serviceFee": 120000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983806/azg6tcdsneyj5p4iigni.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983806/xjztdmpdf07fmfk5v4jp.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983805/gxvjye4kjaibjy5paeen.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983806/b4tlazklwgjcstk9af1o.jpg"
+    ]
+  },
+  {
+    "id": "P1754983903251",
+    "timestamp": 1754983903251,
+    "code": "1052",
+    "address": "\udfe0 Ngõ 401/4 Xuân Đỉnh",
+    "ward": "Xuân Đỉnh",
+    "price": 3900000,
+    "area": 35,
+    "wc": "Chung",
+    "elevator": "Có",
+    "electricity": 4000,
+    "water": 30000,
+    "serviceFee": 200000,
+    "internet": 0,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983893/enx74rt0g38limcwhl3w.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983894/w5sozwohmhrplkmdr7tm.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983893/mo43mgydmhhmpyjelucl.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983893/vzwwgj7osakczshjwes0.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983894/fng3qstw6o1cnxjcipbb.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983894/ddisawiubouenffz9gmw.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983894/vcm40dbyz3mtzmtzdgl5.jpg"
+    ]
+  },
+  {
+    "id": "P1754983982849",
+    "timestamp": 1754983982849,
+    "code": "1038",
+    "address": "\udfe0 Ngõ 168/54 Nguyễn Lân - Thanh Xuân",
+    "ward": "Phương Liệt",
+    "price": 4700000,
+    "area": 25,
+    "wc": "Khép kín",
+    "elevator": "Có",
+    "electricity": 4000,
+    "water": 120000,
+    "serviceFee": 150000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983971/duhmikfa0hiebtx4hgks.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983973/hck5kfskkawnvhticodz.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983972/wpwzyrwxxrp0adw6xqxs.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983973/gdoe2cekeykrz7bgcepv.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983971/cok1npujv4pbbdthgn8p.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983969/nt3aheaaffdcffkdjgfb.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983971/keoxneyrly9xqkmylcnq.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983976/sohfgmxjbwoxx1mhdd8f.jpg"
+    ]
+  },
+  {
+    "id": "P1754984062137",
+    "timestamp": 1754984062137,
+    "code": "241",
+    "address": "\udfe0 Địa chỉ : Ngõ 8/11/150 Lê Quang Đạo - Nam Từ Liêm",
+    "ward": "Mỹ Đình",
+    "price": 4000000,
+    "area": 28,
+    "wc": "Chung",
+    "elevator": "Có",
+    "electricity": 4000,
+    "water": 120000,
+    "serviceFee": 150000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754984050/fb62rwhx6gz6qrzpsmsd.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754984050/dlionksvvyl0d4mk87dk.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754984053/ctaeinq69xh7bbr8am1z.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754984054/iscuqqju8fgkqxkfcjg9.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754984055/wcjjosqtfiy36a4euwiw.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754984051/lunuqmpez7jlwotllgyz.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754984052/tcpopqbbm7arszvttimi.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754984054/ccu2p3kilumqu14braap.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754984052/tqsng01r53jipdr3eiss.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754984054/thkg78vduzpwizghxgvp.jpg"
+    ]
+  },
+  {
+    "id": "P1754987179248",
+    "timestamp": 1754987179248,
+    "code": "216",
+    "address": "\udfe0 542 Trần Cung- Cổ Nhuế  - Bắc Từ Liêm",
+    "ward": "Cổ nhuế 1",
+    "price": 6000000,
+    "area": 35,
+    "wc": "Khép kín",
+    "elevator": "Có",
+    "electricity": 3800,
+    "water": 35000,
+    "serviceFee": 150000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754987178/uov09awls51shhufcwvn.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754987178/npobd2mebqjza57qb6qf.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754987178/kuepnw7zswjfbk3c7v9n.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754987178/bzp6j89xfqebjfdorncs.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754987178/xnaqrsmtvqqopy1ds4tj.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754987178/nkt1z93rbmhodim6gpoq.jpg"
+    ]
+  },
+  {
+    "id": "P1754987292894",
+    "timestamp": 1754987292894,
+    "code": "216",
+    "address": "\udfe0 266 Đội Cấn - Ba Đình",
+    "ward": "Ba Đình",
+    "price": 5500000,
+    "area": 25,
+    "wc": "Khép kín",
+    "elevator": "Có",
+    "electricity": 3800,
+    "water": 40000,
+    "serviceFee": 150000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754987273/ad6ywqzir1l40xdnrw8v.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754987268/ilsgbb10zqr2ymle9x2y.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754987269/hwtrz9frquw37cfn63wq.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754987291/pehee29knt17cvxup1vr.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754987268/y6uivrcyna6lxfpnq7si.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754987266/h7qo4d1mmn5d7lmadts3.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754987267/jir7obntf2ydcl5cdzuo.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754987269/qllenhdg5ry7z9zalylv.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754987270/nldilu2mo2nalbzxyg6n.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754987270/a8eaoxrirrffpidnpu8x.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754987270/qvlpo5mn28nkd8qqysp1.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754987272/oxe18sevh319jmqyhhxn.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754987271/ftrvmaivzoxqm6ze1uei.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754987271/vbwchcdcnuwuv8qn3yuv.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754987271/dodypytmgupd3o88eiem.jpg"
+    ]
+  },
+  {
+    "id": "P1754987329925",
+    "timestamp": 1754987329925,
+    "code": "216",
+    "address": "21/51/155 Cầu Giấy ",
+    "ward": "Cầu giấy",
+    "price": 4700000,
+    "area": 25,
+    "wc": "Khép kín",
+    "elevator": "Có",
+    "electricity": 3800,
+    "water": 100000,
+    "serviceFee": 150000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754987323/ymt5mcevnjb0tgmijytp.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754987324/arvdyiaicgfdtnjo4lk7.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754987325/cat1b5krid3qom8m1stf.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754987329/m4warhhgdq66nbrs7b8r.jpg"
+    ]
+  },
+  {
+    "id": "P1754987591703",
+    "timestamp": 1754987591703,
+    "code": "809",
+    "address": "Ngách 31/273 Trần Cung",
+    "ward": "Bắc Từ Liêm",
+    "price": 4000000,
+    "area": 33,
+    "wc": "Khép kín",
+    "elevator": "Có",
+    "electricity": 3800,
+    "water": 100000,
+    "serviceFee": 150000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754987591/xswgy6dqpf5uwkz7uv7x.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754987587/xxqr6dl1sgmixatyvu3t.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754987590/eswdpx4jldaceulgwq7w.jpg"
+    ]
+  },
+  {
+    "id": "P1754989878965",
+    "timestamp": 1754989878965,
+    "code": "1051",
+    "address": "198 Thái H",
+    "ward": "Đống Đa",
+    "price": 5400000,
+    "area": 30,
+    "wc": "Khép kín",
+    "elevator": "Không",
+    "electricity": 4000,
+    "water": 100,
+    "serviceFee": 200000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754989876/d4nmisppu5kqni4tbg7n.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754989875/ucpanxezci4qvngmr9tv.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754989877/juiqaltcokcgixqs49p6.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754989878/zobameoqwebvbrni0xi4.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754989875/wuo6i0x09gqaijcoiray.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754989875/hvfijlsddpxfccks7oan.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754989876/z15ke3vfmj9jhqam8k11.jpg"
+    ]
+  },
+  {
+    "id": "P1754989960387",
+    "timestamp": 1754989960387,
+    "code": "20",
+    "address": "Ngõ 67 Thái Thịnh",
+    "ward": "Đống Đa",
+    "price": 5500000,
+    "area": 30,
+    "wc": "Khép kín",
+    "elevator": "Có",
+    "electricity": 4000,
+    "water": 3800,
+    "serviceFee": 150000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754989950/lnxg8s0uwyjyscdhxdyp.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754989952/b4jl1ai7sscgzmksilmv.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754989950/qdtmpljuhvquycbp4xgd.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754989951/twjzkhiwvbyr1gsqlayw.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754989952/uuucgf2mhxndflzcoosm.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754989959/xeh99v4i2ididbc6bzbo.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754989952/ykdesajkl4qe7micgbnt.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754989952/irlmxcrgoxd9xmcidzvj.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754989953/x5yrtyc8deqcx9judepv.jpg"
+    ]
+  },
+  {
+    "id": "P1754990025921",
+    "timestamp": 1754990025921,
+    "code": "990",
+    "address": "Ngõ 124/6 Khương Trung",
+    "ward": "Thanh Xuân",
+    "price": 5500000,
+    "area": 30,
+    "wc": "Khép kín",
+    "elevator": "Không",
+    "electricity": 4000,
+    "water": 35000,
+    "serviceFee": 150000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990025/tjeueagxvu65gpnvgyvq.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990021/ulkvwkopdoa7svqyif0t.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990023/ixwvzdb48uvktkodjlp3.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990021/dulrwhpgaqppnlboo3in.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990022/xeznilzqhpekmz5hby7v.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990024/t9ype0yia59j8ziqsmmo.jpg"
+    ]
+  },
+  {
+    "id": "P1754990122793",
+    "timestamp": 1754990122793,
+    "code": "857",
+    "address": "Ngõ 92 Trại Cá",
+    "ward": "Phương Trương Định",
+    "price": 3000000,
+    "area": 25,
+    "wc": "Khép kín",
+    "elevator": "Không",
+    "electricity": 4000,
+    "water": 10000,
+    "serviceFee": 100000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990113/l9ulkt1nmk0orcyvuqzc.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990117/oncmf3xwlpjnkuumev11.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990116/xczobfewwxt30qs6h3dz.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990114/pn5opvt0vlehrcckgknp.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990113/j64zzd4aba46tdzy0top.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990119/g7ehfm54fayojgpxegjc.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990119/kg5ruyhbcol4gqrr8cmq.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990115/byc93ifzgk2xygzkq8dz.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990117/renhngybbrlaukt9v8yn.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990118/ejdhfnprsznpn2ha3jeu.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990121/y5va9qp2hbqp09hpv9ru.jpg"
+    ]
+  },
+  {
+    "id": "P1754990263191",
+    "timestamp": 1754990263191,
+    "code": "1155",
+    "address": "Ngõ 344 Thái Hà",
+    "ward": "Đống Đa",
+    "price": 3800000,
+    "area": 25,
+    "wc": "Chung",
+    "elevator": "Không",
+    "electricity": 4000,
+    "water": 150000,
+    "serviceFee": 100000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990256/viqwgrpwn7utcqzbty4n.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990255/lythh3usucdd98gf6x8w.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990256/easytmooro7h0xxjc7d2.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990253/ecr5utegyiwboq9myhnw.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990253/n73qyenjgfyaoiw4bfkl.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990258/r20epkowkqewgacdmu82.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990262/di6gri9bjy5smgej4wfl.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990258/g3zonttads9nnd8cvbhj.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990261/t5wtyr6mrj1h5zy66nzw.jpg"
+    ]
+  },
+  {
+    "id": "P1754990328725",
+    "timestamp": 1754990328725,
+    "code": "857",
+    "address": "Ngõ 131 Thái Hà",
+    "ward": "Phường Trung Liệt",
+    "price": 3200000,
+    "area": 30,
+    "wc": "Khép kín",
+    "elevator": "Không",
+    "electricity": 4000,
+    "water": 100000,
+    "serviceFee": 100000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990320/kprl5pp3l66nxp7lgzum.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990318/wsmsto4zj1lokym7odko.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990317/meemskozuckji28cswo9.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990321/xm8gncf2cfvpdiflww5p.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990318/xlx7shlola9a8oxldast.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990321/xuj4bipnjahpqdmnhanx.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990321/t5nw6eqtaczbqlkqphmp.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990319/g7k2pvqhpl9g0rmpdtj0.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990320/fariovnecvessmi2xqod.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990321/kqzqpfkzvkjz4hswdguo.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990321/zufy27ive3hghp0wtln9.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990327/mb40djldrp5aosfupcud.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990327/kw69tcjmz792gmzolhjh.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990328/aambhowhtdadh6g9qu0l.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990325/balkdritx3imkjryjw0j.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990323/sfn4ni4sjdgu7k6xnqnp.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990323/y01is6xskrc0xlqacvvb.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990324/acmss6bhkslypuwgngtq.jpg"
+    ]
+  },
+  {
+    "id": "P1754990404606",
+    "timestamp": 1754990404606,
+    "code": "857",
+    "address": "Ngách 45/94 Tân Mai - Hoàng Mai",
+    "ward": "Tân Mai",
+    "price": 3400000,
+    "area": 30,
+    "wc": "Khép kín",
+    "elevator": "Không",
+    "electricity": 4000,
+    "water": 100000,
+    "serviceFee": 100000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990399/j9ksmankiim6icfcwu8a.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990398/aobxsnmluy5jxqqfb7sc.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990400/wxj14nxwonn7hvjmrdb2.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990402/a0z3mxw4m8bouza0ouvs.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990398/gbo431omlx2mcbzfepph.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990398/qpbydguf2jwu787yzahq.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990399/hxyc7vnoi8kslqjjg2yq.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990400/vtu98obvbfigs2v8nsvd.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990400/ewfblnmmwe0spb54n602.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990401/qpcgdqj6xgk6tx50aliw.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990401/pxvg1efwscqozuxziomu.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990401/s9xf4mfqeva4q9pdx84m.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990402/ylgddcldumqwbqyavdkf.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990403/iyyeukwnqumqrvgt6pvk.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990403/jotvb4dm3sthp6rdhckz.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990403/qalblm92nbupw4avcnu6.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990403/fnm1t3ezdmmasmicse9h.jpg"
+    ]
+  },
+  {
+    "id": "P1754990462357",
+    "timestamp": 1754990462357,
+    "code": "857",
+    "address": "Ngõ 595/7 Lĩnh Nam - Hoàng Mai",
+    "ward": "Vĩnh Hưng ",
+    "price": 3000000,
+    "area": 27,
+    "wc": "Chung",
+    "elevator": "Không",
+    "electricity": 4000,
+    "water": 100000,
+    "serviceFee": 100000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990458/zn1pg6opqvhq0lnsb5np.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990459/zbpmfydblc50x2sn7hv2.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990458/boactgephvcvl200xjqh.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990460/dt9nehyzez6g6gm0mui3.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990460/ahtsxldatb9l7hducoxt.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990461/crdovnwiang0dmkajyqb.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990460/fxj5ftmkjxelw9bo27e5.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990460/h0dbzobytbwku7qrfyh7.jpg"
+    ]
+  },
+  {
+    "id": "P1754990514319",
+    "timestamp": 1754990514319,
+    "code": "1136",
+    "address": "Ngách 79 Ngõ 44 Trần Thái Tông",
+    "ward": "Cầu Giấy",
+    "price": 5000000,
+    "area": 35,
+    "wc": "Khép kín",
+    "elevator": "Không",
+    "electricity": 4000,
+    "water": 100000,
+    "serviceFee": 200000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990513/sk0dpc17fifppmyfnlj0.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990512/waelf5juaznknlyxuqie.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990512/qakdmezb1370wl1htl6m.jpg"
+    ]
+  },
+  {
+    "id": "P1754990630017",
+    "timestamp": 1754990630017,
+    "code": "1128",
+    "address": " 43/86 Trung kính  (Đi ngõ 180 Trần duy Hưng . 110 trân duy Hưng )",
+    "ward": "trung hòa",
+    "price": 5000000,
+    "area": 28,
+    "wc": "Chung",
+    "elevator": "Có",
+    "electricity": 3500,
+    "water": 35000,
+    "serviceFee": 170000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990621/mejwoygvr6q24sb0d250.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990621/whebtyx7jzcww30evs3u.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990619/zmdv7cakbrmflgdt3wop.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990625/zhqpf9mluirzwazf65y8.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990629/i5qcxql1i8gfttocsuvq.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990623/npxxitsjc2pc1svebdui.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990621/pkl8lb709h1ymracxnck.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990622/oai39q9cncew0t1jjafq.jpg"
+    ]
+  }
+]
