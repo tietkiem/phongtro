@@ -7,7 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-sha256/0.9.0/sha256.min.js"></script>
     <style>
         body {
             font-family: 'Be Vietnam Pro', sans-serif;
@@ -234,10 +233,10 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            let listingsData = []; // This will be populated from data.json
-            // NEW: Dùng Map để tối ưu tốc độ truy xuất dữ liệu
+            let listingsData = []; 
+            // TỐI ƯU: Dùng Map để tăng tốc độ truy xuất dữ liệu
             let listingsMap = new Map();
-            let sessionListings = []; // For new listings added in the current session
+            let sessionListings = [];
             let isAdminLoggedIn = false;
             let uploadedFiles = [];
 
@@ -257,7 +256,6 @@
             const sortPriceEl = document.getElementById('sort-price');
             const filterWardEl = document.getElementById('filter-ward');
             
-            // Unified Modal
             const listingModal = document.getElementById('listing-modal');
             const closeListingModalBtn = document.getElementById('close-listing-modal');
             const mainGalleryImage = document.getElementById('main-gallery-image');
@@ -302,8 +300,8 @@
                     if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
                     const data = await response.json();
                     listingsData = data;
-                    sessionListings = JSON.parse(JSON.stringify(data)); // Deep copy for session
-                    // NEW: Tạo Map từ dữ liệu để tăng tốc độ truy vấn
+                    sessionListings = JSON.parse(JSON.stringify(data));
+                    // TỐI ƯU: Tạo Map từ dữ liệu để tăng tốc độ truy vấn
                     listingsMap = new Map(data.map(item => [item.id, item]));
                     updateAndRender();
                     populateWards();
@@ -314,7 +312,7 @@
                     ];
                     listingsData = fallbackData;
                     sessionListings = JSON.parse(JSON.stringify(listingsData));
-                    listingsMap = new Map(listingsData.map(item => [item.id, item])); // NEW
+                    listingsMap = new Map(listingsData.map(item => [item.id, item])); // TỐI ƯU
                     updateAndRender();
                     populateWards();
                     grid.insertAdjacentHTML('afterbegin', `<div class="col-span-full text-center text-orange-500 bg-orange-100 p-2 rounded-md mb-4"><p><strong>Lưu ý:</strong> Không tìm thấy file <strong>data.json</strong>. Đang hiển thị dữ liệu mẫu.</p></div>`);
@@ -366,7 +364,7 @@
                 renderListings(filteredData);
             }
 
-            // CHANGED: Tối ưu hàm tìm kiếm bằng Map
+            // TỐI ƯU: Dùng Map để tìm kiếm nhanh hơn
             function findListingById(listingId) {
                 const dataPool = isAdminLoggedIn ? new Map(sessionListings.map(item => [item.id, item])) : listingsMap;
                 return dataPool.get(listingId);
@@ -379,7 +377,6 @@
                     return;
                 };
 
-                // Populate Gallery
                 mainGalleryImage.src = listing.images[0] || 'https://placehold.co/800x600/cccccc/ffffff?text=Không+có+ảnh';
                 thumbnailContainer.innerHTML = '';
                 listing.images.forEach((imgSrc, index) => {
@@ -394,7 +391,6 @@
                     thumbnailContainer.appendChild(thumb);
                 });
 
-                // Populate Details
                 detailsSection.innerHTML = `
                     <h2 class="text-2xl font-bold mb-2 text-blue-700">${listing.address}</h2>
                     <p class="text-lg font-semibold text-red-600 mb-4">${formatCurrency(listing.price)}/tháng</p>
@@ -414,7 +410,7 @@
 
             function populateWards() {
                 const data = isAdminLoggedIn ? sessionListings : listingsData;
-                const wards = [...new Set(data.map(item => item.ward).filter(Boolean))].sort(); // Filter out null/empty wards
+                const wards = [...new Set(data.map(item => item.ward).filter(Boolean))].sort();
                 const currentSelection = filterWardEl.value;
                 filterWardEl.innerHTML = '<option value="all">Tất cả</option>';
                 wardsDatalist.innerHTML = '';
@@ -505,10 +501,9 @@
                     };
                     sessionListings.push(newListing);
                     renderAdminListings();
-                    populateWards(); // NEW: Cập nhật lại bộ lọc Phường
+                    populateWards();
                     alert('Thêm tin đăng mới thành công! Dữ liệu đã được lưu tạm thời.');
                     
-                    // Reset form
                     Object.values(adminForm).forEach(input => { if (input.type !== 'select-one') input.value = ''; });
                     imagePreviewContainer.innerHTML = '';
                     dataParserInput.value = '';
@@ -593,9 +588,9 @@
                 adminForm.elevator.value = /thang máy/i.test(text.toLowerCase()) ? 'Có' : 'Không';
                 adminForm.wc.value = /khép kín|giặt riêng/i.test(text.toLowerCase()) ? 'Khép kín' : 'Chung';
 
-                // CHANGED: Tự động tìm phường từ danh sách phường hiện có
+                // TỐI ƯU: Tự động tìm phường từ danh sách phường hiện có
                 const address = adminForm.address.value.toLowerCase();
-                const allWards = [...new Set(sessionListings.map(item => item.ward))];
+                const allWards = [...new Set(sessionListings.map(item => item.ward).filter(Boolean))];
                 adminForm.ward.value = allWards.find(w => address.includes(w.toLowerCase())) || '';
 
                 alert('Bóc tách dữ liệu hoàn tất! Vui lòng kiểm tra lại thông tin và chọn ảnh.');
@@ -681,16 +676,9 @@
             }
 
             // --- EVENT LISTENERS ---
-            // CHANGED: Login logic with hashed password
+            // KHÔI PHỤC & SỬA LỖI: Login logic được đưa về dạng gốc và sửa lỗi hiển thị thông báo
             loginBtn.addEventListener('click', () => {
-                const ADMIN_USER = 'mrhung';
-                // This is the SHA-256 hash of the password '16051984'
-                const ADMIN_PASS_HASH = 'f6327344f6f188394231b64b192c01990135515de42e47f722a5592505505e6b';
-                
-                const enteredPass = passwordInput.value;
-                const enteredPassHash = sha256(enteredPass); // Hash the entered password
-
-                if (usernameInput.value === ADMIN_USER && enteredPassHash === ADMIN_PASS_HASH) {
+                if (usernameInput.value === 'mrhung' && passwordInput.value === '16051984') {
                     isAdminLoggedIn = true;
                     switchView('admin');
                     loadCloudinarySettings();
@@ -698,8 +686,7 @@
                     loginError.classList.add('hidden');
                     usernameInput.value = ''; passwordInput.value = '';
                 } else {
-                    // FIXED: Show login error message correctly
-                    loginError.classList.remove('hidden');
+                    loginError.classList.remove('hidden'); // SỬA LỖI: Hiển thị thông báo khi sai
                 }
             });
             
@@ -758,7 +745,7 @@
                     showConfirmModal('Xác nhận xóa', `Bạn có chắc chắn muốn xóa tin đăng tại: ${listingToDelete.address}?`, () => {
                         sessionListings = sessionListings.filter(l => l.id !== idToDelete);
                         renderAdminListings();
-                        populateWards(); // NEW: Cập nhật lại bộ lọc Phường
+                        populateWards();
                         alert('Đã xóa tin đăng. Hãy tải file data.json mới để cập nhật vĩnh viễn.');
                     });
                 }
