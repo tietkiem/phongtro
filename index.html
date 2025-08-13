@@ -54,6 +54,7 @@
 </head>
 <body class="text-gray-800">
 
+    <!-- GIAO DIỆN ĐĂNG NHẬP (ẨN BAN ĐẦU) -->
     <div id="login-view" class="min-h-screen flex items-center justify-center p-4 hidden">
         <div class="w-full max-w-sm bg-white rounded-xl shadow-2xl p-8">
             <div class="text-center mb-8">
@@ -76,47 +77,42 @@
         </div>
     </div>
 
+    <!-- PHẦN GIAO DIỆN CHÍNH -->
     <div id="main-view">
+        <!-- HEADER -->
         <header class="bg-white shadow-md sticky top-0 z-40">
-            <div class="container mx-auto px-4 py-3">
-                <div class="flex flex-wrap items-center justify-between gap-y-3">
-                    <div class="text-left pr-4">
-                        <h1 class="text-2xl font-bold text-blue-600"><i class="fas fa-house-chimney-window mr-2"></i>Tìm Phòng Trọ</h1>
-                        <p class="text-sm text-gray-500 italic -mt-1">Tìm trọ miễn phí - An tâm lựa chọn.</p>
+            <div class="container mx-auto px-4 py-4 flex flex-col lg:flex-row justify-between items-center gap-4">
+                <div class="text-center lg:text-left">
+                    <h1 class="text-2xl font-bold text-blue-600"><i class="fas fa-house-chimney-window mr-2"></i>Tìm Phòng Trọ</h1>
+                    <p class="text-sm text-gray-500 italic -mt-1">Tìm trọ miễn phí - An tâm lựa chọn.</p>
+                </div>
+                <div class="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
+                    <div class="relative w-full sm:w-auto">
+                        <input type="search" id="search-input" placeholder="Tìm theo địa chỉ, mã nhà..." class="border border-gray-300 rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
                     </div>
-
-                    <div class="w-full lg:w-auto flex flex-col lg:flex-row lg:items-center gap-3">
-                        <div class="flex items-center gap-3">
-                            <div class="relative flex-grow">
-                                <input type="search" id="search-input" placeholder="Tìm theo địa chỉ, mã nhà..." class="border border-gray-300 rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full">
-                                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                            </div>
-                            <button id="go-to-admin-btn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300"><i class="fas fa-user-shield"></i></button>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-3 w-full sm:w-auto lg:flex lg:gap-2">
-                            <div class="flex items-center gap-2">
-                                <label for="sort-price" class="text-sm font-medium hidden sm:inline"><i class="fas fa-dollar-sign mr-1"></i>Giá:</label>
-                                <select id="sort-price" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full">
-                                    <option value="newest">Mới nhất</option>
-                                    <option value="asc">Giá tăng dần</option>
-                                    <option value="desc">Giá giảm dần</option>
-                                </select>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <label for="filter-ward" class="text-sm font-medium hidden sm:inline"><i class="fas fa-map-marker-alt mr-1"></i>Phường:</label>
-                                <select id="filter-ward" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full">
-                                    <option value="all">Tất cả Phường</option>
-                                </select>
-                            </div>
-                        </div>
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <label for="sort-price" class="text-sm font-medium"><i class="fas fa-dollar-sign mr-1"></i>Giá:</label>
+                        <select id="sort-price" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full">
+                            <option value="newest">Mới nhất</option>
+                            <option value="asc">Tăng dần</option>
+                            <option value="desc">Giảm dần</option>
+                        </select>
                     </div>
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <label for="filter-ward" class="text-sm font-medium"><i class="fas fa-map-marker-alt mr-1"></i>Phường:</label>
+                        <select id="filter-ward" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full">
+                            <option value="all">Tất cả</option>
+                        </select>
+                    </div>
+                     <button id="go-to-admin-btn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300 w-full sm:w-auto"><i class="fas fa-user-shield mr-2"></i>Trang Admin</button>
                 </div>
             </div>
         </header>
         <main class="container mx-auto p-4">
             <div id="listings-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                <div class="col-span-full text-center text-gray-500 py-10">
+                <!-- Data will be loaded here by JavaScript -->
+                 <div class="col-span-full text-center text-gray-500 py-10">
                     <i class="fas fa-spinner fa-spin text-3xl"></i>
                     <p>Đang tải dữ liệu...</p>
                 </div>
@@ -124,6 +120,7 @@
         </main>
     </div>
 
+    <!-- PHẦN GIAO DIỆN ADMIN (ẨN BAN ĐẦU) -->
     <div id="admin-view" class="hidden">
         <div class="container mx-auto p-4 sm:p-6 md:p-8">
             <div class="max-w-6xl mx-auto bg-white rounded-xl shadow-2xl p-6">
@@ -135,6 +132,7 @@
                     </div>
                 </div>
 
+                <!-- CÀI ĐẶT CLOUDINARY -->
                 <div class="mb-8 p-4 bg-purple-50 border border-purple-200 rounded-lg">
                     <h3 class="text-lg font-semibold text-purple-800 mb-2"><i class="fas fa-cloud-upload-alt mr-2"></i>Cài đặt Cloudinary (Chỉ cần làm 1 lần)</h3>
                     <p class="text-sm text-gray-600 mb-2">Để upload ảnh, bạn cần cung cấp thông tin tài khoản Cloudinary. Xem hướng dẫn <a href="https://cloudinary.com/documentation/upload_presets" target="_blank" class="text-blue-600 underline">tại đây</a> để tạo <strong>Upload Preset (Unsigned)</strong>.</p>
@@ -158,6 +156,7 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                    <!-- Form fields -->
                     <div><label for="admin-code" class="block text-sm font-medium text-gray-700">Mã nhà</label><input type="text" id="admin-code" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"></div>
                     <div><label for="admin-address" class="block text-sm font-medium text-gray-700">Địa chỉ</label><input type="text" id="admin-address" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"></div>
                     <div><label for="admin-ward" class="block text-sm font-medium text-gray-700">Phường</label><input type="text" id="admin-ward" list="wards-datalist" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm"><datalist id="wards-datalist"></datalist></div>
@@ -191,10 +190,12 @@
                      <button id="submit-listing-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 flex items-center justify-center text-lg"><i class="fas fa-plus-circle mr-2"></i><span id="submit-btn-text">Thêm Tin Đăng Mới</span><i id="submit-spinner" class="fas fa-spinner fa-spin ml-2 hidden"></i></button>
                 </div>
 
+                <!-- QUẢN LÝ TIN ĐĂNG -->
                 <div class="mt-10 pt-6 border-t-2 border-dashed border-gray-300">
                      <h3 class="text-lg font-semibold text-gray-800 mb-2"><i class="fas fa-list-alt mr-2"></i>Quản lý Tin đăng hiện tại</h3>
                      <div id="admin-listings-container" class="space-y-2 max-h-96 overflow-y-auto pr-2">
-                        </div>
+                        <!-- Admin listings will be rendered here -->
+                     </div>
                 </div>
 
                 <div class="mt-10 pt-6 border-t-2 border-dashed border-gray-300">
@@ -213,20 +214,25 @@
         </div>
     </div>
 
+    <!-- MODAL CHI TIẾT & ẢNH -->
     <div id="listing-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
         <div class="bg-white rounded-lg shadow-2xl w-full max-w-4xl max-h-[95vh] flex flex-col">
             <button id="close-listing-modal" class="absolute top-2 right-2 text-white bg-black bg-opacity-50 rounded-full w-8 h-8 flex items-center justify-center text-xl z-20">&times;</button>
             <div class="p-4 flex-grow overflow-y-auto">
+                <!-- Gallery Section -->
                 <div id="gallery-section" class="mb-4">
                      <img id="main-gallery-image" src="" alt="Ảnh phòng trọ" class="w-full h-[60vh] object-contain rounded-md mb-2 bg-gray-100">
                      <div id="thumbnail-gallery-container" class="flex gap-2 overflow-x-auto pb-2 gallery-scroll"></div>
                 </div>
+                <!-- Details Section -->
                 <div id="details-section" class="p-4 border-t">
-                    </div>
+                    <!-- Details will be injected here -->
+                </div>
             </div>
         </div>
     </div>
     
+    <!-- CUSTOM CONFIRM MODAL -->
     <div id="confirm-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
         <div class="bg-white rounded-lg shadow-2xl w-full max-w-sm p-6">
             <h3 id="confirm-modal-title" class="text-lg font-bold text-gray-800">Xác nhận hành động</h3>
@@ -417,7 +423,7 @@
                 const data = isAdminLoggedIn ? sessionListings : listingsData;
                 const wards = [...new Set(data.map(item => item.ward))].sort();
                 const currentSelection = filterWardEl.value;
-                filterWardEl.innerHTML = '<option value="all">Tất cả Phường</option>';
+                filterWardEl.innerHTML = '<option value="all">Tất cả</option>';
                 wardsDatalist.innerHTML = '';
                 wards.forEach(ward => {
                     const option = document.createElement('option');
@@ -679,19 +685,43 @@
                 }, { once: true });
             }
 
-            // --- EVENT LISTENERS ---
-            loginBtn.addEventListener('click', () => {
-                if (usernameInput.value === 'mrhung' && passwordInput.value === '16051984') {
+            async function sha256(message) {
+                const msgBuffer = new TextEncoder().encode(message);
+                const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+                return hashHex;
+            }
+
+            async function verifyLogin() {
+                const storedUser = 'mrhung';
+                const storedHash = '5180e386812264539f182181c938a299571e28393551351b6321281ce28c824c'; // SHA-256 of '16051984'
+                
+                const enteredUser = usernameInput.value;
+                const enteredPass = passwordInput.value;
+
+                if (enteredUser !== storedUser) {
+                    loginError.classList.remove('hidden');
+                    return;
+                }
+
+                const enteredHash = await sha256(enteredPass);
+
+                if (enteredHash === storedHash) {
                     isAdminLoggedIn = true;
                     switchView('admin');
                     loadCloudinarySettings();
                     renderAdminListings();
                     loginError.classList.add('hidden');
-                    usernameInput.value = ''; passwordInput.value = '';
+                    usernameInput.value = '';
+                    passwordInput.value = '';
                 } else {
-                    loginError.classList.add('hidden');
+                    loginError.classList.remove('hidden');
                 }
-            });
+            }
+
+            // --- EVENT LISTENERS ---
+            loginBtn.addEventListener('click', verifyLogin);
             
             backToMainFromLoginBtn.addEventListener('click', () => switchView('main'));
             logoutBtn.addEventListener('click', () => { isAdminLoggedIn = false; switchView('main'); });
@@ -727,7 +757,7 @@
             saveCloudinarySettingsBtn.addEventListener('click', saveCloudinarySettings);
             
             dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
-            dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover');
+            dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
             dropZone.addEventListener('drop', (e) => {
                 e.preventDefault();
                 dropZone.classList.remove('dragover');
