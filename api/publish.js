@@ -1,4 +1,5 @@
-export default async function handler(req, res) {
+// Sử dụng cú pháp CommonJS (module.exports) thay vì ES Module (export default)
+module.exports = async (req, res) => {
   // Chỉ cho phép phương thức POST
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method Not Allowed' });
@@ -23,7 +24,7 @@ export default async function handler(req, res) {
     // Chuyển đổi đối tượng JSON thành chuỗi có định dạng đẹp mắt
     const newListingsJSON = JSON.stringify(newListings, null, 2);
 
-    // 1. Lấy SHA của file hiện tại trên GitHub (bắt buộc để cập nhật)
+    // 1. Lấy SHA của file hiện tại trên GitHub
     const fileInfoUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${FILE_PATH}`;
     const fileInfoRes = await fetch(fileInfoUrl, {
       headers: {
@@ -53,9 +54,9 @@ export default async function handler(req, res) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        message: `[Automated] Cập nhật dữ liệu lúc ${new Date().toISOString()}`,
+        message: `[Automated] Cap nhat du lieu luc ${new Date().toISOString()}`,
         content: contentEncoded,
-        sha: currentSha, // Nếu file chưa tồn tại, sha sẽ là undefined, GitHub sẽ tự hiểu là tạo file mới
+        sha: currentSha,
       }),
     });
 
@@ -69,7 +70,6 @@ export default async function handler(req, res) {
 
   } catch (error) {
     console.error('Lỗi trong quá trình xuất bản:', error);
-    // Trả về một thông báo lỗi rõ ràng cho phía client
     return res.status(500).json({ message: `Đã xảy ra lỗi phía server: ${error.message}` });
   }
-}
+};

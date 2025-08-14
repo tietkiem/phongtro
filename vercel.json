@@ -1,9 +1,0 @@
-{
-  "routes": [
-    {
-      "src": "/api/publish",
-      "methods": ["POST"],
-      "dest": "/api/publish"
-    }
-  ]
-}
