@@ -288,6 +288,10 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
+        // ========== CẤU HÌNH FACEBOOK ==========
+        const FACEBOOK_USERNAME = "nhatrohanoi25"; // !!! THAY THẾ CHỖ NÀY bằng username Facebook của bạn
+        // ======================================
+
         let listingsData = []; 
         let listingsMap = new Map();
         let sessionListings = [];
@@ -337,7 +341,7 @@
         const cloudinaryUploadPresetInput = document.getElementById('cloudinary-upload-preset');
         const saveCloudinarySettingsBtn = document.getElementById('save-cloudinary-settings-btn');
         const adminListingsContainer = document.getElementById('admin-listings-container');
-        const adminSearchInput = document.getElementById('admin-search-input'); // TÌM KIẾM MỚI
+        const adminSearchInput = document.getElementById('admin-search-input');
         const confirmModal = document.getElementById('confirm-modal');
         let confirmModalOk = document.getElementById('confirm-modal-ok');
         const confirmModalCancel = document.getElementById('confirm-modal-cancel');
@@ -360,6 +364,7 @@
         function showNextImage() { if (currentGalleryIndex < currentGalleryImages.length - 1) { currentGalleryIndex++; updateGalleryView(); } }
         function showPrevImage() { if (currentGalleryIndex > 0) { currentGalleryIndex--; updateGalleryView(); } }
         
+        // ========== HÀM HIỂN THỊ MODAL ĐÃ CẬP NHẬT VỚI NÚT FACEBOOK ==========
         function showListingModal(listingId) {
             const listing = findListingById(listingId);
             if (!listing) { console.error(`Listing with ID ${listingId} not found.`); return; }
@@ -381,6 +386,10 @@
 
             const waterPriceText = listing.water > 0 ? (listing.waterUnit === 'nguoi' ? formatCurrency(listing.water) + '/người' : formatCurrency(listing.water) + '/khối') : 'Miễn phí';
 
+            // Tạo link Facebook với tin nhắn soạn sẵn
+            const prefilledMessage = `Chào bạn, tôi quan tâm đến phòng trọ tại địa chỉ: ${listing.address} (Mã nhà: ${listing.code}).`;
+            const facebookMessageLink = `https://m.me/${FACEBOOK_USERNAME}?ref=${encodeURIComponent(prefilledMessage)}`;
+            
             detailsSection.innerHTML = `
                 <h2 class="text-2xl font-bold mb-2 text-blue-700">${listing.address}</h2>
                 <p class="text-lg font-semibold text-red-600 mb-4">${formatCurrency(listing.price)}/tháng</p>
@@ -393,6 +402,11 @@
                     <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-tint mr-2"></i>Giá nước:</strong> ${waterPriceText}</div>
                     <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-wifi mr-2"></i>Giá mạng:</strong> ${listing.internet > 0 ? formatCurrency(listing.internet) + '/phòng' : 'Miễn phí'}</div>
                     <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-barcode mr-2"></i>Mã nhà:</strong> ${listing.code}</div>
+                </div>
+                <div class="mt-6 pt-4 border-t">
+                    <a href="${facebookMessageLink}" target="_blank" class="inline-block w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 text-center text-lg">
+                        <i class="fab fa-facebook-messenger mr-2"></i> Nhắn tin qua Facebook
+                    </a>
                 </div>`;
             listingModal.classList.remove('hidden');
         }
@@ -411,24 +425,19 @@
                     return;
                 }
             }
-
             if (!currentEditId && uploadedFiles.length === 0) {
                 alert('Vui lòng chọn ít nhất một ảnh cho tin đăng mới.');
                 return;
             }
-            
             submitListingBtn.disabled = true;
             submitSpinner.classList.remove('hidden');
-
             try {
                 let imageUrls = [];
                 if (uploadedFiles.length > 0) {
                     submitBtnText.textContent = 'Đang upload ảnh...';
                     imageUrls = await uploadToCloudinary(uploadedFiles);
                 }
-                
                 submitBtnText.textContent = 'Đang lưu...';
-                
                 const listingData = {
                     code: adminForm.code.value,
                     address: adminForm.address.value,
@@ -443,7 +452,6 @@
                     serviceFee: parseInt(adminForm.serviceFee.value) || 0,
                     internet: parseInt(adminForm.internet.value) || 0,
                 };
-
                 if (currentEditId) {
                     const listingIndex = sessionListings.findIndex(l => l.id === currentEditId);
                     if (listingIndex > -1) {
@@ -461,11 +469,9 @@
                     sessionListings.push(listingData);
                     alert('Thêm tin đăng mới thành công!');
                 }
-                
                 clearAdminForm();
                 renderAdminListings(adminSearchInput.value.toLowerCase().trim());
                 populateWards();
-
             } catch (error) {
                 console.error("Lỗi:", error);
                 alert(`Đã xảy ra lỗi: ${error.message}`);
@@ -498,20 +504,14 @@
         
         function renderAdminListings(searchTerm = '') {
             adminListingsContainer.innerHTML = '';
-            
             let listingsToRender = [...sessionListings];
             if (searchTerm) {
-                listingsToRender = listingsToRender.filter(listing =>
-                    (listing.address?.toLowerCase().includes(searchTerm)) ||
-                    (listing.code?.toLowerCase().includes(searchTerm))
-                );
+                listingsToRender = listingsToRender.filter(listing => (listing.address?.toLowerCase().includes(searchTerm)) || (listing.code?.toLowerCase().includes(searchTerm)));
             }
-
             if (listingsToRender.length === 0) {
                 adminListingsContainer.innerHTML = '<p class="text-sm text-gray-500">Không tìm thấy tin đăng nào.</p>';
                 return;
             }
-
             const sortedListings = listingsToRender.sort((a, b) => b.timestamp - a.timestamp);
             sortedListings.forEach(listing => {
                 const item = document.createElement('div');
@@ -536,9 +536,7 @@
         function handleEditListing(listingId) {
             const listingToEdit = sessionListings.find(l => l.id === listingId);
             if (!listingToEdit) return;
-
             currentEditId = listingId;
-
             adminForm.code.value = listingToEdit.code;
             adminForm.address.value = listingToEdit.address;
             adminForm.ward.value = listingToEdit.ward;
@@ -553,12 +551,9 @@
             }
             adminForm.serviceFee.value = listingToEdit.serviceFee;
             adminForm.internet.value = listingToEdit.internet;
-
             imagePreviewContainer.innerHTML = '<p class="col-span-full text-sm text-blue-600 italic">Để thay đổi, vui lòng chọn lại tất cả ảnh cho tin đăng này.</p>';
             uploadedFiles = [];
-
             submitBtnText.textContent = 'Cập Nhật Tin Đăng';
-            
             window.scrollTo({ top: document.getElementById('admin-view').offsetTop, behavior: 'smooth' });
         }
 
@@ -595,13 +590,11 @@
         adminListingsContainer.addEventListener('click', (e) => {
             const editBtn = e.target.closest('.edit-listing-btn');
             const deleteBtn = e.target.closest('.delete-listing-btn');
-
             if (editBtn) {
                 const idToEdit = editBtn.dataset.id;
                 handleEditListing(idToEdit);
                 return;
             }
-
             if (deleteBtn) {
                 const idToDelete = deleteBtn.dataset.id;
                 const listingToDelete = sessionListings.find(l => l.id === idToDelete);
