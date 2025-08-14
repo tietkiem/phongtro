@@ -43,24 +43,6 @@
         .gallery-nav-btn {
             transition: background-color 0.2s, opacity 0.2s;
         }
-        .rented-overlay {
-            position: absolute;
-            inset: 0;
-            background-color: rgba(0, 0, 0, 0.6);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            pointer-events: none; /* Quan trọng: để click xuyên qua lớp phủ */
-        }
-        .rented-badge {
-            color: white;
-            font-weight: bold;
-            font-size: 1.25rem;
-            border: 2px solid white;
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            transform: rotate(-10deg);
-        }
     </style>
 </head>
 <body class="text-gray-800">
@@ -134,46 +116,34 @@
     </div>
 
     <div id="filter-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
-    <div id="filter-panel" class="offcanvas-panel fixed top-0 left-0 w-4/5 max-w-sm h-full bg-white z-50 shadow-lg p-6 transform -translate-x-full flex flex-col">
+    <div id="filter-panel" class="offcanvas-panel fixed top-0 left-0 w-4/5 max-w-sm h-full bg-white z-50 shadow-lg p-6 space-y-6 transform -translate-x-full">
         <div class="flex justify-between items-center border-b pb-4">
             <h2 class="text-xl font-bold">Lọc & Tìm Kiếm</h2>
             <button id="close-filter-btn" class="p-2 text-2xl font-bold">&times;</button>
         </div>
-        <div class="flex-grow overflow-y-auto space-y-6 py-4">
-            <div class="space-y-4">
-                <div>
-                    <label for="search-input-mobile" class="text-sm font-medium text-gray-700">Tìm địa chỉ, mã nhà</label>
-                    <div class="relative mt-1">
-                        <input type="search" id="search-input-mobile" placeholder="Nhập từ khóa..." class="border border-gray-300 rounded-lg pl-10 pr-4 py-2 text-sm w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                    </div>
-                </div>
-                <div>
-                    <label for="sort-price-mobile" class="text-sm font-medium text-gray-700">Sắp xếp theo giá</label>
-                    <select id="sort-price-mobile" class="border border-gray-300 rounded-lg px-3 py-2 text-sm mt-1 w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="newest">Mới nhất</option>
-                        <option value="asc">Tăng dần</option>
-                        <option value="desc">Giảm dần</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="filter-ward-mobile" class="text-sm font-medium text-gray-700">Lọc theo phường</label>
-                    <select id="filter-ward-mobile" class="border border-gray-300 rounded-lg px-3 py-2 text-sm mt-1 w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="all">Tất cả</option>
-                    </select>
+        <div class="space-y-4">
+            <div>
+                <label for="search-input-mobile" class="text-sm font-medium text-gray-700">Tìm địa chỉ, mã nhà</label>
+                <div class="relative mt-1">
+                    <input type="search" id="search-input-mobile" placeholder="Nhập từ khóa..." class="border border-gray-300 rounded-lg pl-10 pr-4 py-2 text-sm w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
                 </div>
             </div>
-            <div class="space-y-3 border-t pt-4">
-                <h3 class="text-sm font-medium text-gray-700">Lọc theo tiện ích</h3>
-                <div id="amenity-filters-mobile" class="grid grid-cols-2 gap-2">
-                    <label class="flex items-center space-x-2"><input type="checkbox" data-amenity="airCon" class="amenity-filter rounded"><span>Điều hòa</span></label>
-                    <label class="flex items-center space-x-2"><input type="checkbox" data-amenity="waterHeater" class="amenity-filter rounded"><span>Nóng lạnh</span></label>
-                    <label class="flex items-center space-x-2"><input type="checkbox" data-amenity="balcony" class="amenity-filter rounded"><span>Ban công</span></label>
-                    <label class="flex items-center space-x-2"><input type="checkbox" data-amenity="parking" class="amenity-filter rounded"><span>Chỗ để xe</span></label>
-                    <label class="flex items-center space-x-2"><input type="checkbox" data-amenity="noLiveWithHost" class="amenity-filter rounded"><span>Không chung chủ</span></label>
-                </div>
+            <div>
+                <label for="sort-price-mobile" class="text-sm font-medium text-gray-700">Sắp xếp theo giá</label>
+                <select id="sort-price-mobile" class="border border-gray-300 rounded-lg px-3 py-2 text-sm mt-1 w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="newest">Mới nhất</option>
+                    <option value="asc">Tăng dần</option>
+                    <option value="desc">Giảm dần</option>
+                </select>
             </div>
+            <div>
+                <label for="filter-ward-mobile" class="text-sm font-medium text-gray-700">Lọc theo phường</label>
+                <select id="filter-ward-mobile" class="border border-gray-300 rounded-lg px-3 py-2 text-sm mt-1 w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="all">Tất cả</option>
+                </select>
             </div>
+        </div>
         <div class="border-t pt-6">
             <button id="go-to-admin-btn-mobile" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300">
                 <i class="fas fa-user-shield mr-2"></i>Trang Admin
@@ -220,6 +190,7 @@
                     <div><label for="admin-elevator" class="block text-sm font-medium text-gray-700">Thang máy</label><select id="admin-elevator" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2"><option>Không</option><option>Có</option></select></div>
                     <div><label for="admin-wc" class="block text-sm font-medium text-gray-700">Vệ sinh</label><select id="admin-wc" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2"><option>Khép kín</option><option>Chung</option></select></div>
                     <div><label for="admin-electricity" class="block text-sm font-medium text-gray-700">Giá điện (VND/kWh)</label><input type="number" id="admin-electricity" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2"></div>
+                    
                     <div>
                         <label for="admin-water" class="block text-sm font-medium text-gray-700">Giá nước</label>
                         <div class="mt-1 flex rounded-md shadow-sm">
@@ -230,19 +201,9 @@
                             </select>
                         </div>
                     </div>
+                    
                     <div><label for="admin-service-fee" class="block text-sm font-medium text-gray-700">Phí dịch vụ (VND/người)</label><input type="number" id="admin-service-fee" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2"></div>
                     <div><label for="admin-internet" class="block text-sm font-medium text-gray-700">Giá mạng (VND/phòng)</label><input type="number" id="admin-internet" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2"></div>
-                    
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700">Tiện ích</label>
-                        <div id="admin-amenities" class="mt-2 grid grid-cols-2 sm:grid-cols-3 gap-2 p-4 border rounded-md bg-gray-50">
-                            <label class="flex items-center space-x-2"><input type="checkbox" id="admin-airCon" class="rounded"><span>Điều hòa</span></label>
-                            <label class="flex items-center space-x-2"><input type="checkbox" id="admin-waterHeater" class="rounded"><span>Nóng lạnh</span></label>
-                            <label class="flex items-center space-x-2"><input type="checkbox" id="admin-balcony" class="rounded"><span>Ban công</span></label>
-                            <label class="flex items-center space-x-2"><input type="checkbox" id="admin-parking" class="rounded"><span>Chỗ để xe</span></label>
-                            <label class="flex items-center space-x-2"><input type="checkbox" id="admin-noLiveWithHost" class="rounded"><span>Không chung chủ</span></label>
-                        </div>
-                    </div>
                     <div class="md:col-span-2">
                         <label class="block text-sm font-medium text-gray-700">Ảnh phòng trọ</label>
                         <div id="drop-zone" class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md transition-colors duration-300">
@@ -327,8 +288,7 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const FACEBOOK_USERNAME = "thay-ten-facebook-cua-ban";
-        const ZALO_PHONE_NUMBER = "936018987";
+        const FACEBOOK_USERNAME = "nhatrohanoi25"; 
         
         let listingsData = []; 
         let listingsMap = new Map();
@@ -338,7 +298,7 @@
         let currentGalleryImages = [];
         let currentGalleryIndex = 0;
         let currentEditId = null; 
-        let sessionDiscount = 0;
+        let sessionDiscount = 0; // BIẾN MỚI CHO GIẢM GIÁ
 
         // --- DOM ELEMENTS ---
         const allViews = { login: document.getElementById('login-view'), main: document.getElementById('main-view'), admin: document.getElementById('admin-view') };
@@ -347,17 +307,6 @@
         const loginBtn = document.getElementById('login-btn');
         const loginError = document.getElementById('login-error');
         const backToMainFromLoginBtn = document.getElementById('back-to-main-from-login');
-        const adminForm = {
-            code: document.getElementById('admin-code'), address: document.getElementById('admin-address'), ward: document.getElementById('admin-ward'), price: document.getElementById('admin-price'), area: document.getElementById('admin-area'), wc: document.getElementById('admin-wc'), elevator: document.getElementById('admin-elevator'), electricity: document.getElementById('admin-electricity'), water: document.getElementById('admin-water'), serviceFee: document.getElementById('admin-service-fee'), internet: document.getElementById('admin-internet'), images: document.getElementById('admin-images'),
-            amenities: {
-                airCon: document.getElementById('admin-airCon'),
-                waterHeater: document.getElementById('admin-waterHeater'),
-                balcony: document.getElementById('admin-balcony'),
-                parking: document.getElementById('admin-parking'),
-                noLiveWithHost: document.getElementById('admin-noLiveWithHost')
-            }
-        };
-        const amenityFiltersMobile = document.getElementById('amenity-filters-mobile');
         const grid = document.getElementById('listings-grid');
         const searchInputDesktop = document.getElementById('search-input-desktop');
         const sortPriceDesktop = document.getElementById('sort-price-desktop');
@@ -380,6 +329,7 @@
         const logoutBtn = document.getElementById('logout-btn');
         const dataParserInput = document.getElementById('data-parser-input');
         const parseDataBtn = document.getElementById('parse-data-btn');
+        const adminForm = { code: document.getElementById('admin-code'), address: document.getElementById('admin-address'), ward: document.getElementById('admin-ward'), price: document.getElementById('admin-price'), area: document.getElementById('admin-area'), wc: document.getElementById('admin-wc'), elevator: document.getElementById('admin-elevator'), electricity: document.getElementById('admin-electricity'), water: document.getElementById('admin-water'), serviceFee: document.getElementById('admin-service-fee'), internet: document.getElementById('admin-internet'), images: document.getElementById('admin-images') };
         const wardsDatalist = document.getElementById('wards-datalist');
         const dropZone = document.getElementById('drop-zone');
         const imagePreviewContainer = document.getElementById('image-preview-container');
@@ -401,36 +351,137 @@
         const galleryPrevBtn = document.getElementById('gallery-prev-btn');
         const galleryNextBtn = document.getElementById('gallery-next-btn');
 
-
         // --- FUNCTIONS ---
-        // ... (Toàn bộ các hàm JavaScript còn lại giữ nguyên như phiên bản trước, tôi chỉ dán lại ở đây để đảm bảo tính hoàn chỉnh) ...
-        function generateSessionDiscount() { sessionDiscount = Math.floor(Math.random() * 11) + 10; }
-        function applyDiscountOverlay(imageUrl) { if (!sessionDiscount || !imageUrl || !imageUrl.includes('/upload/')) return imageUrl; const overlayText = `GIẢM ${sessionDiscount}%`; const encodedText = encodeURIComponent(overlayText).replace(/%/g, '%25'); const transformation = `l_text:Poppins_40_bold:${encodedText},co_rgb:FFFFFF,b_rgb:FF0000,o_80,fl_layer_apply,g_south_east,x_20,y_20`; const urlParts = imageUrl.split('/upload/'); if (urlParts.length !== 2) return imageUrl; return `${urlParts[0]}/upload/${transformation}/${urlParts[1]}`; }
+
+        // ========== CÁC HÀM MỚI CHO TÍNH NĂNG GIẢM GIÁ ==========
+        function generateSessionDiscount() {
+            sessionDiscount = Math.floor(Math.random() * 11) + 10; // Random từ 10 đến 20
+        }
+
+        function applyDiscountOverlay(imageUrl) {
+            if (!sessionDiscount || !imageUrl || !imageUrl.includes('/upload/')) {
+                return imageUrl;
+            }
+            
+            const overlayText = `GIẢM ${sessionDiscount}%`;
+            // Mã hóa text để đưa vào URL an toàn. Dấu % phải được mã hóa thành %25
+            const encodedText = encodeURIComponent(overlayText).replace(/%/g, '%25');
+
+            // Cấu hình overlay: font Poppins, 40px, đậm, chữ trắng, nền đỏ bán trong suốt, padding, đặt ở góc dưới bên phải
+            const transformation = `l_text:Poppins_40_bold:${encodedText},co_rgb:FFFFFF,b_rgb:FF0000,o_80,fl_layer_apply,g_south_east,x_20,y_20`;
+            
+            const urlParts = imageUrl.split('/upload/');
+            if (urlParts.length !== 2) return imageUrl;
+            
+            return `${urlParts[0]}/upload/${transformation}/${urlParts[1]}`;
+        }
+        // =========================================================
+
         function syncFilters(source, target) { target.value = source.value; }
         function toggleFilterMenu() { filterPanel.classList.toggle('-translate-x-full'); filterOverlay.classList.toggle('hidden'); }
         async function loadListings() { try { const response = await fetch(`data.json?v=${new Date().getTime()}`); if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`); const data = await response.json(); listingsData = data; sessionListings = JSON.parse(JSON.stringify(data)); listingsMap = new Map(data.map(item => [item.id, item])); updateAndRender(); populateWards(); } catch (error) { console.error('Could not fetch listings data:', error); grid.innerHTML = `<p class="col-span-full text-center text-red-500">Lỗi tải dữ liệu. Vui lòng kiểm tra file data.json và làm mới trang.</p>`; } }
         const formatCurrency = (amount) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
-        function renderListings(data) { grid.innerHTML = ''; if (data.length === 0) { grid.innerHTML = `<p class="col-span-full text-center text-gray-500 py-10">Không tìm thấy phòng trọ nào phù hợp.</p>`; return; } data.forEach(listing => { const card = document.createElement('div'); card.className = 'listing-card bg-white rounded-lg shadow-lg overflow-hidden cursor-pointer relative'; card.setAttribute('data-id', listing.id); const thumbnailUrl = listing.images && listing.images.length > 0 ? applyDiscountOverlay(listing.images[0]) : 'https://placehold.co/600x400/cccccc/ffffff?text=Lỗi+Ảnh'; let cardHTML = ` <div class="relative"> <img src="${thumbnailUrl}" alt="Ảnh phòng trọ" class="w-full h-48 object-cover" onerror="this.onerror=null;this.src='https://placehold.co/600x400/cccccc/ffffff?text=Lỗi+Ảnh';"> <div class="absolute top-2 right-2 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded">${listing.ward}</div> </div> <div class="p-4"> <p class="font-bold text-lg text-red-500">${formatCurrency(listing.price)}/tháng</p> <p class="text-sm text-gray-600 truncate"><i class="fas fa-map-marker-alt mr-1 text-gray-400"></i>${listing.address}</p> </div>`; if (listing.status === 'rented') { cardHTML += `<div class="rented-overlay"><span class="rented-badge">ĐÃ CHO THUÊ</span></div>`; } card.innerHTML = cardHTML; grid.appendChild(card); }); }
-        function updateAndRender() { let dataToRender = authToken ? sessionListings : listingsData; let filteredData = [...dataToRender]; const searchTerm = searchInputDesktop.value.toLowerCase().trim(); if (searchTerm) { filteredData = filteredData.filter(item => (item.address && item.address.toLowerCase().includes(searchTerm)) || (item.code && item.code.toLowerCase().includes(searchTerm))); } const selectedWard = filterWardDesktop.value; if (selectedWard !== 'all') { filteredData = filteredData.filter(item => item.ward === selectedWard); } const activeAmenityFilters = Array.from(amenityFiltersMobile.querySelectorAll('.amenity-filter:checked')).map(cb => cb.dataset.amenity); if (activeAmenityFilters.length > 0) { filteredData = filteredData.filter(listing => { return activeAmenityFilters.every(amenity => listing.amenities && listing.amenities[amenity]); }); } const sortBy = sortPriceDesktop.value; if (sortBy === 'asc') filteredData.sort((a, b) => a.price - b.price); else if (sortBy === 'desc') filteredData.sort((a, b) => b.price - a.price); else filteredData.sort((a, b) => b.timestamp - a.timestamp); renderListings(filteredData); }
+        
+        function renderListings(data) { 
+            grid.innerHTML = ''; 
+            if (data.length === 0) { 
+                grid.innerHTML = `<p class="col-span-full text-center text-gray-500 py-10">Không tìm thấy phòng trọ nào phù hợp.</p>`; 
+                return; 
+            } 
+            data.forEach(listing => { 
+                const card = document.createElement('div'); 
+                card.className = 'listing-card bg-white rounded-lg shadow-lg overflow-hidden cursor-pointer'; 
+                card.setAttribute('data-id', listing.id);
+                // Áp dụng overlay giảm giá cho ảnh thumbnail
+                const thumbnailUrl = listing.images && listing.images.length > 0 ? applyDiscountOverlay(listing.images[0]) : 'https://placehold.co/600x400/cccccc/ffffff?text=Lỗi+Ảnh';
+                card.innerHTML = `<div class="relative"><img src="${thumbnailUrl}" alt="Ảnh phòng trọ" class="w-full h-48 object-cover" onerror="this.onerror=null;this.src='https://placehold.co/600x400/cccccc/ffffff?text=Lỗi+Ảnh';"><div class="absolute top-2 right-2 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded">${listing.ward}</div></div><div class="p-4"><p class="font-bold text-lg text-red-500">${formatCurrency(listing.price)}/tháng</p><p class="text-sm text-gray-600 truncate"><i class="fas fa-map-marker-alt mr-1 text-gray-400"></i>${listing.address}</p></div>`; 
+                grid.appendChild(card); 
+            }); 
+        }
+
+        function updateAndRender() { let dataToRender = authToken ? sessionListings : listingsData; let filteredData = [...dataToRender]; const searchTerm = searchInputDesktop.value.toLowerCase().trim(); if (searchTerm) { filteredData = filteredData.filter(item => item.address.toLowerCase().includes(searchTerm) || (item.code && item.code.toLowerCase().includes(searchTerm))); } const selectedWard = filterWardDesktop.value; if (selectedWard !== 'all') { filteredData = filteredData.filter(item => item.ward === selectedWard); } const sortBy = sortPriceDesktop.value; if (sortBy === 'asc') filteredData.sort((a, b) => a.price - b.price); else if (sortBy === 'desc') filteredData.sort((a, b) => b.price - a.price); else filteredData.sort((a, b) => b.timestamp - a.timestamp); renderListings(filteredData); }
         function findListingById(listingId) { const dataPool = authToken ? new Map(sessionListings.map(item => [item.id, item])) : listingsMap; return dataPool.get(listingId); }
-        function updateGalleryView() { if (!currentGalleryImages || currentGalleryImages.length === 0) return; mainGalleryImage.src = applyDiscountOverlay(currentGalleryImages[currentGalleryIndex]); galleryPrevBtn.style.display = currentGalleryIndex === 0 ? 'none' : 'flex'; galleryNextBtn.style.display = currentGalleryIndex === currentGalleryImages.length - 1 ? 'none' : 'flex'; const thumbnails = document.querySelectorAll('#thumbnail-gallery-container img'); thumbnails.forEach((thumb, index) => { if (index === currentGalleryIndex) { thumb.classList.add('border-blue-500'); thumb.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' }); } else { thumb.classList.remove('border-blue-500'); } }); }
+        
+        function updateGalleryView() { 
+            if (!currentGalleryImages || currentGalleryImages.length === 0) return; 
+            // Áp dụng overlay giảm giá cho ảnh chính trong modal
+            mainGalleryImage.src = applyDiscountOverlay(currentGalleryImages[currentGalleryIndex]); 
+            galleryPrevBtn.style.display = currentGalleryIndex === 0 ? 'none' : 'flex'; 
+            galleryNextBtn.style.display = currentGalleryIndex === currentGalleryImages.length - 1 ? 'none' : 'flex'; 
+            const thumbnails = document.querySelectorAll('#thumbnail-gallery-container img'); 
+            thumbnails.forEach((thumb, index) => { 
+                if (index === currentGalleryIndex) { 
+                    thumb.classList.add('border-blue-500'); 
+                    thumb.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' }); 
+                } else { 
+                    thumb.classList.remove('border-blue-500'); 
+                } 
+            }); 
+        }
+
         function showNextImage() { if (currentGalleryIndex < currentGalleryImages.length - 1) { currentGalleryIndex++; updateGalleryView(); } }
         function showPrevImage() { if (currentGalleryIndex > 0) { currentGalleryIndex--; updateGalleryView(); } }
-        function showListingModal(listingId) { const listing = findListingById(listingId); if (!listing) { console.error(`Listing with ID ${listingId} not found.`); return; } currentGalleryImages = listing.images; currentGalleryIndex = 0; thumbnailContainer.innerHTML = ''; if (currentGalleryImages && currentGalleryImages.length > 0) { currentGalleryImages.forEach((imgSrc, index) => { const thumb = document.createElement('img'); thumb.src = applyDiscountOverlay(imgSrc); thumb.className = `w-24 h-16 object-cover rounded-md cursor-pointer border-2 border-transparent`; thumb.onclick = () => { currentGalleryIndex = index; updateGalleryView(); }; thumbnailContainer.appendChild(thumb); }); } else { mainGalleryImage.src = 'https://placehold.co/800x600/cccccc/ffffff?text=Không+có+ảnh'; } updateGalleryView(); const waterPriceText = listing.water > 0 ? (listing.waterUnit === 'nguoi' ? formatCurrency(listing.water) + '/người' : formatCurrency(listing.water) + '/khối') : 'Miễn phí'; const prefilledMessage = `Chào bạn, tôi quan tâm đến phòng trọ tại địa chỉ: ${listing.address} (Mã nhà: ${listing.code}).`; const facebookMessageLink = `https://m.me/${FACEBOOK_USERNAME}?ref=${encodeURIComponent(prefilledMessage)}`; const zaloLink = `https://zalo.me/${ZALO_PHONE_NUMBER}`; let amenitiesHTML = ''; if (listing.amenities) { const amenityMap = { airCon: { icon: 'fa-snowflake', text: 'Điều hòa' }, waterHeater: { icon: 'fa-temperature-full', text: 'Nóng lạnh' }, balcony: { icon: 'fa-archway', text: 'Ban công' }, parking: { icon: 'fa-motorcycle', text: 'Chỗ để xe' }, noLiveWithHost: { icon: 'fa-key', text: 'Không chung chủ' } }; const availableAmenities = Object.keys(amenityMap).filter(key => listing.amenities[key]); if (availableAmenities.length > 0) { amenitiesHTML = `<h3 class="text-lg font-semibold mb-2 mt-4">Tiện ích</h3><div class="flex flex-wrap gap-4">` + availableAmenities.map(key => ` <div class="flex items-center gap-2 text-sm bg-green-100 text-green-800 px-3 py-1 rounded-full"> <i class="fas ${amenityMap[key].icon}"></i> <span>${amenityMap[key].text}</span> </div> `).join('') + `</div>`; } } detailsSection.innerHTML = ` <h2 class="text-2xl font-bold mb-2 text-blue-700">${listing.address}</h2> <p class="text-lg font-semibold text-red-600 mb-4">${formatCurrency(listing.price)}/tháng</p> <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700"> <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-ruler-combined mr-2"></i>Diện tích:</strong> ${listing.area} m²</div> <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-toilet mr-2"></i>Vệ sinh:</strong> ${listing.wc}</div> <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-elevator mr-2"></i>Thang máy:</strong> ${listing.elevator || 'Không'}</div> <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-concierge-bell mr-2"></i>Phí dịch vụ:</strong> ${listing.serviceFee > 0 ? formatCurrency(listing.serviceFee) + '/người' : 'Miễn phí'}</div> <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-bolt mr-2"></i>Giá điện:</strong> ${listing.electricity > 0 ? formatCurrency(listing.electricity) + '/kWh' : 'Miễn phí'}</div> <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-tint mr-2"></i>Giá nước:</strong> ${waterPriceText}</div> <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-wifi mr-2"></i>Giá mạng:</strong> ${listing.internet > 0 ? formatCurrency(listing.internet) + '/phòng' : 'Miễn phí'}</div> <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-barcode mr-2"></i>Mã nhà:</strong> ${listing.code}</div> </div> ${amenitiesHTML} <div class="mt-6 pt-4 border-t grid grid-cols-1 sm:grid-cols-2 gap-4"> <a href="${zaloLink}" target="_blank" class="inline-block w-full bg-sky-500 hover:bg-sky-600 text-white font-bold py-3 px-4 rounded-lg transition duration-300 text-center text-lg"> <i class="fas fa-phone mr-2"></i> Gọi Zalo </a> <a href="${facebookMessageLink}" target="_blank" class="inline-block w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 text-center text-lg"> <i class="fab fa-facebook-messenger mr-2"></i> Nhắn tin Facebook </a> </div>`; listingModal.classList.remove('hidden'); }
+        
+        function showListingModal(listingId) {
+            const listing = findListingById(listingId);
+            if (!listing) { console.error(`Listing with ID ${listingId} not found.`); return; }
+            currentGalleryImages = listing.images;
+            currentGalleryIndex = 0;
+            thumbnailContainer.innerHTML = '';
+            if (currentGalleryImages && currentGalleryImages.length > 0) {
+                currentGalleryImages.forEach((imgSrc, index) => {
+                    const thumb = document.createElement('img');
+                    // Áp dụng overlay giảm giá cho ảnh thumbnail trong modal
+                    thumb.src = applyDiscountOverlay(imgSrc);
+                    thumb.className = `w-24 h-16 object-cover rounded-md cursor-pointer border-2 border-transparent`;
+                    thumb.onclick = () => { currentGalleryIndex = index; updateGalleryView(); };
+                    thumbnailContainer.appendChild(thumb);
+                });
+            } else {
+                mainGalleryImage.src = 'https://placehold.co/800x600/cccccc/ffffff?text=Không+có+ảnh';
+            }
+            updateGalleryView();
+
+            const waterPriceText = listing.water > 0 ? (listing.waterUnit === 'nguoi' ? formatCurrency(listing.water) + '/người' : formatCurrency(listing.water) + '/khối') : 'Miễn phí';
+            const prefilledMessage = `Chào bạn, tôi quan tâm đến phòng trọ tại địa chỉ: ${listing.address} (Mã nhà: ${listing.code}).`;
+            const facebookMessageLink = `https://m.me/${FACEBOOK_USERNAME}?ref=${encodeURIComponent(prefilledMessage)}`;
+            
+            detailsSection.innerHTML = `
+                <h2 class="text-2xl font-bold mb-2 text-blue-700">${listing.address}</h2>
+                <p class="text-lg font-semibold text-red-600 mb-4">${formatCurrency(listing.price)}/tháng</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
+                    <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-ruler-combined mr-2"></i>Diện tích:</strong> ${listing.area} m²</div>
+                    <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-toilet mr-2"></i>Vệ sinh:</strong> ${listing.wc}</div>
+                    <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-elevator mr-2"></i>Thang máy:</strong> ${listing.elevator || 'Không'}</div>
+                    <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-concierge-bell mr-2"></i>Phí dịch vụ:</strong> ${listing.serviceFee > 0 ? formatCurrency(listing.serviceFee) + '/người' : 'Miễn phí'}</div>
+                    <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-bolt mr-2"></i>Giá điện:</strong> ${listing.electricity > 0 ? formatCurrency(listing.electricity) + '/kWh' : 'Miễn phí'}</div>
+                    <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-tint mr-2"></i>Giá nước:</strong> ${waterPriceText}</div>
+                    <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-wifi mr-2"></i>Giá mạng:</strong> ${listing.internet > 0 ? formatCurrency(listing.internet) + '/phòng' : 'Miễn phí'}</div>
+                    <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-barcode mr-2"></i>Mã nhà:</strong> ${listing.code}</div>
+                </div>
+                <div class="mt-6 pt-4 border-t">
+                    <a href="${facebookMessageLink}" target="_blank" class="inline-block w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 text-center text-lg">
+                        <i class="fab fa-facebook-messenger mr-2"></i> Nhắn tin qua Facebook
+                    </a>
+                </div>`;
+            listingModal.classList.remove('hidden');
+        }
+        
+        // ... (Các hàm còn lại giữ nguyên như cũ) ...
         function populateWards() { const data = authToken ? sessionListings : listingsData; const wards = [...new Set(data.map(item => item.ward).filter(Boolean))].sort(); const currentSelectionDesktop = filterWardDesktop.value; filterWardDesktop.innerHTML = '<option value="all">Tất cả</option>'; filterWardMobile.innerHTML = '<option value="all">Tất cả</option>'; wardsDatalist.innerHTML = ''; wards.forEach(ward => { const option = document.createElement('option'); option.value = ward; option.textContent = ward; filterWardDesktop.appendChild(option.cloneNode(true)); filterWardMobile.appendChild(option.cloneNode(true)); wardsDatalist.appendChild(option); }); if (wards.includes(currentSelectionDesktop)) { filterWardDesktop.value = currentSelectionDesktop; filterWardMobile.value = currentSelectionDesktop; } }
         function switchView(view) { Object.values(allViews).forEach(v => v.classList.add('hidden')); allViews[view].classList.remove('hidden'); window.scrollTo(0, 0); }
         function saveCloudinarySettings() { const cloudName = cloudinaryCloudNameInput.value.trim(); const uploadPreset = cloudinaryUploadPresetInput.value.trim(); if (cloudName && uploadPreset) { localStorage.setItem('cloudinarySettings', JSON.stringify({ cloudName, uploadPreset })); alert('Đã lưu cài đặt Cloudinary!'); } else { alert('Vui lòng điền đầy đủ cả Cloud Name và Upload Preset.'); } }
         function loadCloudinarySettings() { const settings = JSON.parse(localStorage.getItem('cloudinarySettings')); if (settings) { cloudinaryCloudNameInput.value = settings.cloudName; cloudinaryUploadPresetInput.value = settings.uploadPreset; } }
         async function uploadToCloudinary(files) { const settings = JSON.parse(localStorage.getItem('cloudinarySettings')); if (!settings || !settings.cloudName || !settings.uploadPreset) { throw new Error('Chưa cài đặt Cloudinary.'); } const { cloudName, uploadPreset } = settings; const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`; const uploadPromises = files.map(file => { const formData = new FormData(); formData.append('file', file); formData.append('upload_preset', uploadPreset); return fetch(url, { method: 'POST', body: formData }).then(response => response.json()); }); const results = await Promise.all(uploadPromises); return results.map(result => { if (result.secure_url) return result.secure_url; throw new Error(`Upload thất bại: ${result.error.message}`); }); }
-        async function handleAdminSubmit() { const requiredFields = ['code', 'address', 'ward', 'price', 'area']; for (const field of requiredFields) { if (!adminForm[field].value) { alert(`Vui lòng điền thông tin: ${adminForm[field].previousElementSibling.textContent}`); return; } } if (!currentEditId && uploadedFiles.length === 0) { alert('Vui lòng chọn ít nhất một ảnh cho tin đăng mới.'); return; } submitListingBtn.disabled = true; submitSpinner.classList.remove('hidden'); try { let imageUrls = []; if (uploadedFiles.length > 0) { submitBtnText.textContent = 'Đang upload ảnh...'; imageUrls = await uploadToCloudinary(uploadedFiles); } submitBtnText.textContent = 'Đang lưu...'; const amenitiesData = {}; for (const key in adminForm.amenities) { amenitiesData[key] = adminForm.amenities[key].checked; } const listingData = { code: adminForm.code.value, address: adminForm.address.value, ward: adminForm.ward.value, price: parseInt(adminForm.price.value), area: parseInt(adminForm.area.value), wc: adminForm.wc.value, elevator: adminForm.elevator.value, electricity: parseInt(adminForm.electricity.value) || 0, water: parseInt(adminForm.water.value) || 0, waterUnit: document.getElementById('admin-water-unit')?.value || 'khoi', serviceFee: parseInt(adminForm.serviceFee.value) || 0, internet: parseInt(adminForm.internet.value) || 0, amenities: amenitiesData }; if (currentEditId) { const listingIndex = sessionListings.findIndex(l => l.id === currentEditId); if (listingIndex > -1) { const existingListing = sessionListings[listingIndex]; listingData.images = imageUrls.length > 0 ? imageUrls : existingListing.images; listingData.id = existingListing.id; listingData.timestamp = Date.now(); listingData.status = existingListing.status || 'available'; sessionListings[listingIndex] = listingData; alert('Cập nhật tin đăng thành công!'); } } else { listingData.images = imageUrls; listingData.id = 'P' + Date.now(); listingData.timestamp = Date.now(); listingData.status = 'available'; sessionListings.push(listingData); alert('Thêm tin đăng mới thành công!'); } clearAdminForm(); renderAdminListings(adminSearchInput.value.toLowerCase().trim()); populateWards(); } catch (error) { console.error("Lỗi:", error); alert(`Đã xảy ra lỗi: ${error.message}`); } finally { submitListingBtn.disabled = false; submitSpinner.classList.add('hidden'); submitBtnText.textContent = 'Thêm Tin Đăng Mới'; } }
-        function clearAdminForm() { Object.values(adminForm).forEach(input => { if (typeof input === 'object' && input.nodeName !== 'INPUT' && input.nodeName !== 'SELECT' && input.nodeName !== 'TEXTAREA') { if (input.amenities) { for (const key in input.amenities) { input.amenities[key].checked = false; } } } else if(input.type !== 'select-one') { input.value = ''; } }); adminForm.wc.value = 'Khép kín'; adminForm.elevator.value = 'Không'; if (document.getElementById('admin-water-unit')) { document.getElementById('admin-water-unit').value = 'khoi'; } imagePreviewContainer.innerHTML = ''; dataParserInput.value = ''; uploadedFiles = []; currentEditId = null; submitBtnText.textContent = 'Thêm Tin Đăng Mới'; }
+        async function handleAdminSubmit() { const requiredFields = ['code', 'address', 'ward', 'price', 'area']; for (const field of requiredFields) { if (!adminForm[field].value) { alert(`Vui lòng điền thông tin: ${adminForm[field].previousElementSibling.textContent}`); return; } } if (!currentEditId && uploadedFiles.length === 0) { alert('Vui lòng chọn ít nhất một ảnh cho tin đăng mới.'); return; } submitListingBtn.disabled = true; submitSpinner.classList.remove('hidden'); try { let imageUrls = []; if (uploadedFiles.length > 0) { submitBtnText.textContent = 'Đang upload ảnh...'; imageUrls = await uploadToCloudinary(uploadedFiles); } submitBtnText.textContent = 'Đang lưu...'; const listingData = { code: adminForm.code.value, address: adminForm.address.value, ward: adminForm.ward.value, price: parseInt(adminForm.price.value), area: parseInt(adminForm.area.value), wc: adminForm.wc.value, elevator: adminForm.elevator.value, electricity: parseInt(adminForm.electricity.value) || 0, water: parseInt(adminForm.water.value) || 0, waterUnit: document.getElementById('admin-water-unit')?.value || 'khoi', serviceFee: parseInt(adminForm.serviceFee.value) || 0, internet: parseInt(adminForm.internet.value) || 0, }; if (currentEditId) { const listingIndex = sessionListings.findIndex(l => l.id === currentEditId); if (listingIndex > -1) { const existingListing = sessionListings[listingIndex]; listingData.images = imageUrls.length > 0 ? imageUrls : existingListing.images; listingData.id = existingListing.id; listingData.timestamp = Date.now(); sessionListings[listingIndex] = listingData; alert('Cập nhật tin đăng thành công!'); } } else { listingData.images = imageUrls; listingData.id = 'P' + Date.now(); listingData.timestamp = Date.now(); sessionListings.push(listingData); alert('Thêm tin đăng mới thành công!'); } clearAdminForm(); renderAdminListings(adminSearchInput.value.toLowerCase().trim()); populateWards(); } catch (error) { console.error("Lỗi:", error); alert(`Đã xảy ra lỗi: ${error.message}`); } finally { submitListingBtn.disabled = false; submitSpinner.classList.add('hidden'); submitBtnText.textContent = 'Thêm Tin Đăng Mới'; } }
+        function clearAdminForm() { Object.values(adminForm).forEach(input => { if (input.type !== 'select-one') input.value = ''; }); if (document.getElementById('admin-water-unit')) { document.getElementById('admin-water-unit').value = 'khoi'; } imagePreviewContainer.innerHTML = ''; dataParserInput.value = ''; uploadedFiles = []; currentEditId = null; submitBtnText.textContent = 'Thêm Tin Đăng Mới'; }
         function parsePrice(priceStr) { if (!priceStr) return 0; priceStr = priceStr.toLowerCase().replace(/,/g, '.'); let price = 0; if (priceStr.includes('tr')) { const parts = priceStr.split('tr'); const mainPart = parseFloat(parts[0]) || 0; price = mainPart * 1000000; if (parts[1]) { const subPart = parseInt(parts[1]) || 0; price += subPart * 100000; } } else { price = parseInt(priceStr.replace(/\D/g, '')) || 0; } return price; }
         function parseKNumber(kStr) { if (!kStr) return 0; kStr = kStr.toLowerCase().replace(/,/g, '.'); let value = 0; if (kStr.includes('k')) { const parts = kStr.split('k'); const mainPart = parseFloat(parts[0]) || 0; value = mainPart * 1000; if (parts[1]) { const subPart = parseInt(parts[1]) || 0; value += subPart * 100; } } else { value = parseInt(kStr.replace(/\D/g, '')) || 0; } return value; }
         function parseData() { const text = dataParserInput.value; if (!text) { alert('Vui lòng dán nội dung vào ô.'); return; } const getVal = (regex, defaultVal = '') => (text.match(regex) || [])[1] || defaultVal; adminForm.code.value = getVal(/Mã\s*(\S+)/i); adminForm.address.value = getVal(/[🕍🏠]\s*(.*)/i).trim(); const priceStr = getVal(/Giá\s*[-:]?\s*([^\n\r]*)/i).trim(); adminForm.price.value = parsePrice(priceStr); const areaStr = getVal(/Diện tích\s*(\d+)/i); adminForm.area.value = parseInt(areaStr) || 0; const elecStr = getVal(/Điện\s*([^\s\/]+)/i); adminForm.electricity.value = parseKNumber(elecStr); const waterStr = getVal(/Nước\s*([^\s\/]+)/i); adminForm.water.value = parseKNumber(waterStr); const serviceFeeStr = getVal(/(?:Dịch vụ chung|dvc)[:\s]*([^\s\/]+)/i); adminForm.serviceFee.value = parseKNumber(serviceFeeStr); const internetStr = getVal(/Mạng\s*([^\s\/]+)/i) || getVal(/wifi\s*([^\s\/]+)/i); adminForm.internet.value = parseKNumber(internetStr); if(adminForm.internet.value === 0 && /gồm.*wifi/i.test(text.toLowerCase())) adminForm.internet.value = 100000; adminForm.elevator.value = /thang máy/i.test(text.toLowerCase()) ? 'Có' : 'Không'; adminForm.wc.value = /khép kín|giặt riêng/i.test(text.toLowerCase()) ? 'Khép kín' : 'Chung'; const address = adminForm.address.value.toLowerCase(); const allWards = [...new Set(sessionListings.map(item => item.ward).filter(Boolean))]; adminForm.ward.value = allWards.find(w => address.includes(w.toLowerCase())) || ''; alert('Bóc tách dữ liệu hoàn tất! Vui lòng kiểm tra lại thông tin và chọn ảnh.'); }
         function handleImageFiles(files) { uploadedFiles = Array.from(files); renderImagePreviews(); }
         function renderImagePreviews() { imagePreviewContainer.innerHTML = ''; if (uploadedFiles.length > 0) { uploadedFiles.forEach((file, index) => { const item = document.createElement('div'); item.className = 'image-preview-item'; const thumb = document.createElement('img'); thumb.src = URL.createObjectURL(file); thumb.className = 'w-full h-24 object-cover rounded-md'; thumb.onload = () => URL.revokeObjectURL(thumb.src); const deleteBtn = document.createElement('button'); deleteBtn.className = 'delete-image-btn'; deleteBtn.innerHTML = '&times;'; deleteBtn.dataset.index = index; deleteBtn.onclick = (e) => { const idxToRemove = parseInt(e.target.dataset.index); uploadedFiles.splice(idxToRemove, 1); renderImagePreviews(); }; item.appendChild(thumb); item.appendChild(deleteBtn); imagePreviewContainer.appendChild(item); }); } }
-        function renderAdminListings(searchTerm = '') { adminListingsContainer.innerHTML = ''; let listingsToRender = [...sessionListings]; if (searchTerm) { listingsToRender = listingsToRender.filter(listing => (listing.address?.toLowerCase().includes(searchTerm)) || (listing.code?.toLowerCase().includes(searchTerm))); } if (listingsToRender.length === 0) { adminListingsContainer.innerHTML = '<p class="text-sm text-gray-500">Không tìm thấy tin đăng nào.</p>'; return; } const sortedListings = listingsToRender.sort((a, b) => b.timestamp - a.timestamp); sortedListings.forEach(listing => { const isRented = listing.status === 'rented'; const statusBtnClass = isRented ? 'bg-green-500 hover:bg-green-600' : 'bg-yellow-500 hover:bg-yellow-600'; const statusBtnIcon = isRented ? 'fa-check-circle' : 'fa-times-circle'; const statusBtnTitle = isRented ? 'Đánh dấu là Còn phòng' : 'Đánh dấu là Đã cho thuê'; const item = document.createElement('div'); item.className = `flex items-center justify-between p-2 rounded-md ${isRented ? 'bg-gray-200' : 'bg-gray-50'}`; item.innerHTML = ` <div class="flex-grow truncate pr-4 ${isRented ? 'opacity-50' : ''}"> <p class="text-sm text-gray-800 font-medium">${listing.address}</p> <p class="text-xs text-gray-500">${listing.ward} - ${formatCurrency(listing.price)}</p> </div> <div class="flex-shrink-0 flex gap-2"> <button data-id="${listing.id}" class="status-toggle-btn ${statusBtnClass} text-white w-8 h-8 rounded-md flex items-center justify-center" title="${statusBtnTitle}"> <i class="fas ${statusBtnIcon}"></i> </button> <button data-id="${listing.id}" class="edit-listing-btn bg-blue-500 text-white w-8 h-8 rounded-md hover:bg-blue-600 flex items-center justify-center" title="Sửa tin này"> <i class="fas fa-pencil-alt"></i> </button> <button data-id="${listing.id}" class="delete-listing-btn bg-red-500 text-white w-8 h-8 rounded-md hover:bg-red-600 flex items-center justify-center" title="Xóa tin này"> <i class="fas fa-trash"></i> </button> </div>`; adminListingsContainer.appendChild(item); }); }
-        function handleEditListing(listingId) { const listingToEdit = sessionListings.find(l => l.id === listingId); if (!listingToEdit) return; currentEditId = listingId; adminForm.code.value = listingToEdit.code; adminForm.address.value = listingToEdit.address; adminForm.ward.value = listingToEdit.ward; adminForm.price.value = listingToEdit.price; adminForm.area.value = listingToEdit.area; adminForm.elevator.value = listingToEdit.elevator; adminForm.wc.value = listingToEdit.wc; adminForm.electricity.value = listingToEdit.electricity; adminForm.water.value = listingToEdit.water; if (document.getElementById('admin-water-unit')) { document.getElementById('admin-water-unit').value = listingToEdit.waterUnit || 'khoi'; } adminForm.serviceFee.value = listingToEdit.serviceFee; adminForm.internet.value = listingToEdit.internet; if (listingToEdit.amenities) { for (const key in adminForm.amenities) { adminForm.amenities[key].checked = listingToEdit.amenities[key] || false; } } else { for (const key in adminForm.amenities) { adminForm.amenities[key].checked = false; } } imagePreviewContainer.innerHTML = '<p class="col-span-full text-sm text-blue-600 italic">Để thay đổi, vui lòng chọn lại tất cả ảnh cho tin đăng này.</p>'; uploadedFiles = []; submitBtnText.textContent = 'Cập Nhật Tin Đăng'; window.scrollTo({ top: document.getElementById('admin-view').offsetTop, behavior: 'smooth' }); }
+        function renderAdminListings(searchTerm = '') { adminListingsContainer.innerHTML = ''; let listingsToRender = [...sessionListings]; if (searchTerm) { listingsToRender = listingsToRender.filter(listing => (listing.address?.toLowerCase().includes(searchTerm)) || (listing.code?.toLowerCase().includes(searchTerm))); } if (listingsToRender.length === 0) { adminListingsContainer.innerHTML = '<p class="text-sm text-gray-500">Không tìm thấy tin đăng nào.</p>'; return; } const sortedListings = listingsToRender.sort((a, b) => b.timestamp - a.timestamp); sortedListings.forEach(listing => { const item = document.createElement('div'); item.className = 'flex items-center justify-between bg-gray-50 p-2 rounded-md'; item.innerHTML = ` <div class="flex-grow truncate pr-4"> <p class="text-sm text-gray-800 font-medium">${listing.address}</p> <p class="text-xs text-gray-500">${listing.ward} - ${formatCurrency(listing.price)}</p> </div> <div class="flex-shrink-0 flex gap-2"> <button data-id="${listing.id}" class="edit-listing-btn bg-blue-500 text-white w-8 h-8 rounded-md hover:bg-blue-600 flex items-center justify-center" title="Sửa tin này"> <i class="fas fa-pencil-alt"></i> </button> <button data-id="${listing.id}" class="delete-listing-btn bg-red-500 text-white w-8 h-8 rounded-md hover:bg-red-600 flex items-center justify-center" title="Xóa tin này"> <i class="fas fa-trash"></i> </button> </div>`; adminListingsContainer.appendChild(item); }); }
+        function handleEditListing(listingId) { const listingToEdit = sessionListings.find(l => l.id === listingId); if (!listingToEdit) return; currentEditId = listingId; adminForm.code.value = listingToEdit.code; adminForm.address.value = listingToEdit.address; adminForm.ward.value = listingToEdit.ward; adminForm.price.value = listingToEdit.price; adminForm.area.value = listingToEdit.area; adminForm.elevator.value = listingToEdit.elevator; adminForm.wc.value = listingToEdit.wc; adminForm.electricity.value = listingToEdit.electricity; adminForm.water.value = listingToEdit.water; if (document.getElementById('admin-water-unit')) { document.getElementById('admin-water-unit').value = listingToEdit.waterUnit || 'khoi'; } adminForm.serviceFee.value = listingToEdit.serviceFee; adminForm.internet.value = listingToEdit.internet; imagePreviewContainer.innerHTML = '<p class="col-span-full text-sm text-blue-600 italic">Để thay đổi, vui lòng chọn lại tất cả ảnh cho tin đăng này.</p>'; uploadedFiles = []; submitBtnText.textContent = 'Cập Nhật Tin Đăng'; window.scrollTo({ top: document.getElementById('admin-view').offsetTop, behavior: 'smooth' }); }
         function showConfirmModal(title, text, onOk) { confirmModalTitle.textContent = title; confirmModalText.textContent = text; confirmModal.classList.remove('hidden'); const newOk = confirmModalOk.cloneNode(true); confirmModalOk.parentNode.replaceChild(newOk, confirmModalOk); confirmModalOk = newOk; confirmModalOk.addEventListener('click', () => { onOk(); confirmModal.classList.add('hidden'); }, { once: true }); }
         
         // --- EVENT LISTENERS ---
@@ -447,18 +498,7 @@
         sortPriceMobile.addEventListener('change', () => { syncFilters(sortPriceMobile, sortPriceDesktop); updateAndRender(); });
         filterWardDesktop.addEventListener('change', () => { syncFilters(filterWardDesktop, filterWardMobile); updateAndRender(); });
         filterWardMobile.addEventListener('change', () => { syncFilters(filterWardMobile, filterWardDesktop); updateAndRender(); });
-        amenityFiltersMobile.addEventListener('change', updateAndRender);
-        
-        // ========== DÒNG CODE SỬA LỖI ==========
-        grid.addEventListener('click', (e) => {
-            const card = e.target.closest('.listing-card');
-            if (card) { // Chỉ cần kiểm tra có phải là card hay không
-                const listingId = card.dataset.id;
-                showListingModal(listingId);
-            }
-        });
-        // =====================================
-
+        grid.addEventListener('click', (e) => { const card = e.target.closest('.listing-card'); if (!card) return; const listingId = card.dataset.id; showListingModal(listingId); });
         closeListingModalBtn.addEventListener('click', () => listingModal.classList.add('hidden'));
         listingModal.addEventListener('click', (e) => { if (e.target === listingModal) listingModal.classList.add('hidden'); });
         openFilterBtn.addEventListener('click', toggleFilterMenu);
@@ -471,7 +511,7 @@
         dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); if (e.dataTransfer.files) { adminForm.images.files = e.dataTransfer.files; handleImageFiles(e.dataTransfer.files); } });
         adminForm.images.addEventListener('change', (e) => handleImageFiles(e.target.files));
         submitListingBtn.addEventListener('click', handleAdminSubmit);
-        adminListingsContainer.addEventListener('click', (e) => { const editBtn = e.target.closest('.edit-listing-btn'); const deleteBtn = e.target.closest('.delete-listing-btn'); const statusBtn = e.target.closest('.status-toggle-btn'); if (editBtn) { const idToEdit = editBtn.dataset.id; handleEditListing(idToEdit); return; } if (deleteBtn) { const idToDelete = deleteBtn.dataset.id; const listingToDelete = sessionListings.find(l => l.id === idToDelete); showConfirmModal('Xác nhận xóa', `Bạn có chắc chắn muốn xóa tin đăng tại: ${listingToDelete.address}?`, () => { sessionListings = sessionListings.filter(l => l.id !== idToDelete); renderAdminListings(adminSearchInput.value.toLowerCase().trim()); populateWards(); alert('Đã xóa tin đăng. Hãy nhấn nút "Lưu và Xuất Bản" để cập nhật vĩnh viễn.'); }); return; } if (statusBtn) { const idToToggle = statusBtn.dataset.id; const listingIndex = sessionListings.findIndex(l => l.id === idToToggle); if (listingIndex > -1) { const currentStatus = sessionListings[listingIndex].status; sessionListings[listingIndex].status = currentStatus === 'rented' ? 'available' : 'rented'; renderAdminListings(adminSearchInput.value.toLowerCase().trim()); alert('Đã cập nhật trạng thái. Hãy nhấn "Lưu và Xuất Bản" để lưu thay đổi.'); } } });
+        adminListingsContainer.addEventListener('click', (e) => { const editBtn = e.target.closest('.edit-listing-btn'); const deleteBtn = e.target.closest('.delete-listing-btn'); if (editBtn) { const idToEdit = editBtn.dataset.id; handleEditListing(idToEdit); return; } if (deleteBtn) { const idToDelete = deleteBtn.dataset.id; const listingToDelete = sessionListings.find(l => l.id === idToDelete); showConfirmModal('Xác nhận xóa', `Bạn có chắc chắn muốn xóa tin đăng tại: ${listingToDelete.address}?`, () => { sessionListings = sessionListings.filter(l => l.id !== idToDelete); renderAdminListings(adminSearchInput.value.toLowerCase().trim()); populateWards(); alert('Đã xóa tin đăng. Hãy nhấn nút "Lưu và Xuất Bản" để cập nhật vĩnh viễn.'); }); } });
         adminSearchInput.addEventListener('input', () => { const searchTerm = adminSearchInput.value.toLowerCase().trim(); renderAdminListings(searchTerm); });
         confirmModalCancel.addEventListener('click', () => confirmModal.classList.add('hidden'));
         confirmModal.addEventListener('click', (e) => { if (e.target === confirmModal) confirmModal.classList.add('hidden'); });
@@ -485,7 +525,7 @@
         function handleSwipe() { const swipeThreshold = 50; if (touchEndX < touchStartX - swipeThreshold) { showNextImage(); } if (touchEndX > touchStartX + swipeThreshold) { showPrevImage(); } }
 
         // --- KHỞI TẠO ---
-        generateSessionDiscount();
+        generateSessionDiscount(); // Tạo mã giảm giá ngay khi tải trang
         loadListings();
         switchView('main');
     });
