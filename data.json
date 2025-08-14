@@ -1299,23 +1299,5 @@
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990621/pkl8lb709h1ymracxnck.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990622/oai39q9cncew0t1jjafq.jpg"
     ]
-  },
-  {
-    "id": "P1755139028462",
-    "timestamp": 1755139028462,
-    "code": "12",
-    "address": "12",
-    "ward": "Hai Bà Trung",
-    "price": 12,
-    "area": 12,
-    "wc": "Khép kín",
-    "elevator": "Không",
-    "electricity": 0,
-    "water": 0,
-    "serviceFee": 0,
-    "internet": 0,
-    "images": [
-      "https://res.cloudinary.com/domiqn6vf/image/upload/v1755139027/a27bxbxuxgkgoqqfkows.jpg"
-    ]
   }
 ]
