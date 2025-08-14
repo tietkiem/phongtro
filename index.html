@@ -1,422 +1,126 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tìm Phòng Trọ Nhanh</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        body {
-            font-family: 'Be Vietnam Pro', sans-serif;
-            background-color: #f0f2f5;
-        }
-        .modal-backdrop { background-color: rgba(0,0,0,0.7); }
-        .listing-card { transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; }
-        .listing-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-        }
-        .gallery-scroll::-webkit-scrollbar { height: 8px; }
-        .gallery-scroll::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
-        .gallery-scroll::-webkit-scrollbar-thumb { background: #888; border-radius: 10px; }
-        .gallery-scroll::-webkit-scrollbar-thumb:hover { background: #555; }
-        .hidden { display: none; }
-        #login-view {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        #drop-zone.dragover {
-            border-color: #2563eb;
-            background-color: #eff6ff;
-        }
-        .image-preview-item { position: relative; }
-        .delete-image-btn {
-            position: absolute; top: -5px; right: -5px; width: 20px; height: 20px;
-            background-color: rgba(0,0,0,0.6); color: white; border-radius: 50%;
-            border: 1px solid white; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; font-size: 12px; line-height: 1;
-        }
-        .offcanvas-panel {
-            transition: transform 0.3s ease-in-out;
-        }
-    </style>
-</head>
-<body class="text-gray-800">
-
-    <div id="login-view" class="min-h-screen flex items-center justify-center p-4 hidden">
-        <div class="w-full max-w-sm bg-white rounded-xl shadow-2xl p-8">
-            <div class="text-center mb-8">
-                <i class="fas fa-house-user text-5xl text-blue-600"></i>
-                <h2 class="mt-4 text-2xl font-bold text-gray-800">Đăng Nhập Admin</h2>
-            </div>
-            <div class="space-y-4">
-                <div>
-                    <label for="username" class="block text-sm font-medium text-gray-700">Tên đăng nhập</label>
-                    <input type="text" id="username" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2">
-                </div>
-                <div>
-                    <label for="password" class="block text-sm font-medium text-gray-700">Mật khẩu</label>
-                    <input type="password" id="password" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2">
-                </div>
-                <p id="login-error" class="text-red-500 text-sm hidden">Tên đăng nhập hoặc mật khẩu không đúng.</p>
-                <button id="login-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">Đăng Nhập</button>
-                 <button id="back-to-main-from-login" class="mt-2 w-full text-center text-sm text-gray-600 hover:text-blue-600">Quay về trang chủ</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="main-view">
-        <header class="bg-white shadow-md sticky top-0 z-40">
-            <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-                <div class="text-left">
-                    <h1 class="text-2xl font-bold text-blue-600"><i class="fas fa-house-chimney-window mr-2"></i>Tìm Phòng Trọ</h1>
-                    <p class="text-sm text-gray-500 italic -mt-1">Tìm trọ miễn phí - An tâm lựa chọn.</p>
-                </div>
-                <div class="hidden lg:flex items-center gap-3">
-                    <div class="relative">
-                        <input type="search" id="search-input-desktop" placeholder="Tìm theo địa chỉ, mã nhà..." class="border border-gray-300 rounded-lg pl-10 pr-4 py-2 text-sm w-64 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <label for="sort-price-desktop" class="text-sm font-medium"><i class="fas fa-dollar-sign mr-1"></i>Giá:</label>
-                        <select id="sort-price-desktop" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="newest">Mới nhất</option>
-                            <option value="asc">Tăng dần</option>
-                            <option value="desc">Giảm dần</option>
-                        </select>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <label for="filter-ward-desktop" class="text-sm font-medium"><i class="fas fa-map-marker-alt mr-1"></i>Phường:</label>
-                        <select id="filter-ward-desktop" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="all">Tất cả</option>
-                        </select>
-                    </div>
-                    <button id="go-to-admin-btn-desktop" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300"><i class="fas fa-user-shield mr-2"></i>Admin</button>
-                </div>
-                <div class="lg:hidden">
-                    <button id="open-filter-btn" class="p-2 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400">
-                        <i class="fas fa-bars text-xl"></i>
-                    </button>
-                </div>
-            </div>
-        </header>
-
-        <main class="container mx-auto p-4">
-            <div id="listings-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                <div class="col-span-full text-center text-gray-500 py-10">
-                    <i class="fas fa-spinner fa-spin text-3xl"></i>
-                    <p>Đang tải dữ liệu...</p>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <div id="filter-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
-    <div id="filter-panel" class="offcanvas-panel fixed top-0 left-0 w-4/5 max-w-sm h-full bg-white z-50 shadow-lg p-6 space-y-6 transform -translate-x-full">
-        <div class="flex justify-between items-center border-b pb-4">
-            <h2 class="text-xl font-bold">Lọc & Tìm Kiếm</h2>
-            <button id="close-filter-btn" class="p-2 text-2xl font-bold">&times;</button>
-        </div>
-        <div class="space-y-4">
-            <div>
-                <label for="search-input-mobile" class="text-sm font-medium text-gray-700">Tìm địa chỉ, mã nhà</label>
-                <div class="relative mt-1">
-                    <input type="search" id="search-input-mobile" placeholder="Nhập từ khóa..." class="border border-gray-300 rounded-lg pl-10 pr-4 py-2 text-sm w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                </div>
-            </div>
-            <div>
-                <label for="sort-price-mobile" class="text-sm font-medium text-gray-700">Sắp xếp theo giá</label>
-                <select id="sort-price-mobile" class="border border-gray-300 rounded-lg px-3 py-2 text-sm mt-1 w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option value="newest">Mới nhất</option>
-                    <option value="asc">Tăng dần</option>
-                    <option value="desc">Giảm dần</option>
-                </select>
-            </div>
-            <div>
-                <label for="filter-ward-mobile" class="text-sm font-medium text-gray-700">Lọc theo phường</label>
-                <select id="filter-ward-mobile" class="border border-gray-300 rounded-lg px-3 py-2 text-sm mt-1 w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option value="all">Tất cả</option>
-                </select>
-            </div>
-        </div>
-        <div class="border-t pt-6">
-            <button id="go-to-admin-btn-mobile" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300">
-                <i class="fas fa-user-shield mr-2"></i>Trang Admin
-            </button>
-        </div>
-    </div>
-
-    <div id="admin-view" class="hidden">
-        <div class="container mx-auto p-4 sm:p-6 md:p-8">
-            <div class="max-w-6xl mx-auto bg-white rounded-xl shadow-2xl p-6">
-                <div class="flex flex-wrap justify-between items-center mb-6 border-b pb-4 gap-4">
-                    <h2 class="text-2xl font-bold text-gray-800">Trang Quản Trị</h2>
-                    <div class="flex items-center gap-4">
-                        <button id="go-to-main-btn" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300"><i class="fas fa-arrow-left mr-2"></i>Về Trang Chủ</button>
-                        <button id="logout-btn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300"><i class="fas fa-sign-out-alt mr-2"></i>Đăng xuất</button>
-                    </div>
-                </div>
-                <div class="mb-8 p-4 bg-purple-50 border border-purple-200 rounded-lg">
-                    <h3 class="text-lg font-semibold text-purple-800 mb-2"><i class="fas fa-cloud-upload-alt mr-2"></i>Cài đặt Cloudinary (Chỉ cần làm 1 lần)</h3>
-                    <p class="text-sm text-gray-600 mb-2">Để upload ảnh, bạn cần cung cấp thông tin tài khoản Cloudinary. Xem hướng dẫn <a href="https://cloudinary.com/documentation/upload_presets" target="_blank" class="text-blue-600 underline">tại đây</a> để tạo <strong>Upload Preset (Unsigned)</strong>.</p>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label for="cloudinary-cloud-name" class="block text-sm font-medium text-gray-700">Cloud Name</label>
-                            <input type="text" id="cloudinary-cloud-name" placeholder="Tên cloud của bạn" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2">
-                        </div>
-                        <div>
-                            <label for="cloudinary-upload-preset" class="block text-sm font-medium text-gray-700">Upload Preset Name</label>
-                            <input type="text" id="cloudinary-upload-preset" placeholder="Tên upload preset" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2">
-                        </div>
-                    </div>
-                    <button id="save-cloudinary-settings-btn" class="mt-3 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300"><i class="fas fa-save mr-2"></i>Lưu Cài Đặt</button>
-                </div>
-                <div class="mb-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <h3 class="text-lg font-semibold text-blue-800 mb-2"><i class="fas fa-magic mr-2"></i>Công cụ Bóc tách Dữ liệu</h3>
-                    <textarea id="data-parser-input" class="w-full h-32 border-gray-300 rounded-md shadow-sm p-2 font-mono text-sm" placeholder="Dán nội dung tin đăng vào đây..."></textarea>
-                    <button id="parse-data-btn" class="mt-2 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300">Bóc tách dữ liệu</button>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                    <div><label for="admin-code" class="block text-sm font-medium text-gray-700">Mã nhà</label><input type="text" id="admin-code" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2"></div>
-                    <div><label for="admin-address" class="block text-sm font-medium text-gray-700">Địa chỉ</label><input type="text" id="admin-address" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2"></div>
-                    <div><label for="admin-ward" class="block text-sm font-medium text-gray-700">Phường</label><input type="text" id="admin-ward" list="wards-datalist" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2"><datalist id="wards-datalist"></datalist></div>
-                    <div><label for="admin-price" class="block text-sm font-medium text-gray-700">Giá phòng (VND)</label><input type="number" id="admin-price" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2"></div>
-                    <div><label for="admin-area" class="block text-sm font-medium text-gray-700">Diện tích (m²)</label><input type="number" id="admin-area" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2"></div>
-                    <div><label for="admin-elevator" class="block text-sm font-medium text-gray-700">Thang máy</label><select id="admin-elevator" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2"><option>Không</option><option>Có</option></select></div>
-                    <div><label for="admin-wc" class="block text-sm font-medium text-gray-700">Vệ sinh</label><select id="admin-wc" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2"><option>Khép kín</option><option>Chung</option></select></div>
-                    <div><label for="admin-electricity" class="block text-sm font-medium text-gray-700">Giá điện (VND/kWh)</label><input type="number" id="admin-electricity" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2"></div>
-                    <div><label for="admin-water" class="block text-sm font-medium text-gray-700">Giá nước (VND/khối)</label><input type="number" id="admin-water" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2"></div>
-                    <div><label for="admin-service-fee" class="block text-sm font-medium text-gray-700">Phí dịch vụ (VND/người)</label><input type="number" id="admin-service-fee" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2"></div>
-                    <div><label for="admin-internet" class="block text-sm font-medium text-gray-700">Giá mạng (VND/phòng)</label><input type="number" id="admin-internet" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2"></div>
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700">Ảnh phòng trọ</label>
-                        <div id="drop-zone" class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md transition-colors duration-300">
-                            <div class="space-y-1 text-center">
-                                <i class="fas fa-cloud-upload-alt text-4xl text-gray-400"></i>
-                                <div class="flex text-sm text-gray-600">
-                                    <label for="admin-images" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none">
-                                        <span>Tải lên một file</span>
-                                        <input id="admin-images" type="file" class="sr-only" multiple accept="image/*">
-                                    </label>
-                                    <p class="pl-1">hoặc kéo và thả</p>
-                                </div>
-                                <p class="text-xs text-gray-500">PNG, JPG, GIF</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="image-preview-container" class="md:col-span-2 mt-2 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 bg-gray-50 p-2 rounded-md border min-h-[80px]"></div>
-                </div>
-                <div class="mt-8 pt-5 border-t">
-                     <button id="submit-listing-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 flex items-center justify-center text-lg"><i class="fas fa-plus-circle mr-2"></i><span id="submit-btn-text">Thêm Tin Đăng Mới</span><i id="submit-spinner" class="fas fa-spinner fa-spin ml-2 hidden"></i></button>
-                </div>
-                <div class="mt-10 pt-6 border-t-2 border-dashed border-gray-300">
-                     <h3 class="text-lg font-semibold text-gray-800 mb-2"><i class="fas fa-list-alt mr-2"></i>Quản lý Tin đăng hiện tại</h3>
-                     <div id="admin-listings-container" class="space-y-2 max-h-96 overflow-y-auto pr-2"></div>
-                </div>
-                <div class="mt-10 pt-6 border-t-2 border-dashed border-gray-300">
-                    <div class="p-4 bg-green-50 border border-green-300 rounded-lg">
-                        <h3 class="text-lg font-semibold text-green-800 mb-2"><i class="fas fa-cogs mr-2"></i>Công Cụ Cập Nhật Website</h3>
-                        <p class="text-sm text-gray-600 mb-2">Sau khi đã thêm/xóa/sửa tin, nhấn nút bên dưới để lưu và xuất bản các thay đổi lên website.</p>
-                        <ol class="list-decimal list-inside text-sm space-y-1">
-                            <li>Thực hiện các thay đổi (thêm/xóa/sửa tin).</li>
-                            <li>Nhấn nút <strong>"Lưu và Xuất Bản Lên GitHub"</strong>.</li>
-                            <li>Chờ khoảng 1-2 phút để website của bạn tự động cập nhật.</li>
-                        </ol>
-                        <button id="publish-to-github-btn" class="mt-3 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 flex items-center justify-center">
-							<i class="fab fa-github mr-2"></i>Lưu và Xuất Bản Lên GitHub
-						</button>
-						<p id="publish-status" class="text-sm mt-2"></p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="listing-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
-        <div class="bg-white rounded-lg shadow-2xl w-full max-w-4xl max-h-[95vh] flex flex-col">
-            <button id="close-listing-modal" class="absolute top-2 right-2 text-white bg-black bg-opacity-50 rounded-full w-8 h-8 flex items-center justify-center text-xl z-20">&times;</button>
-            <div class="p-4 flex-grow overflow-y-auto">
-                <div id="gallery-section" class="mb-4">
-                     <img id="main-gallery-image" src="" alt="Ảnh phòng trọ" class="w-full h-[60vh] object-contain rounded-md mb-2 bg-gray-100">
-                     <div id="thumbnail-gallery-container" class="flex gap-2 overflow-x-auto pb-2 gallery-scroll"></div>
-                </div>
-                <div id="details-section" class="p-4 border-t"></div>
-            </div>
-        </div>
-    </div>
-    
-    <div id="confirm-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
-        <div class="bg-white rounded-lg shadow-2xl w-full max-w-sm p-6">
-            <h3 id="confirm-modal-title" class="text-lg font-bold text-gray-800">Xác nhận hành động</h3>
-            <p id="confirm-modal-text" class="text-sm text-gray-600 mt-2">Bạn có chắc chắn muốn thực hiện hành động này?</p>
-            <div class="mt-6 flex justify-end gap-3">
-                <button id="confirm-modal-cancel" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Hủy</button>
-                <button id="confirm-modal-ok" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">Xác nhận</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
+<script>
     document.addEventListener('DOMContentLoaded', () => {
-        let listingsData = []; 
+        let listingsData = [];
         let listingsMap = new Map();
         let sessionListings = [];
-        let isAdminLoggedIn = false;
         let uploadedFiles = [];
+        
+        // BIẾN MỚI: Dùng để lưu "vé vào cửa"
+        let authToken = null;
 
-        // --- DOM ELEMENTS ---
+        // --- DOM ELEMENTS (giữ nguyên) ---
         const allViews = { login: document.getElementById('login-view'), main: document.getElementById('main-view'), admin: document.getElementById('admin-view') };
         const usernameInput = document.getElementById('username');
         const passwordInput = document.getElementById('password');
         const loginBtn = document.getElementById('login-btn');
         const loginError = document.getElementById('login-error');
-        const backToMainFromLoginBtn = document.getElementById('back-to-main-from-login');
-        const grid = document.getElementById('listings-grid');
-        const searchInputDesktop = document.getElementById('search-input-desktop');
-        const sortPriceDesktop = document.getElementById('sort-price-desktop');
-        const filterWardDesktop = document.getElementById('filter-ward-desktop');
-        const searchInputMobile = document.getElementById('search-input-mobile');
-        const sortPriceMobile = document.getElementById('sort-price-mobile');
-        const filterWardMobile = document.getElementById('filter-ward-mobile');
-        const filterPanel = document.getElementById('filter-panel');
-        const filterOverlay = document.getElementById('filter-overlay');
-        const openFilterBtn = document.getElementById('open-filter-btn');
-        const closeFilterBtn = document.getElementById('close-filter-btn');
-        const listingModal = document.getElementById('listing-modal');
-        const closeListingModalBtn = document.getElementById('close-listing-modal');
-        const mainGalleryImage = document.getElementById('main-gallery-image');
-        const thumbnailContainer = document.getElementById('thumbnail-gallery-container');
-        const detailsSection = document.getElementById('details-section');
-        const goToAdminBtnDesktop = document.getElementById('go-to-admin-btn-desktop');
-        const goToAdminBtnMobile = document.getElementById('go-to-admin-btn-mobile');
-        const goToMainBtn = document.getElementById('go-to-main-btn');
-        const logoutBtn = document.getElementById('logout-btn');
-        const dataParserInput = document.getElementById('data-parser-input');
-        const parseDataBtn = document.getElementById('parse-data-btn');
-        const adminForm = { code: document.getElementById('admin-code'), address: document.getElementById('admin-address'), ward: document.getElementById('admin-ward'), price: document.getElementById('admin-price'), area: document.getElementById('admin-area'), wc: document.getElementById('admin-wc'), elevator: document.getElementById('admin-elevator'), electricity: document.getElementById('admin-electricity'), water: document.getElementById('admin-water'), serviceFee: document.getElementById('admin-service-fee'), internet: document.getElementById('admin-internet'), images: document.getElementById('admin-images') };
-        const wardsDatalist = document.getElementById('wards-datalist');
-        const dropZone = document.getElementById('drop-zone');
-        const imagePreviewContainer = document.getElementById('image-preview-container');
-        const submitListingBtn = document.getElementById('submit-listing-btn');
-        const submitBtnText = document.getElementById('submit-btn-text');
-        const submitSpinner = document.getElementById('submit-spinner');
-        const cloudinaryCloudNameInput = document.getElementById('cloudinary-cloud-name');
-        const cloudinaryUploadPresetInput = document.getElementById('cloudinary-upload-preset');
-        const saveCloudinarySettingsBtn = document.getElementById('save-cloudinary-settings-btn');
-        const adminListingsContainer = document.getElementById('admin-listings-container');
-        const confirmModal = document.getElementById('confirm-modal');
-        let confirmModalOk = document.getElementById('confirm-modal-ok');
-        const confirmModalCancel = document.getElementById('confirm-modal-cancel');
-        const confirmModalTitle = document.getElementById('confirm-modal-title');
-        const confirmModalText = document.getElementById('confirm-modal-text');
-        const publishBtn = document.getElementById('publish-to-github-btn');
-        const publishStatus = document.getElementById('publish-status');
+        // ... (các element khác giữ nguyên)
 
-        // --- FUNCTIONS ---
-        // (Tất cả các hàm từ syncFilters đến showConfirmModal không thay đổi)
-        function syncFilters(source, target) { target.value = source.value; }
-        function toggleFilterMenu() { filterPanel.classList.toggle('-translate-x-full'); filterOverlay.classList.toggle('hidden'); }
-        async function loadListings() { try { const response = await fetch(`data.json?v=${new Date().getTime()}`); if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`); const data = await response.json(); listingsData = data; sessionListings = JSON.parse(JSON.stringify(data)); listingsMap = new Map(data.map(item => [item.id, item])); updateAndRender(); populateWards(); } catch (error) { console.error('Could not fetch listings data:', error); grid.innerHTML = `<p class="col-span-full text-center text-red-500">Lỗi tải dữ liệu. Vui lòng kiểm tra file data.json và làm mới trang.</p>`; } }
-        const formatCurrency = (amount) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
-        function renderListings(data) { grid.innerHTML = ''; if (data.length === 0) { grid.innerHTML = `<p class="col-span-full text-center text-gray-500 py-10">Không tìm thấy phòng trọ nào phù hợp.</p>`; return; } data.forEach(listing => { const card = document.createElement('div'); card.className = 'listing-card bg-white rounded-lg shadow-lg overflow-hidden cursor-pointer'; card.setAttribute('data-id', listing.id); card.innerHTML = `<div class="relative"><img src="${listing.images[0]}" alt="Ảnh phòng trọ" class="w-full h-48 object-cover" onerror="this.onerror=null;this.src='https://placehold.co/600x400/cccccc/ffffff?text=Lỗi+Ảnh';"><div class="absolute top-2 right-2 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded">${listing.ward}</div></div><div class="p-4"><p class="font-bold text-lg text-red-500">${formatCurrency(listing.price)}/tháng</p><p class="text-sm text-gray-600 truncate"><i class="fas fa-map-marker-alt mr-1 text-gray-400"></i>${listing.address}</p></div>`; grid.appendChild(card); }); }
-        function updateAndRender() { let dataToRender = isAdminLoggedIn ? sessionListings : listingsData; let filteredData = [...dataToRender]; const searchTerm = searchInputDesktop.value.toLowerCase().trim(); if (searchTerm) { filteredData = filteredData.filter(item => item.address.toLowerCase().includes(searchTerm) || (item.code && item.code.toLowerCase().includes(searchTerm))); } const selectedWard = filterWardDesktop.value; if (selectedWard !== 'all') { filteredData = filteredData.filter(item => item.ward === selectedWard); } const sortBy = sortPriceDesktop.value; if (sortBy === 'asc') filteredData.sort((a, b) => a.price - b.price); else if (sortBy === 'desc') filteredData.sort((a, b) => b.price - a.price); else filteredData.sort((a, b) => b.timestamp - a.timestamp); renderListings(filteredData); }
-        function findListingById(listingId) { const dataPool = isAdminLoggedIn ? new Map(sessionListings.map(item => [item.id, item])) : listingsMap; return dataPool.get(listingId); }
-        function showListingModal(listingId) { const listing = findListingById(listingId); if (!listing) return; mainGalleryImage.src = listing.images[0] || 'https://placehold.co/800x600/cccccc/ffffff?text=Không+có+ảnh'; thumbnailContainer.innerHTML = ''; listing.images.forEach((imgSrc, index) => { const thumb = document.createElement('img'); thumb.src = imgSrc; thumb.className = `w-24 h-16 object-cover rounded-md cursor-pointer border-2 ${index === 0 ? 'border-blue-500' : 'border-transparent'}`; thumb.onclick = () => { mainGalleryImage.src = imgSrc; document.querySelectorAll('#thumbnail-gallery-container img').forEach(t => t.classList.remove('border-blue-500')); thumb.classList.add('border-blue-500'); }; thumbnailContainer.appendChild(thumb); }); detailsSection.innerHTML = `<h2 class="text-2xl font-bold mb-2 text-blue-700">${listing.address}</h2><p class="text-lg font-semibold text-red-600 mb-4">${formatCurrency(listing.price)}/tháng</p><div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700"><div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-ruler-combined mr-2"></i>Diện tích:</strong> ${listing.area} m²</div><div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-toilet mr-2"></i>Vệ sinh:</strong> ${listing.wc}</div><div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-elevator mr-2"></i>Thang máy:</strong> ${listing.elevator || 'Không'}</div><div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-concierge-bell mr-2"></i>Phí dịch vụ:</strong> ${listing.serviceFee > 0 ? formatCurrency(listing.serviceFee) + '/người' : 'Miễn phí'}</div><div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-bolt mr-2"></i>Giá điện:</strong> ${formatCurrency(listing.electricity)}/kWh</div><div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-tint mr-2"></i>Giá nước:</strong> ${listing.water > 0 ? formatCurrency(listing.water) + '/khối' : 'Miễn phí'}</div><div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-wifi mr-2"></i>Giá mạng:</strong> ${listing.internet > 0 ? formatCurrency(listing.internet) + '/phòng' : 'Miễn phí'}</div><div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-barcode mr-2"></i>Mã nhà:</strong> ${listing.code}</div></div>`; listingModal.classList.remove('hidden'); }
-        function populateWards() { const data = isAdminLoggedIn ? sessionListings : listingsData; const wards = [...new Set(data.map(item => item.ward).filter(Boolean))].sort(); const currentSelectionDesktop = filterWardDesktop.value; filterWardDesktop.innerHTML = '<option value="all">Tất cả</option>'; filterWardMobile.innerHTML = '<option value="all">Tất cả</option>'; wardsDatalist.innerHTML = ''; wards.forEach(ward => { const option = document.createElement('option'); option.value = ward; option.textContent = ward; filterWardDesktop.appendChild(option.cloneNode(true)); filterWardMobile.appendChild(option.cloneNode(true)); wardsDatalist.appendChild(option); }); if (wards.includes(currentSelectionDesktop)) { filterWardDesktop.value = currentSelectionDesktop; filterWardMobile.value = currentSelectionDesktop; } }
-        function switchView(view) { Object.values(allViews).forEach(v => v.classList.add('hidden')); allViews[view].classList.remove('hidden'); window.scrollTo(0, 0); }
-        function saveCloudinarySettings() { const cloudName = cloudinaryCloudNameInput.value.trim(); const uploadPreset = cloudinaryUploadPresetInput.value.trim(); if (cloudName && uploadPreset) { localStorage.setItem('cloudinarySettings', JSON.stringify({ cloudName, uploadPreset })); alert('Đã lưu cài đặt Cloudinary!'); } else { alert('Vui lòng điền đầy đủ cả Cloud Name và Upload Preset.'); } }
-        function loadCloudinarySettings() { const settings = JSON.parse(localStorage.getItem('cloudinarySettings')); if (settings) { cloudinaryCloudNameInput.value = settings.cloudName; cloudinaryUploadPresetInput.value = settings.uploadPreset; } }
-        async function uploadToCloudinary(files) { const settings = JSON.parse(localStorage.getItem('cloudinarySettings')); if (!settings || !settings.cloudName || !settings.uploadPreset) { throw new Error('Chưa cài đặt Cloudinary.'); } const { cloudName, uploadPreset } = settings; const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`; const uploadPromises = files.map(file => { const formData = new FormData(); formData.append('file', file); formData.append('upload_preset', uploadPreset); return fetch(url, { method: 'POST', body: formData }).then(response => response.json()); }); const results = await Promise.all(uploadPromises); return results.map(result => { if (result.secure_url) return result.secure_url; throw new Error(`Upload thất bại: ${result.error.message}`); }); }
-        async function handleAdminSubmit() { const requiredFields = ['code', 'address', 'ward', 'price', 'area']; for (const field of requiredFields) { if (!adminForm[field].value) { alert(`Vui lòng điền thông tin: ${adminForm[field].previousElementSibling.textContent}`); return; } } if (uploadedFiles.length === 0) { alert('Vui lòng chọn ít nhất một ảnh.'); return; } submitListingBtn.disabled = true; submitBtnText.textContent = 'Đang upload ảnh...'; submitSpinner.classList.remove('hidden'); try { const imageUrls = await uploadToCloudinary(uploadedFiles); submitBtnText.textContent = 'Đang lưu...'; const newListing = { id: 'P' + Date.now(), timestamp: Date.now(), code: adminForm.code.value, address: adminForm.address.value, ward: adminForm.ward.value, price: parseInt(adminForm.price.value), area: parseInt(adminForm.area.value), wc: adminForm.wc.value, elevator: adminForm.elevator.value, electricity: parseInt(adminForm.electricity.value) || 0, water: parseInt(adminForm.water.value) || 0, serviceFee: parseInt(adminForm.serviceFee.value) || 0, internet: parseInt(adminForm.internet.value) || 0, images: imageUrls }; sessionListings.push(newListing); renderAdminListings(); populateWards(); alert('Thêm tin đăng mới thành công! Hãy nhấn nút "Lưu và Xuất Bản" để cập nhật website.'); Object.values(adminForm).forEach(input => { if (input.type !== 'select-one') input.value = ''; }); imagePreviewContainer.innerHTML = ''; dataParserInput.value = ''; uploadedFiles = []; } catch (error) { console.error("Lỗi:", error); alert(`Đã xảy ra lỗi: ${error.message}`); } finally { submitListingBtn.disabled = false; submitBtnText.textContent = 'Thêm Tin Đăng Mới'; submitSpinner.classList.add('hidden'); } }
-        function parsePrice(priceStr) { if (!priceStr) return 0; priceStr = priceStr.toLowerCase().replace(/,/g, '.'); let price = 0; if (priceStr.includes('tr')) { const parts = priceStr.split('tr'); const mainPart = parseFloat(parts[0]) || 0; price = mainPart * 1000000; if (parts[1]) { const subPart = parseInt(parts[1]) || 0; price += subPart * 100000; } } else { price = parseInt(priceStr.replace(/\D/g, '')) || 0; } return price; }
-        function parseKNumber(kStr) { if (!kStr) return 0; kStr = kStr.toLowerCase().replace(/,/g, '.'); let value = 0; if (kStr.includes('k')) { const parts = kStr.split('k'); const mainPart = parseFloat(parts[0]) || 0; value = mainPart * 1000; if (parts[1]) { const subPart = parseInt(parts[1]) || 0; value += subPart * 100; } } else { value = parseInt(kStr.replace(/\D/g, '')) || 0; } return value; }
-        function parseData() { const text = dataParserInput.value; if (!text) { alert('Vui lòng dán nội dung vào ô.'); return; } const getVal = (regex, defaultVal = '') => (text.match(regex) || [])[1] || defaultVal; adminForm.code.value = getVal(/Mã\s*(\S+)/i); adminForm.address.value = getVal(/[🕍🏠]\s*(.*)/i).trim(); const priceStr = getVal(/Giá\s*[-:]?\s*([^\n\r]*)/i).trim(); adminForm.price.value = parsePrice(priceStr); const areaStr = getVal(/Diện tích\s*(\d+)/i); adminForm.area.value = parseInt(areaStr) || 0; const elecStr = getVal(/Điện\s*([^\s\/]+)/i); adminForm.electricity.value = parseKNumber(elecStr); const waterStr = getVal(/Nước\s*([^\s\/]+)/i); adminForm.water.value = parseKNumber(waterStr); const serviceFeeStr = getVal(/(?:Dịch vụ chung|dvc)[:\s]*([^\s\/]+)/i); adminForm.serviceFee.value = parseKNumber(serviceFeeStr); const internetStr = getVal(/Mạng\s*([^\s\/]+)/i) || getVal(/wifi\s*([^\s\/]+)/i); adminForm.internet.value = parseKNumber(internetStr); if(adminForm.internet.value === 0 && /gồm.*wifi/i.test(text.toLowerCase())) adminForm.internet.value = 100000; adminForm.elevator.value = /thang máy/i.test(text.toLowerCase()) ? 'Có' : 'Không'; adminForm.wc.value = /khép kín|giặt riêng/i.test(text.toLowerCase()) ? 'Khép kín' : 'Chung'; const address = adminForm.address.value.toLowerCase(); const allWards = [...new Set(sessionListings.map(item => item.ward).filter(Boolean))]; adminForm.ward.value = allWards.find(w => address.includes(w.toLowerCase())) || ''; alert('Bóc tách dữ liệu hoàn tất! Vui lòng kiểm tra lại thông tin và chọn ảnh.'); }
-        function handleImageFiles(files) { uploadedFiles = Array.from(files); renderImagePreviews(); }
-        function renderImagePreviews() { imagePreviewContainer.innerHTML = ''; if (uploadedFiles.length > 0) { uploadedFiles.forEach((file, index) => { const item = document.createElement('div'); item.className = 'image-preview-item'; const thumb = document.createElement('img'); thumb.src = URL.createObjectURL(file); thumb.className = 'w-full h-24 object-cover rounded-md'; thumb.onload = () => URL.revokeObjectURL(thumb.src); const deleteBtn = document.createElement('button'); deleteBtn.className = 'delete-image-btn'; deleteBtn.innerHTML = '&times;'; deleteBtn.dataset.index = index; deleteBtn.onclick = (e) => { const idxToRemove = parseInt(e.target.dataset.index); uploadedFiles.splice(idxToRemove, 1); renderImagePreviews(); }; item.appendChild(thumb); item.appendChild(deleteBtn); imagePreviewContainer.appendChild(item); }); } }
-        function renderAdminListings() { adminListingsContainer.innerHTML = ''; if (sessionListings.length === 0) { adminListingsContainer.innerHTML = '<p class="text-sm text-gray-500">Chưa có tin đăng nào.</p>'; return; } const sortedListings = [...sessionListings].sort((a, b) => b.timestamp - a.timestamp); sortedListings.forEach(listing => { const item = document.createElement('div'); item.className = 'flex items-center justify-between bg-gray-50 p-2 rounded-md'; item.innerHTML = `<p class="text-sm text-gray-700 truncate pr-4">${listing.address} - <strong>${listing.ward}</strong></p><button data-id="${listing.id}" class="delete-listing-btn flex-shrink-0 bg-red-500 text-white w-6 h-6 rounded-md hover:bg-red-600">&times;</button>`; adminListingsContainer.appendChild(item); }); }
-        function showConfirmModal(title, text, onOk) { confirmModalTitle.textContent = title; confirmModalText.textContent = text; confirmModal.classList.remove('hidden'); const newOk = confirmModalOk.cloneNode(true); confirmModalOk.parentNode.replaceChild(newOk, confirmModalOk); confirmModalOk = newOk; confirmModalOk.addEventListener('click', () => { onOk(); confirmModal.classList.add('hidden'); }, { once: true }); }
-
+        // --- CÁC HÀM KHÁC (giữ nguyên từ loadListings đến showConfirmModal) ---
+        // ... (dán tất cả các hàm cũ của bạn vào đây)
+        
         // --- EVENT LISTENERS ---
-        // (Các event listener khác không thay đổi)
-        loginBtn.addEventListener('click', () => { if (usernameInput.value === 'mrhung' && passwordInput.value === '16051984') { isAdminLoggedIn = true; switchView('admin'); loadCloudinarySettings(); renderAdminListings(); loginError.classList.add('hidden'); usernameInput.value = ''; passwordInput.value = ''; } else { loginError.classList.remove('hidden'); } });
-        backToMainFromLoginBtn.addEventListener('click', () => switchView('main'));
-        logoutBtn.addEventListener('click', () => { isAdminLoggedIn = false; switchView('main'); });
-        const handleGoToAdmin = () => { if (isAdminLoggedIn) { switchView('admin'); renderAdminListings(); } else { switchView('login'); } if (!filterPanel.classList.contains('-translate-x-full')) { toggleFilterMenu(); } };
-        goToAdminBtnDesktop.addEventListener('click', handleGoToAdmin);
-        goToAdminBtnMobile.addEventListener('click', handleGoToAdmin);
-        goToMainBtn.addEventListener('click', () => { updateAndRender(); switchView('main'); });
-        searchInputDesktop.addEventListener('input', () => { syncFilters(searchInputDesktop, searchInputMobile); updateAndRender(); });
-        searchInputMobile.addEventListener('input', () => { syncFilters(searchInputMobile, searchInputDesktop); updateAndRender(); });
-        sortPriceDesktop.addEventListener('change', () => { syncFilters(sortPriceDesktop, sortPriceMobile); updateAndRender(); });
-        sortPriceMobile.addEventListener('change', () => { syncFilters(sortPriceMobile, sortPriceDesktop); updateAndRender(); });
-        filterWardDesktop.addEventListener('change', () => { syncFilters(filterWardDesktop, filterWardMobile); updateAndRender(); });
-        filterWardMobile.addEventListener('change', () => { syncFilters(filterWardMobile, filterWardDesktop); updateAndRender(); });
-        grid.addEventListener('click', (e) => { const card = e.target.closest('.listing-card'); if (!card) return; const listingId = card.dataset.id; showListingModal(listingId); });
-        closeListingModalBtn.addEventListener('click', () => listingModal.classList.add('hidden'));
-        listingModal.addEventListener('click', (e) => { if (e.target === listingModal) listingModal.classList.add('hidden'); });
-        openFilterBtn.addEventListener('click', toggleFilterMenu);
-        closeFilterBtn.addEventListener('click', toggleFilterMenu);
-        filterOverlay.addEventListener('click', toggleFilterMenu);
-        parseDataBtn.addEventListener('click', parseData);
-        saveCloudinarySettingsBtn.addEventListener('click', saveCloudinarySettings);
-        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
-        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-        dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); if (e.dataTransfer.files) { adminForm.images.files = e.dataTransfer.files; handleImageFiles(e.dataTransfer.files); } });
-        adminForm.images.addEventListener('change', (e) => handleImageFiles(e.target.files));
-        submitListingBtn.addEventListener('click', handleAdminSubmit);
-        adminListingsContainer.addEventListener('click', (e) => { if (e.target.classList.contains('delete-listing-btn')) { const idToDelete = e.target.dataset.id; const listingToDelete = sessionListings.find(l => l.id === idToDelete); showConfirmModal('Xác nhận xóa', `Bạn có chắc chắn muốn xóa tin đăng tại: ${listingToDelete.address}?`, () => { sessionListings = sessionListings.filter(l => l.id !== idToDelete); renderAdminListings(); populateWards(); alert('Đã xóa tin đăng. Hãy nhấn nút "Lưu và Xuất Bản" để cập nhật vĩnh viễn.'); }); } });
-        confirmModalCancel.addEventListener('click', () => confirmModal.classList.add('hidden'));
-        confirmModal.addEventListener('click', (e) => { if (e.target === confirmModal) confirmModal.classList.add('hidden'); });
 
-        // THAY ĐỔI: Trình xử lý sự kiện cho nút xuất bản với khả năng hiển thị lỗi chi tiết
+        // THAY ĐỔI: Logic nút Đăng Nhập
+        loginBtn.addEventListener('click', async () => {
+            const username = usernameInput.value;
+            const password = passwordInput.value;
+            loginBtn.disabled = true;
+            loginError.classList.add('hidden');
+
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password }),
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Lỗi không xác định.');
+                }
+                
+                // Lưu "vé vào cửa"
+                authToken = data.token;
+                
+                // Chuyển sang trang admin
+                switchView('admin');
+                loadCloudinarySettings();
+                renderAdminListings();
+                usernameInput.value = '';
+                passwordInput.value = '';
+
+            } catch (error) {
+                loginError.textContent = error.message;
+                loginError.classList.remove('hidden');
+            } finally {
+                loginBtn.disabled = false;
+            }
+        });
+
+        // THAY ĐỔI: Logic nút Đăng Xuất
+        logoutBtn.addEventListener('click', () => {
+            authToken = null; // Xóa "vé"
+            switchView('main');
+        });
+        
+        // THAY ĐỔI: Logic nút Trang Admin
+        const handleGoToAdmin = () => {
+            // Chỉ vào được nếu có "vé"
+            if (authToken) {
+                switchView('admin');
+                renderAdminListings();
+            } else {
+                switchView('login');
+            }
+            if (!filterPanel.classList.contains('-translate-x-full')) {
+                toggleFilterMenu();
+            }
+        };
+
+        // ... (Các event listener khác giữ nguyên)
+
+        // THAY ĐỔI: Logic nút Xuất Bản
         publishBtn.addEventListener('click', async () => {
-            if (!isAdminLoggedIn) {
-                alert("Vui lòng đăng nhập.");
+            // Kiểm tra xem có "vé" không
+            if (!authToken) {
+                alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+                switchView('login');
                 return;
             }
-            const isConfirmed = confirm("Bạn có chắc chắn muốn xuất bản dữ liệu hiện tại lên website không?");
+
+            const isConfirmed = confirm("Bạn có chắc chắn muốn xuất bản dữ liệu không?");
             if (!isConfirmed) return;
 
             publishStatus.textContent = 'Đang kết nối và xuất bản...';
-            publishStatus.className = 'text-sm mt-2 text-blue-600';
             publishBtn.disabled = true;
 
-            let response; // Khai báo response ở ngoài để có thể truy cập trong cả try và catch
             try {
                 const dataString = JSON.stringify(sessionListings, null, 2);
                 
-                response = await fetch('/api/publish', {
+                const response = await fetch('/api/publish', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // Gửi kèm "vé vào cửa"
+                        'Authorization': `Bearer ${authToken}`
+                    },
                     body: dataString,
                 });
+                
+                const result = await response.json();
 
-                // Kiểm tra xem phản hồi có phải là JSON hợp lệ hay không
-                const responseText = await response.text();
                 if (!response.ok) {
-                    // Nếu không OK, ném lỗi kèm theo nội dung text để bắt ở dưới
-                    throw new Error(responseText);
+                    throw new Error(result.message || 'Lỗi không xác định từ server.');
                 }
 
-                const result = JSON.parse(responseText); // Phân tích cú pháp text đã nhận
-                
                 publishStatus.textContent = 'Xuất bản thành công! Website sẽ được cập nhật sau vài phút.';
-                publishStatus.className = 'text-sm mt-2 text-green-600';
-                
                 listingsData = JSON.parse(JSON.stringify(sessionListings));
                 listingsMap = new Map(listingsData.map(item => [item.id, item]));
 
             } catch (error) {
-                console.error("Đã xảy ra lỗi khi xuất bản. Chi tiết bên dưới:");
-                
-                // Hiển thị nội dung lỗi chi tiết trong Console
-                // error.message lúc này sẽ chính là nội dung HTML của trang lỗi
-                console.error(error.message);
-
-                publishStatus.textContent = `Xuất bản thất bại! Hãy mở Console (nhấn F12) để xem chi tiết lỗi.`;
-                publishStatus.className = 'text-sm mt-2 text-red-600';
+                publishStatus.textContent = `Xuất bản thất bại: ${error.message}`;
             } finally {
                 publishBtn.disabled = false;
             }
@@ -426,6 +130,4 @@
         loadListings();
         switchView('main');
     });
-    </script>
-</body>
-</html>
+</script>

@@ -1,0 +1,12 @@
+{
+  "name": "phongtro-api-handler",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "jsonwebtoken": "^9.0.2"
+  },
+  "engines": {
+    "node": "22.x"
+  }
+}
