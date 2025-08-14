@@ -1197,17 +1197,16 @@
     ]
   },
   {
-    "id": "P1754990404606",
-    "timestamp": 1754990404606,
     "code": "857",
-    "address": "Ngách 45/94 Tân Mai - Hoàng Mai",
-    "ward": "Tân Mai",
+    "address": "Ngách 45/94 Tân Mai - Tân Mai",
+    "ward": "Hoàng Mai",
     "price": 3400000,
     "area": 30,
     "wc": "Khép kín",
     "elevator": "Không",
     "electricity": 4000,
     "water": 100000,
+    "waterUnit": "khoi",
     "serviceFee": 100000,
     "internet": 100000,
     "images": [
@@ -1228,20 +1227,21 @@
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990403/jotvb4dm3sthp6rdhckz.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990403/qalblm92nbupw4avcnu6.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990403/fnm1t3ezdmmasmicse9h.jpg"
-    ]
+    ],
+    "id": "P1754990404606",
+    "timestamp": 1755161595494
   },
   {
-    "id": "P1754990462357",
-    "timestamp": 1754990462357,
     "code": "857",
-    "address": "Ngõ 595/7 Lĩnh Nam - Hoàng Mai",
-    "ward": "Vĩnh Hưng ",
+    "address": "Ngõ 595/7 Lĩnh Nam - Vĩnh Hưng",
+    "ward": "Hoàng Mai",
     "price": 3000000,
     "area": 27,
     "wc": "Chung",
     "elevator": "Không",
     "electricity": 4000,
     "water": 100000,
+    "waterUnit": "khoi",
     "serviceFee": 100000,
     "internet": 100000,
     "images": [
@@ -1253,7 +1253,9 @@
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990461/crdovnwiang0dmkajyqb.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990460/fxj5ftmkjxelw9bo27e5.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990460/h0dbzobytbwku7qrfyh7.jpg"
-    ]
+    ],
+    "id": "P1754990462357",
+    "timestamp": 1755161586622
   },
   {
     "id": "P1754990514319",
@@ -1276,17 +1278,16 @@
     ]
   },
   {
-    "id": "P1754990630017",
-    "timestamp": 1754990630017,
     "code": "1128",
     "address": " 43/86 Trung kính  (Đi ngõ 180 Trần duy Hưng . 110 trân duy Hưng )",
-    "ward": "trung hòa",
+    "ward": "Cầu Giấy",
     "price": 5000000,
     "area": 28,
     "wc": "Chung",
     "elevator": "Có",
     "electricity": 3500,
     "water": 35000,
+    "waterUnit": "khoi",
     "serviceFee": 170000,
     "internet": 100000,
     "images": [
@@ -1298,20 +1299,21 @@
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990623/npxxitsjc2pc1svebdui.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990621/pkl8lb709h1ymracxnck.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990622/oai39q9cncew0t1jjafq.jpg"
-    ]
+    ],
+    "id": "P1754990630017",
+    "timestamp": 1755161567729
   },
   {
-    "id": "P1755157750636",
-    "timestamp": 1755157750636,
     "code": "NGÁCH 6 NGÕ 277 QUAN HOA ",
     "address": "NGÁCH 6 NGÕ 277 QUAN HOA ",
-    "ward": "Quan Hoa",
+    "ward": "Cầu Giấy",
     "price": 4000000,
     "area": 28,
     "wc": "Khép kín",
     "elevator": "Có",
     "electricity": 4000,
     "water": 35000,
+    "waterUnit": "khoi",
     "serviceFee": 150000,
     "internet": 100000,
     "images": [
@@ -1348,20 +1350,21 @@
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1755157700/cj7p60hh9wfchfxseaij.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1755157700/ebajiwtmnipi6uerqdfz.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1755157745/ioij0za3kslgmfqdasop.jpg"
-    ]
+    ],
+    "id": "P1755157750636",
+    "timestamp": 1755161559793
   },
   {
-    "id": "P1755158077307",
-    "timestamp": 1755158077307,
     "code": "SỐ 15 NGÕ 143 QUAN HOA",
     "address": "SỐ 15 NGÕ 143 QUAN HOA",
-    "ward": "Quan Hoa",
+    "ward": "Cầu Giấy",
     "price": 4200000,
     "area": 25,
     "wc": "Khép kín",
     "elevator": "Có",
     "electricity": 4000,
     "water": 150000,
+    "waterUnit": "khoi",
     "serviceFee": 100000,
     "internet": 100000,
     "images": [
@@ -1376,20 +1379,21 @@
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1755158068/w6ikwrn9yr6obomlap6c.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1755158067/lt3rhn1llkcbfubwvsth.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1755158072/zmudeomrvmlvxyftbb2h.jpg"
-    ]
+    ],
+    "id": "P1755158077307",
+    "timestamp": 1755161551671
   },
   {
-    "id": "P1755158420325",
-    "timestamp": 1755158420325,
     "code": "602 1PK + 2 PN",
     "address": "SỐ 15 NGÕ 143 QUAN HOA",
-    "ward": "Quan Hoa",
+    "ward": "Cầu Giấy",
     "price": 700000,
     "area": 45,
     "wc": "Khép kín",
     "elevator": "Có",
     "electricity": 4000,
     "water": 150000,
+    "waterUnit": "khoi",
     "serviceFee": 100000,
     "internet": 100000,
     "images": [
@@ -1400,20 +1404,21 @@
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1755158414/vkw4dst9uti4v9jzgya3.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1755158414/u0b0axp65gy1mtnm6gvy.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1755158418/qlmo9deqyjqxqs7nbqlf.jpg"
-    ]
+    ],
+    "id": "P1755158420325",
+    "timestamp": 1755161544845
   },
   {
-    "id": "P1755158562250",
-    "timestamp": 1755158562250,
     "code": "Trục 1",
     "address": "   \t 65B YÊN HÒA",
-    "ward": "Yên Hòa",
+    "ward": "Cầu Giấy",
     "price": 4000000,
     "area": 25,
     "wc": "Khép kín",
     "elevator": "Có",
     "electricity": 4000,
     "water": 35000,
+    "waterUnit": "khoi",
     "serviceFee": 100000,
     "internet": 100000,
     "images": [
@@ -1426,20 +1431,21 @@
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1755158558/pobv7wjdr0l3xwb9f1ms.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1755158555/aulkd8msfazwrqv3cuxd.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1755158555/bxhutnchdfdmnwhujbtd.jpg"
-    ]
+    ],
+    "id": "P1755158562250",
+    "timestamp": 1755161535677
   },
   {
-    "id": "P1755158775382",
-    "timestamp": 1755158775382,
     "code": "Trục 2",
     "address": "65B Yên Hòa",
-    "ward": "Yên Hòa",
+    "ward": "Cầu Giấy",
     "price": 4500000,
     "area": 28,
     "wc": "Khép kín",
     "elevator": "Không",
     "electricity": 4000,
     "water": 35000,
+    "waterUnit": "khoi",
     "serviceFee": 100000,
     "internet": 100000,
     "images": [
@@ -1453,20 +1459,21 @@
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1755158732/b1bv0nigqw3jrxqfbgfl.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1755158733/kvxoh8tlg1piuqjre9jp.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1755158728/en1mdi0wbd61vqdoiyao.jpg"
-    ]
+    ],
+    "id": "P1755158775382",
+    "timestamp": 1755161508653
   },
   {
-    "id": "P1755158988863",
-    "timestamp": 1755158988863,
     "code": "Trục 1",
     "address": "NGÁCH 34 NGÕ 232 YÊN HÒA",
-    "ward": "Yên Hòa",
+    "ward": "Cầu Giấy",
     "price": 4500000,
     "area": 25,
     "wc": "Khép kín",
     "elevator": "Có",
     "electricity": 4000,
     "water": 35000,
+    "waterUnit": "khoi",
     "serviceFee": 150000,
     "internet": 100000,
     "images": [
@@ -1489,20 +1496,21 @@
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1755158977/d3c37jkigimqxvlne9kx.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1755158987/bfzqt6thkjledwv8njc8.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1755158974/oesmnrkk9zapzqcauxz9.jpg"
-    ]
+    ],
+    "id": "P1755158988863",
+    "timestamp": 1755161522155
   },
   {
-    "id": "P1755159642653",
-    "timestamp": 1755159642653,
     "code": "Trục 2",
     "address": "NGÁCH 34 NGÕ 232 YÊN HÒA",
-    "ward": "Yên Hòa",
+    "ward": "Cầu Giấy",
     "price": 4900000,
     "area": 30,
     "wc": "Khép kín",
     "elevator": "Có",
     "electricity": 4000,
     "water": 35000,
+    "waterUnit": "khoi",
     "serviceFee": 150000,
     "internet": 100000,
     "images": [
@@ -1513,7 +1521,9 @@
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1755159631/zk8ly5qjzoftep844aqb.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1755159625/v1nids3glvahmhzadvzo.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1755159634/dm2qrsbxicj5aomckdbh.png"
-    ]
+    ],
+    "id": "P1755159642653",
+    "timestamp": 1755161498326
   },
   {
     "id": "P1755160236943",
