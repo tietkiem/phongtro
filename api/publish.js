@@ -1,75 +1,75 @@
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
-
 export default async function handler(req, res) {
+  // Chỉ cho phép phương thức POST
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method Not Allowed' });
   }
 
+  // Cấu hình kho chứa
   const GITHUB_OWNER = 'tietkiem';
   const GITHUB_REPO = 'phongtro';
   const FILE_PATH = 'data.json';
   const GITHUB_TOKEN = process.env.GITHUB_PAT;
 
+  // Kiểm tra xem token đã được cài đặt trên Vercel chưa
   if (!GITHUB_TOKEN) {
-    console.error('LỖI CẤU HÌNH: Biến môi trường GITHUB_PAT chưa được cài đặt trên Vercel.');
+    console.error('LỖI CẤU HÌNH: Biến môi trường GITHUB_PAT chưa được cài đặt.');
     return res.status(500).json({ message: 'Lỗi cấu hình server: Thiếu GitHub Token.' });
   }
 
   try {
-    const chunks = [];
-    for await (const chunk of req) {
-      chunks.push(chunk);
-    }
-    let newListingsJSON = Buffer.concat(chunks).toString('utf8');
+    // Đọc dữ liệu JSON mới từ request. Vercel tự động phân tích cú pháp body.
+    const newListings = req.body;
 
-    // BƯỚC SỬA LỖI: Loại bỏ các ký tự Unicode không hợp lệ
-    // Biểu thức chính quy này sẽ tìm và xóa các cặp surrogate không hợp lệ
-    newListingsJSON = newListingsJSON.replace(/\\u[dD][8-9a-fA-F]{2,2}|\\u[dD][c-fC-F]{2,2}/g, '');
+    // Chuyển đổi đối tượng JSON thành chuỗi có định dạng đẹp mắt
+    const newListingsJSON = JSON.stringify(newListings, null, 2);
 
-
+    // 1. Lấy SHA của file hiện tại trên GitHub (bắt buộc để cập nhật)
     const fileInfoUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${FILE_PATH}`;
     const fileInfoRes = await fetch(fileInfoUrl, {
-      headers: { 'Authorization': `token ${GITHUB_TOKEN}` },
+      headers: {
+        'Authorization': `token ${GITHUB_TOKEN}`,
+        'Accept': 'application/vnd.github.v3+json',
+      },
     });
-    
+
     if (!fileInfoRes.ok && fileInfoRes.status !== 404) {
-      const errorBody = await fileInfoRes.text();
-      throw new Error(`Không thể lấy thông tin file. Status: ${fileInfoRes.status}. Body: ${errorBody}`);
+      const errorText = await fileInfoRes.text();
+      throw new Error(`Không thể lấy thông tin file từ GitHub. Status: ${fileInfoRes.status}. Lỗi: ${errorText}`);
     }
-    
+
     const fileInfo = fileInfoRes.status === 404 ? {} : await fileInfoRes.json();
     const currentSha = fileInfo.sha;
 
+    // 2. Mã hóa nội dung mới sang Base64
     const contentEncoded = Buffer.from(newListingsJSON).toString('base64');
 
+    // 3. Gửi yêu cầu cập nhật file lên GitHub
     const updateUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${FILE_PATH}`;
     const updateRes = await fetch(updateUrl, {
       method: 'PUT',
       headers: {
         'Authorization': `token ${GITHUB_TOKEN}`,
+        'Accept': 'application/vnd.github.v3+json',
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         message: `[Automated] Cập nhật dữ liệu lúc ${new Date().toISOString()}`,
         content: contentEncoded,
-        sha: currentSha,
+        sha: currentSha, // Nếu file chưa tồn tại, sha sẽ là undefined, GitHub sẽ tự hiểu là tạo file mới
       }),
     });
 
     if (!updateRes.ok) {
-        const errorData = await updateRes.json();
-        throw new Error(`GitHub API error: ${errorData.message}`);
+      const errorData = await updateRes.json();
+      throw new Error(`Lỗi từ GitHub API: ${errorData.message}`);
     }
 
     const result = await updateRes.json();
-    res.status(200).json({ message: 'Cập nhật dữ liệu lên GitHub thành công!', data: result });
+    return res.status(200).json({ message: 'Cập nhật dữ liệu lên GitHub thành công!', data: result });
 
   } catch (error) {
-    console.error('Lỗi trong khối try...catch:', error);
-    res.status(500).json({ message: `Đã xảy ra lỗi: ${error.message}` });
+    console.error('Lỗi trong quá trình xuất bản:', error);
+    // Trả về một thông báo lỗi rõ ràng cho phía client
+    return res.status(500).json({ message: `Đã xảy ra lỗi phía server: ${error.message}` });
   }
 }
