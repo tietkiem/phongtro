@@ -1566,5 +1566,28 @@
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1755160311/lgmjnajjqdftoqhcujpu.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1755160312/ulg9jlkajj2ej9vipv2l.jpg"
     ]
+  },
+  {
+    "id": "P1755160858129",
+    "timestamp": 1755160858129,
+    "code": "NGÕ 165 DƯƠNG QUẢNG HÀM",
+    "address": "NGÕ 165 DƯƠNG QUẢNG HÀM",
+    "ward": "Cầu Giấy",
+    "price": 5000000,
+    "area": 28,
+    "wc": "Khép kín",
+    "elevator": "Không",
+    "electricity": 4000,
+    "water": 35000,
+    "serviceFee": 100000,
+    "internet": 100000,
+    "images": [
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1755160855/guphfruvuz7ta8drmppi.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1755160854/qnidgqaywrzthrj7nqdp.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1755160854/rmj96us0qg3qyfbfpflo.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1755160854/orp4vveo0ks2nbgahz5l.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1755160851/bjuucnuu7fgmjwymjgwf.jpg",
+      "https://res.cloudinary.com/domiqn6vf/image/upload/v1755160850/po45souitanuiuwpvd0m.jpg"
+    ]
   }
 ]
