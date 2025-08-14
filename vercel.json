@@ -4,5 +4,11 @@
       "src": "api/publish.js",
       "use": "@vercel/node"
     }
+  ],
+  "routes": [
+    {
+      "src": "/api/publish",
+      "dest": "/api/publish.js"
+    }
   ]
 }
