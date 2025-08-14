@@ -50,6 +50,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            pointer-events: none; /* Quan trọng: để click xuyên qua lớp phủ */
         }
         .rented-badge {
             color: white;
@@ -345,9 +346,7 @@
         const passwordInput = document.getElementById('password');
         const loginBtn = document.getElementById('login-btn');
         const loginError = document.getElementById('login-error');
-        // ========== THÊM DÒNG BỊ THIẾU VÀO ĐÂY ==========
         const backToMainFromLoginBtn = document.getElementById('back-to-main-from-login');
-        // ===============================================
         const adminForm = {
             code: document.getElementById('admin-code'), address: document.getElementById('admin-address'), ward: document.getElementById('admin-ward'), price: document.getElementById('admin-price'), area: document.getElementById('admin-area'), wc: document.getElementById('admin-wc'), elevator: document.getElementById('admin-elevator'), electricity: document.getElementById('admin-electricity'), water: document.getElementById('admin-water'), serviceFee: document.getElementById('admin-service-fee'), internet: document.getElementById('admin-internet'), images: document.getElementById('admin-images'),
             amenities: {
@@ -404,7 +403,7 @@
 
 
         // --- FUNCTIONS ---
-        // ... (Toàn bộ các hàm JavaScript còn lại giữ nguyên như phiên bản trước) ...
+        // ... (Toàn bộ các hàm JavaScript còn lại giữ nguyên như phiên bản trước, tôi chỉ dán lại ở đây để đảm bảo tính hoàn chỉnh) ...
         function generateSessionDiscount() { sessionDiscount = Math.floor(Math.random() * 11) + 10; }
         function applyDiscountOverlay(imageUrl) { if (!sessionDiscount || !imageUrl || !imageUrl.includes('/upload/')) return imageUrl; const overlayText = `GIẢM ${sessionDiscount}%`; const encodedText = encodeURIComponent(overlayText).replace(/%/g, '%25'); const transformation = `l_text:Poppins_40_bold:${encodedText},co_rgb:FFFFFF,b_rgb:FF0000,o_80,fl_layer_apply,g_south_east,x_20,y_20`; const urlParts = imageUrl.split('/upload/'); if (urlParts.length !== 2) return imageUrl; return `${urlParts[0]}/upload/${transformation}/${urlParts[1]}`; }
         function syncFilters(source, target) { target.value = source.value; }
@@ -449,7 +448,17 @@
         filterWardDesktop.addEventListener('change', () => { syncFilters(filterWardDesktop, filterWardMobile); updateAndRender(); });
         filterWardMobile.addEventListener('change', () => { syncFilters(filterWardMobile, filterWardDesktop); updateAndRender(); });
         amenityFiltersMobile.addEventListener('change', updateAndRender);
-        grid.addEventListener('click', (e) => { const card = e.target.closest('.listing-card'); if (card && !card.querySelector('.rented-overlay')) { const listingId = card.dataset.id; showListingModal(listingId); } });
+        
+        // ========== DÒNG CODE SỬA LỖI ==========
+        grid.addEventListener('click', (e) => {
+            const card = e.target.closest('.listing-card');
+            if (card) { // Chỉ cần kiểm tra có phải là card hay không
+                const listingId = card.dataset.id;
+                showListingModal(listingId);
+            }
+        });
+        // =====================================
+
         closeListingModalBtn.addEventListener('click', () => listingModal.classList.add('hidden'));
         listingModal.addEventListener('click', (e) => { if (e.target === listingModal) listingModal.classList.add('hidden'); });
         openFilterBtn.addEventListener('click', toggleFilterMenu);
