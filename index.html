@@ -1,133 +1,182 @@
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        let listingsData = [];
-        let listingsMap = new Map();
-        let sessionListings = [];
-        let uploadedFiles = [];
-        
-        // BIẾN MỚI: Dùng để lưu "vé vào cửa"
-        let authToken = null;
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tìm Phòng Trọ Nhanh</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+            background-color: #f0f2f5;
+        }
+        .modal-backdrop { background-color: rgba(0,0,0,0.7); }
+        .listing-card { transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; }
+        .listing-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .gallery-scroll::-webkit-scrollbar { height: 8px; }
+        .gallery-scroll::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        .gallery-scroll::-webkit-scrollbar-thumb { background: #888; border-radius: 10px; }
+        .gallery-scroll::-webkit-scrollbar-thumb:hover { background: #555; }
+        .hidden { display: none; }
+        #login-view {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        #drop-zone.dragover {
+            border-color: #2563eb;
+            background-color: #eff6ff;
+        }
+        .image-preview-item { position: relative; }
+        .delete-image-btn {
+            position: absolute; top: -5px; right: -5px; width: 20px; height: 20px;
+            background-color: rgba(0,0,0,0.6); color: white; border-radius: 50%;
+            border: 1px solid white; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 12px; line-height: 1;
+        }
+        .offcanvas-panel {
+            transition: transform 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
 
-        // --- DOM ELEMENTS (giữ nguyên) ---
-        const allViews = { login: document.getElementById('login-view'), main: document.getElementById('main-view'), admin: document.getElementById('admin-view') };
-        const usernameInput = document.getElementById('username');
-        const passwordInput = document.getElementById('password');
-        const loginBtn = document.getElementById('login-btn');
-        const loginError = document.getElementById('login-error');
-        // ... (các element khác giữ nguyên)
+    <div id="login-view" class="min-h-screen flex items-center justify-center p-4 hidden">
+        <div class="w-full max-w-sm bg-white rounded-xl shadow-2xl p-8">
+            <div class="text-center mb-8">
+                <i class="fas fa-house-user text-5xl text-blue-600"></i>
+                <h2 class="mt-4 text-2xl font-bold text-gray-800">Đăng Nhập Admin</h2>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label for="username" class="block text-sm font-medium text-gray-700">Tên đăng nhập</label>
+                    <input type="text" id="username" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2">
+                </div>
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700">Mật khẩu</label>
+                    <input type="password" id="password" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2">
+                </div>
+                <p id="login-error" class="text-red-500 text-sm hidden">Tên đăng nhập hoặc mật khẩu không đúng.</p>
+                <button id="login-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">Đăng Nhập</button>
+                 <button id="back-to-main-from-login" class="mt-2 w-full text-center text-sm text-gray-600 hover:text-blue-600">Quay về trang chủ</button>
+            </div>
+        </div>
+    </div>
 
-        // --- CÁC HÀM KHÁC (giữ nguyên từ loadListings đến showConfirmModal) ---
-        // ... (dán tất cả các hàm cũ của bạn vào đây)
-        
-        // --- EVENT LISTENERS ---
+    <div id="main-view">
+        <header class="bg-white shadow-md sticky top-0 z-40">
+            <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+                <div class="text-left">
+                    <h1 class="text-2xl font-bold text-blue-600"><i class="fas fa-house-chimney-window mr-2"></i>Tìm Phòng Trọ</h1>
+                    <p class="text-sm text-gray-500 italic -mt-1">Tìm trọ miễn phí - An tâm lựa chọn.</p>
+                </div>
+                <div class="hidden lg:flex items-center gap-3">
+                    <div class="relative">
+                        <input type="search" id="search-input-desktop" placeholder="Tìm theo địa chỉ, mã nhà..." class="border border-gray-300 rounded-lg pl-10 pr-4 py-2 text-sm w-64 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <label for="sort-price-desktop" class="text-sm font-medium"><i class="fas fa-dollar-sign mr-1"></i>Giá:</label>
+                        <select id="sort-price-desktop" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="newest">Mới nhất</option>
+                            <option value="asc">Tăng dần</option>
+                            <option value="desc">Giảm dần</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <label for="filter-ward-desktop" class="text-sm font-medium"><i class="fas fa-map-marker-alt mr-1"></i>Phường:</label>
+                        <select id="filter-ward-desktop" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="all">Tất cả</option>
+                        </select>
+                    </div>
+                    <button id="go-to-admin-btn-desktop" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300"><i class="fas fa-user-shield mr-2"></i>Admin</button>
+                </div>
+                <div class="lg:hidden">
+                    <button id="open-filter-btn" class="p-2 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
 
-        // THAY ĐỔI: Logic nút Đăng Nhập
-        loginBtn.addEventListener('click', async () => {
-            const username = usernameInput.value;
-            const password = passwordInput.value;
-            loginBtn.disabled = true;
-            loginError.classList.add('hidden');
+        <main class="container mx-auto p-4">
+            <div id="listings-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <div class="col-span-full text-center text-gray-500 py-10">
+                    <i class="fas fa-spinner fa-spin text-3xl"></i>
+                    <p>Đang tải dữ liệu...</p>
+                </div>
+            </div>
+        </main>
+    </div>
 
-            try {
-                const response = await fetch('/api/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password }),
-                });
+    <div id="filter-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
+    <div id="filter-panel" class="offcanvas-panel fixed top-0 left-0 w-4/5 max-w-sm h-full bg-white z-50 shadow-lg p-6 space-y-6 transform -translate-x-full">
+        <div class="flex justify-between items-center border-b pb-4">
+            <h2 class="text-xl font-bold">Lọc & Tìm Kiếm</h2>
+            <button id="close-filter-btn" class="p-2 text-2xl font-bold">&times;</button>
+        </div>
+        <div class="space-y-4">
+            <div>
+                <label for="search-input-mobile" class="text-sm font-medium text-gray-700">Tìm địa chỉ, mã nhà</label>
+                <div class="relative mt-1">
+                    <input type="search" id="search-input-mobile" placeholder="Nhập từ khóa..." class="border border-gray-300 rounded-lg pl-10 pr-4 py-2 text-sm w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                </div>
+            </div>
+            <div>
+                <label for="sort-price-mobile" class="text-sm font-medium text-gray-700">Sắp xếp theo giá</label>
+                <select id="sort-price-mobile" class="border border-gray-300 rounded-lg px-3 py-2 text-sm mt-1 w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="newest">Mới nhất</option>
+                    <option value="asc">Tăng dần</option>
+                    <option value="desc">Giảm dần</option>
+                </select>
+            </div>
+            <div>
+                <label for="filter-ward-mobile" class="text-sm font-medium text-gray-700">Lọc theo phường</label>
+                <select id="filter-ward-mobile" class="border border-gray-300 rounded-lg px-3 py-2 text-sm mt-1 w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="all">Tất cả</option>
+                </select>
+            </div>
+        </div>
+        <div class="border-t pt-6">
+            <button id="go-to-admin-btn-mobile" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300">
+                <i class="fas fa-user-shield mr-2"></i>Trang Admin
+            </button>
+        </div>
+    </div>
 
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.message || 'Lỗi không xác định.');
-                }
-                
-                // Lưu "vé vào cửa"
-                authToken = data.token;
-                
-                // Chuyển sang trang admin
-                switchView('admin');
-                loadCloudinarySettings();
-                renderAdminListings();
-                usernameInput.value = '';
-                passwordInput.value = '';
-
-            } catch (error) {
-                loginError.textContent = error.message;
-                loginError.classList.remove('hidden');
-            } finally {
-                loginBtn.disabled = false;
-            }
-        });
-
-        // THAY ĐỔI: Logic nút Đăng Xuất
-        logoutBtn.addEventListener('click', () => {
-            authToken = null; // Xóa "vé"
-            switchView('main');
-        });
-        
-        // THAY ĐỔI: Logic nút Trang Admin
-        const handleGoToAdmin = () => {
-            // Chỉ vào được nếu có "vé"
-            if (authToken) {
-                switchView('admin');
-                renderAdminListings();
-            } else {
-                switchView('login');
-            }
-            if (!filterPanel.classList.contains('-translate-x-full')) {
-                toggleFilterMenu();
-            }
-        };
-
-        // ... (Các event listener khác giữ nguyên)
-
-        // THAY ĐỔI: Logic nút Xuất Bản
-        publishBtn.addEventListener('click', async () => {
-            // Kiểm tra xem có "vé" không
-            if (!authToken) {
-                alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
-                switchView('login');
-                return;
-            }
-
-            const isConfirmed = confirm("Bạn có chắc chắn muốn xuất bản dữ liệu không?");
-            if (!isConfirmed) return;
-
-            publishStatus.textContent = 'Đang kết nối và xuất bản...';
-            publishBtn.disabled = true;
-
-            try {
-                const dataString = JSON.stringify(sessionListings, null, 2);
-                
-                const response = await fetch('/api/publish', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        // Gửi kèm "vé vào cửa"
-                        'Authorization': `Bearer ${authToken}`
-                    },
-                    body: dataString,
-                });
-                
-                const result = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(result.message || 'Lỗi không xác định từ server.');
-                }
-
-                publishStatus.textContent = 'Xuất bản thành công! Website sẽ được cập nhật sau vài phút.';
-                listingsData = JSON.parse(JSON.stringify(sessionListings));
-                listingsMap = new Map(listingsData.map(item => [item.id, item]));
-
-            } catch (error) {
-                publishStatus.textContent = `Xuất bản thất bại: ${error.message}`;
-            } finally {
-                publishBtn.disabled = false;
-            }
-        });
-
-        // --- KHỞI TẠO ---
-        loadListings();
-        switchView('main');
-    });
-</script>
+    <div id="admin-view" class="hidden">
+        <div class="container mx-auto p-4 sm:p-6 md:p-8">
+            <div class="max-w-6xl mx-auto bg-white rounded-xl shadow-2xl p-6">
+                <div class="flex flex-wrap justify-between items-center mb-6 border-b pb-4 gap-4">
+                    <h2 class="text-2xl font-bold text-gray-800">Trang Quản Trị</h2>
+                    <div class="flex items-center gap-4">
+                        <button id="go-to-main-btn" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300"><i class="fas fa-arrow-left mr-2"></i>Về Trang Chủ</button>
+                        <button id="logout-btn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300"><i class="fas fa-sign-out-alt mr-2"></i>Đăng xuất</button>
+                    </div>
+                </div>
+                <div class="mb-8 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                    <h3 class="text-lg font-semibold text-purple-800 mb-2"><i class="fas fa-cloud-upload-alt mr-2"></i>Cài đặt Cloudinary (Chỉ cần làm 1 lần)</h3>
+                    <p class="text-sm text-gray-600 mb-2">Để upload ảnh, bạn cần cung cấp thông tin tài khoản Cloudinary. Xem hướng dẫn <a href="https://cloudinary.com/documentation/upload_presets" target="_blank" class="text-blue-600 underline">tại đây</a> để tạo <strong>Upload Preset (Unsigned)</strong>.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="cloudinary-cloud-name" class="block text-sm font-medium text-gray-700">Cloud Name</label>
+                            <input type="text" id="cloudinary-cloud-name" placeholder="Tên cloud của bạn" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2">
+                        </div>
+                        <div>
+                            <label for="cloudinary-upload-preset" class="block text-sm font-medium text-gray-700">Upload Preset Name</label>
+                            <input type="text" id="cloudinary-upload-preset" placeholder="Tên upload preset" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2">
+                        </div>
+                    </div>
+                    <button id="save-cloudinary-settings-btn" class="mt-3 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300"><i class="fas fa-save mr-2"></i>Lưu Cài Đặt</button>
+                </div>
+                <div class="mb-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <h3 class="text-lg font-semibold text-blue-800 mb-2"><i class="fas fa-magic mr-2"></i>Công cụ Bóc tách Dữ liệu</h3>
+                    <textarea id="data-parser-input" class="w-full h-32 border-gray-300 rounded-md shadow-sm p-2 font-mono text-sm" placeholder="Dán nội dung tin đăng vào đây..."></textarea>
+                    <button id="parse-data-btn" class="mt-2 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300">Bóc tách dữ liệu</button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                    <div><label for="admin-code" class="block text-sm font-medium text-
