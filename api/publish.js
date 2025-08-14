@@ -1,8 +1,9 @@
-// Sử dụng cú pháp CommonJS (module.exports) thay vì ES Module (export default)
+// Sử dụng cú pháp module.exports - tương thích nhất
 module.exports = async (req, res) => {
   // Chỉ cho phép phương thức POST
   if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Method Not Allowed' });
+    res.setHeader('Allow', ['POST']);
+    return res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 
   // Cấu hình kho chứa
@@ -11,17 +12,14 @@ module.exports = async (req, res) => {
   const FILE_PATH = 'data.json';
   const GITHUB_TOKEN = process.env.GITHUB_PAT;
 
-  // Kiểm tra xem token đã được cài đặt trên Vercel chưa
+  // Kiểm tra token
   if (!GITHUB_TOKEN) {
-    console.error('LỖI CẤU HÌNH: Biến môi trường GITHUB_PAT chưa được cài đặt.');
+    console.error('LỖI CẤU HÌNH SERVER: Biến môi trường GITHUB_PAT chưa được cài đặt.');
     return res.status(500).json({ message: 'Lỗi cấu hình server: Thiếu GitHub Token.' });
   }
 
   try {
-    // Đọc dữ liệu JSON mới từ request. Vercel tự động phân tích cú pháp body.
     const newListings = req.body;
-
-    // Chuyển đổi đối tượng JSON thành chuỗi có định dạng đẹp mắt
     const newListingsJSON = JSON.stringify(newListings, null, 2);
 
     // 1. Lấy SHA của file hiện tại trên GitHub
@@ -41,10 +39,10 @@ module.exports = async (req, res) => {
     const fileInfo = fileInfoRes.status === 404 ? {} : await fileInfoRes.json();
     const currentSha = fileInfo.sha;
 
-    // 2. Mã hóa nội dung mới sang Base64
+    // 2. Mã hóa nội dung mới
     const contentEncoded = Buffer.from(newListingsJSON).toString('base64');
 
-    // 3. Gửi yêu cầu cập nhật file lên GitHub
+    // 3. Gửi yêu cầu cập nhật
     const updateUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${FILE_PATH}`;
     const updateRes = await fetch(updateUrl, {
       method: 'PUT',
