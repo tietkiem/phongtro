@@ -1,0 +1,14 @@
+{
+  "routes": [
+    {
+      "src": "/api/publish",
+      "methods": ["POST"],
+      "dest": "/api/publish"
+    },
+    {
+      "src": "/api/login",
+      "methods": ["POST"],
+      "dest": "/api/login"
+    }
+  ]
+}
