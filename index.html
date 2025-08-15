@@ -644,3 +644,27 @@
     </script>
 </body>
 </html>
+                });
+            }
+        });
+        
+        adminSearchInput.addEventListener('input', () => { renderAdminListings(adminSearchInput.value.toLowerCase().trim()); });
+
+        confirmModalCancel.addEventListener('click', () => confirmModal.classList.add('hidden'));
+        confirmModal.addEventListener('click', (e) => { if (e.target === confirmModal) confirmModal.classList.add('hidden'); });
+        publishBtn.addEventListener('click', async () => { if (!authToken) { alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại."); switchView('login'); return; } const isConfirmed = confirm("Bạn có chắc chắn muốn xuất bản dữ liệu không?"); if (!isConfirmed) return; publishStatus.textContent = 'Đang kết nối và xuất bản...'; publishStatus.className = 'text-sm mt-2 text-blue-600'; publishBtn.disabled = true; let response; try { const dataString = JSON.stringify(sessionListings, null, 2); response = await fetch('/api/publish', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` }, body: dataString, }); const responseText = await response.text(); if (!response.ok) { throw new Error(responseText); } const result = JSON.parse(responseText); publishStatus.textContent = 'Xuất bản thành công! Website sẽ được cập nhật sau vài phút.'; publishStatus.className = 'text-sm mt-2 text-green-600'; listingsData = JSON.parse(JSON.stringify(sessionListings)); listingsMap = new Map(listingsData.map(item => [item.id, item])); } catch (error) { console.error("Đã xảy ra lỗi khi xuất bản. Chi tiết bên dưới:"); console.error(error.message); publishStatus.textContent = `Xuất bản thất bại! Hãy mở Console (nhấn F12) để xem chi tiết lỗi.`; publishStatus.className = 'text-sm mt-2 text-red-600'; } finally { publishBtn.disabled = false; } });
+        galleryNextBtn.addEventListener('click', showNextImage);
+        galleryPrevBtn.addEventListener('click', showPrevImage);
+        let touchStartX = 0;
+        let touchEndX = 0;
+        mainGalleryImage.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; }, { passive: true });
+        mainGalleryImage.addEventListener('touchend', (e) => { touchEndX = e.changedTouches[0].screenX; handleSwipe(); });
+        function handleSwipe() { const swipeThreshold = 50; if (touchEndX < touchStartX - swipeThreshold) { showNextImage(); } if (touchEndX > touchStartX + swipeThreshold) { showPrevImage(); } }
+
+        // --- KHỞI TẠO ---
+        loadListings();
+        switchView('main');
+    });
+    </script>
+</body>
+</html>
