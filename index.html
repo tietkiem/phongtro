@@ -211,12 +211,12 @@
                                 <i class="fas fa-cloud-upload-alt text-4xl text-gray-400"></i>
                                 <div class="flex text-sm text-gray-600">
                                     <label for="admin-images" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none">
-                                        <span>Tải lên một file</span>
+                                        <span>Tải lên ảnh mới</span>
                                         <input id="admin-images" type="file" class="sr-only" multiple accept="image/*">
                                     </label>
                                     <p class="pl-1">hoặc kéo và thả</p>
                                 </div>
-                                <p class="text-xs text-gray-500">PNG, JPG, GIF</p>
+                                <p class="text-xs text-gray-500">Các ảnh mới sẽ được thêm vào cuối danh sách.</p>
                             </div>
                         </div>
                     </div>
@@ -296,6 +296,7 @@
         let listingsMap = new Map();
         let sessionListings = [];
         let uploadedFiles = [];
+        let currentEditImages = []; // Dùng để quản lý ảnh (URL) khi sửa
         let authToken = null;
         let currentGalleryImages = [];
         let currentGalleryIndex = 0;
@@ -364,7 +365,6 @@
         function showNextImage() { if (currentGalleryIndex < currentGalleryImages.length - 1) { currentGalleryIndex++; updateGalleryView(); } }
         function showPrevImage() { if (currentGalleryIndex > 0) { currentGalleryIndex--; updateGalleryView(); } }
         
-        // ========== HÀM HIỂN THỊ MODAL ĐÃ CẬP NHẬT VỚI NÚT FACEBOOK ==========
         function showListingModal(listingId) {
             const listing = findListingById(listingId);
             if (!listing) { console.error(`Listing with ID ${listingId} not found.`); return; }
@@ -385,8 +385,6 @@
             updateGalleryView();
 
             const waterPriceText = listing.water > 0 ? (listing.waterUnit === 'nguoi' ? formatCurrency(listing.water) + '/người' : formatCurrency(listing.water) + '/khối') : 'Miễn phí';
-
-            // Tạo link Facebook với tin nhắn soạn sẵn
             const prefilledMessage = `Chào bạn, tôi quan tâm đến phòng trọ tại địa chỉ: ${listing.address} (Mã nhà: ${listing.code}).`;
             const facebookMessageLink = `https://m.me/${FACEBOOK_USERNAME}?ref=${encodeURIComponent(prefilledMessage)}`;
             
@@ -419,74 +417,47 @@
         
         async function handleAdminSubmit() {
             const requiredFields = ['code', 'address', 'ward', 'price', 'area'];
-            for (const field of requiredFields) {
-                if (!adminForm[field].value) {
-                    alert(`Vui lòng điền thông tin: ${adminForm[field].previousElementSibling.textContent}`);
-                    return;
-                }
-            }
-            if (!currentEditId && uploadedFiles.length === 0) {
-                alert('Vui lòng chọn ít nhất một ảnh cho tin đăng mới.');
-                return;
-            }
+            for (const field of requiredFields) { if (!adminForm[field].value) { alert(`Vui lòng điền thông tin: ${adminForm[field].previousElementSibling.textContent}`); return; } }
+            if (!currentEditId && uploadedFiles.length === 0) { alert('Vui lòng chọn ít nhất một ảnh cho tin đăng mới.'); return; }
+            if (currentEditId && currentEditImages.length === 0 && uploadedFiles.length === 0) { alert('Tin đăng phải có ít nhất một ảnh. Vui lòng thêm ảnh mới.'); return; }
+            
             submitListingBtn.disabled = true;
             submitSpinner.classList.remove('hidden');
             try {
-                let imageUrls = [];
+                let newImageUrls = [];
                 if (uploadedFiles.length > 0) {
                     submitBtnText.textContent = 'Đang upload ảnh...';
-                    imageUrls = await uploadToCloudinary(uploadedFiles);
+                    newImageUrls = await uploadToCloudinary(uploadedFiles);
                 }
                 submitBtnText.textContent = 'Đang lưu...';
-                const listingData = {
-                    code: adminForm.code.value,
-                    address: adminForm.address.value,
-                    ward: adminForm.ward.value,
-                    price: parseInt(adminForm.price.value),
-                    area: parseInt(adminForm.area.value),
-                    wc: adminForm.wc.value,
-                    elevator: adminForm.elevator.value,
-                    electricity: parseInt(adminForm.electricity.value) || 0,
-                    water: parseInt(adminForm.water.value) || 0,
-                    waterUnit: document.getElementById('admin-water-unit')?.value || 'khoi',
-                    serviceFee: parseInt(adminForm.serviceFee.value) || 0,
-                    internet: parseInt(adminForm.internet.value) || 0,
-                };
                 
-                // ========== START: SỬA LỖI ==========
+                const listingData = {
+                    code: adminForm.code.value, address: adminForm.address.value, ward: adminForm.ward.value,
+                    price: parseInt(adminForm.price.value), area: parseInt(adminForm.area.value), wc: adminForm.wc.value,
+                    elevator: adminForm.elevator.value, electricity: parseInt(adminForm.electricity.value) || 0,
+                    water: parseInt(adminForm.water.value) || 0, waterUnit: document.getElementById('admin-water-unit')?.value || 'khoi',
+                    serviceFee: parseInt(adminForm.serviceFee.value) || 0, internet: parseInt(adminForm.internet.value) || 0,
+                };
+
                 if (currentEditId) {
                     const listingIndex = sessionListings.findIndex(l => l.id === currentEditId);
                     if (listingIndex > -1) {
-                        const existingListing = sessionListings[listingIndex];
-                        
-                        // Tạo đối tượng chứa dữ liệu cập nhật
-                        const updatedData = {
-                            ...listingData, // Lấy tất cả dữ liệu từ form
-                            images: imageUrls.length > 0 ? imageUrls : existingListing.images, // Cập nhật ảnh (giữ ảnh cũ nếu không upload ảnh mới)
-                            timestamp: Date.now() // Cập nhật thời gian
-                        };
-                        
-                        // Dùng Object.assign để hợp nhất dữ liệu mới vào tin đăng cũ.
-                        // Cách này sẽ giữ lại `id` và các thuộc tính khác không có trong form.
+                        const finalImages = [...currentEditImages, ...newImageUrls];
+                        const updatedData = { ...listingData, images: finalImages, timestamp: Date.now() };
                         Object.assign(sessionListings[listingIndex], updatedData);
-                        
                         alert('Cập nhật tin đăng thành công!');
                     }
                 } else {
-                    listingData.images = imageUrls;
+                    listingData.images = newImageUrls;
                     listingData.id = 'P' + Date.now();
                     listingData.timestamp = Date.now();
                     sessionListings.push(listingData);
                     alert('Thêm tin đăng mới thành công!');
                 }
-                // ========== END: SỬA LỖI ==========
-
                 clearAdminForm();
                 renderAdminListings(adminSearchInput.value.toLowerCase().trim());
                 populateWards();
-            } catch (error) {
-                console.error("Lỗi:", error);
-                alert(`Đã xảy ra lỗi: ${error.message}`);
+            } catch (error) { console.error("Lỗi:", error); alert(`Đã xảy ra lỗi: ${error.message}`);
             } finally {
                 submitListingBtn.disabled = false;
                 submitSpinner.classList.add('hidden');
@@ -495,35 +466,76 @@
         }
 
         function clearAdminForm() {
-            Object.values(adminForm).forEach(input => {
-                if (input.type !== 'select-one') input.value = '';
-            });
-            if (document.getElementById('admin-water-unit')) {
-                document.getElementById('admin-water-unit').value = 'khoi';
-            }
+            Object.values(adminForm).forEach(input => { if (input.type !== 'select-one') input.value = ''; });
+            if (document.getElementById('admin-water-unit')) document.getElementById('admin-water-unit').value = 'khoi';
             imagePreviewContainer.innerHTML = '';
             dataParserInput.value = '';
             uploadedFiles = [];
+            currentEditImages = [];
             currentEditId = null; 
             submitBtnText.textContent = 'Thêm Tin Đăng Mới';
+            adminForm.images.value = '';
         }
 
         function parsePrice(priceStr) { if (!priceStr) return 0; priceStr = priceStr.toLowerCase().replace(/,/g, '.'); let price = 0; if (priceStr.includes('tr')) { const parts = priceStr.split('tr'); const mainPart = parseFloat(parts[0]) || 0; price = mainPart * 1000000; if (parts[1]) { const subPart = parseInt(parts[1]) || 0; price += subPart * 100000; } } else { price = parseInt(priceStr.replace(/\D/g, '')) || 0; } return price; }
         function parseKNumber(kStr) { if (!kStr) return 0; kStr = kStr.toLowerCase().replace(/,/g, '.'); let value = 0; if (kStr.includes('k')) { const parts = kStr.split('k'); const mainPart = parseFloat(parts[0]) || 0; value = mainPart * 1000; if (parts[1]) { const subPart = parseInt(parts[1]) || 0; value += subPart * 100; } } else { value = parseInt(kStr.replace(/\D/g, '')) || 0; } return value; }
         function parseData() { const text = dataParserInput.value; if (!text) { alert('Vui lòng dán nội dung vào ô.'); return; } const getVal = (regex, defaultVal = '') => (text.match(regex) || [])[1] || defaultVal; adminForm.code.value = getVal(/Mã\s*(\S+)/i); adminForm.address.value = getVal(/[🕍🏠]\s*(.*)/i).trim(); const priceStr = getVal(/Giá\s*[-:]?\s*([^\n\r]*)/i).trim(); adminForm.price.value = parsePrice(priceStr); const areaStr = getVal(/Diện tích\s*(\d+)/i); adminForm.area.value = parseInt(areaStr) || 0; const elecStr = getVal(/Điện\s*([^\s\/]+)/i); adminForm.electricity.value = parseKNumber(elecStr); const waterStr = getVal(/Nước\s*([^\s\/]+)/i); adminForm.water.value = parseKNumber(waterStr); const serviceFeeStr = getVal(/(?:Dịch vụ chung|dvc)[:\s]*([^\s\/]+)/i); adminForm.serviceFee.value = parseKNumber(serviceFeeStr); const internetStr = getVal(/Mạng\s*([^\s\/]+)/i) || getVal(/wifi\s*([^\s\/]+)/i); adminForm.internet.value = parseKNumber(internetStr); if(adminForm.internet.value === 0 && /gồm.*wifi/i.test(text.toLowerCase())) adminForm.internet.value = 100000; adminForm.elevator.value = /thang máy/i.test(text.toLowerCase()) ? 'Có' : 'Không'; adminForm.wc.value = /khép kín|giặt riêng/i.test(text.toLowerCase()) ? 'Khép kín' : 'Chung'; const address = adminForm.address.value.toLowerCase(); const allWards = [...new Set(sessionListings.map(item => item.ward).filter(Boolean))]; adminForm.ward.value = allWards.find(w => address.includes(w.toLowerCase())) || ''; alert('Bóc tách dữ liệu hoàn tất! Vui lòng kiểm tra lại thông tin và chọn ảnh.'); }
-        function handleImageFiles(files) { uploadedFiles = Array.from(files); renderImagePreviews(); }
-        function renderImagePreviews() { imagePreviewContainer.innerHTML = ''; if (uploadedFiles.length > 0) { uploadedFiles.forEach((file, index) => { const item = document.createElement('div'); item.className = 'image-preview-item'; const thumb = document.createElement('img'); thumb.src = URL.createObjectURL(file); thumb.className = 'w-full h-24 object-cover rounded-md'; thumb.onload = () => URL.revokeObjectURL(thumb.src); const deleteBtn = document.createElement('button'); deleteBtn.className = 'delete-image-btn'; deleteBtn.innerHTML = '&times;'; deleteBtn.dataset.index = index; deleteBtn.onclick = (e) => { const idxToRemove = parseInt(e.target.dataset.index); uploadedFiles.splice(idxToRemove, 1); renderImagePreviews(); }; item.appendChild(thumb); item.appendChild(deleteBtn); imagePreviewContainer.appendChild(item); }); } }
+        
+        function handleImageFiles(files) { 
+            uploadedFiles.push(...Array.from(files));
+            renderAdminImagePreviews();
+        }
+
+        function renderAdminImagePreviews() {
+            imagePreviewContainer.innerHTML = '';
+            
+            // Render ảnh cũ (URL)
+            currentEditImages.forEach((imageUrl, index) => {
+                const item = document.createElement('div');
+                item.className = 'image-preview-item';
+                const thumb = document.createElement('img');
+                thumb.src = imageUrl;
+                thumb.className = 'w-full h-24 object-cover rounded-md';
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'delete-image-btn';
+                deleteBtn.innerHTML = '&times;';
+                deleteBtn.title = 'Xóa ảnh này';
+                deleteBtn.onclick = () => {
+                    currentEditImages.splice(index, 1);
+                    renderAdminImagePreviews();
+                };
+                item.appendChild(thumb);
+                item.appendChild(deleteBtn);
+                imagePreviewContainer.appendChild(item);
+            });
+
+            // Render ảnh mới (File object)
+            uploadedFiles.forEach((file, index) => {
+                const item = document.createElement('div');
+                item.className = 'image-preview-item';
+                const thumb = document.createElement('img');
+                thumb.src = URL.createObjectURL(file);
+                thumb.className = 'w-full h-24 object-cover rounded-md border-2 border-green-500';
+                thumb.onload = () => URL.revokeObjectURL(thumb.src);
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'delete-image-btn';
+                deleteBtn.innerHTML = '&times;';
+                deleteBtn.title = 'Xóa ảnh mới này';
+                deleteBtn.onclick = () => {
+                    uploadedFiles.splice(index, 1);
+                    renderAdminImagePreviews();
+                };
+                item.appendChild(thumb);
+                item.appendChild(deleteBtn);
+                imagePreviewContainer.appendChild(item);
+            });
+        }
         
         function renderAdminListings(searchTerm = '') {
             adminListingsContainer.innerHTML = '';
             let listingsToRender = [...sessionListings];
-            if (searchTerm) {
-                listingsToRender = listingsToRender.filter(listing => (listing.address?.toLowerCase().includes(searchTerm)) || (listing.code?.toLowerCase().includes(searchTerm)));
-            }
-            if (listingsToRender.length === 0) {
-                adminListingsContainer.innerHTML = '<p class="text-sm text-gray-500">Không tìm thấy tin đăng nào.</p>';
-                return;
-            }
+            if (searchTerm) { listingsToRender = listingsToRender.filter(listing => (listing.address?.toLowerCase().includes(searchTerm)) || (listing.code?.toLowerCase().includes(searchTerm))); }
+            if (listingsToRender.length === 0) { adminListingsContainer.innerHTML = '<p class="text-sm text-gray-500">Không tìm thấy tin đăng nào.</p>'; return; }
             const sortedListings = listingsToRender.sort((a, b) => b.timestamp - a.timestamp);
             sortedListings.forEach(listing => {
                 const item = document.createElement('div');
@@ -534,12 +546,8 @@
                         <p class="text-xs text-gray-500">${listing.ward} - ${formatCurrency(listing.price)}</p>
                     </div>
                     <div class="flex-shrink-0 flex gap-2">
-                        <button data-id="${listing.id}" class="edit-listing-btn bg-blue-500 text-white w-8 h-8 rounded-md hover:bg-blue-600 flex items-center justify-center" title="Sửa tin này">
-                            <i class="fas fa-pencil-alt"></i>
-                        </button>
-                        <button data-id="${listing.id}" class="delete-listing-btn bg-red-500 text-white w-8 h-8 rounded-md hover:bg-red-600 flex items-center justify-center" title="Xóa tin này">
-                            <i class="fas fa-trash"></i>
-                        </button>
+                        <button data-id="${listing.id}" class="edit-listing-btn bg-blue-500 text-white w-8 h-8 rounded-md hover:bg-blue-600 flex items-center justify-center" title="Sửa tin này"><i class="fas fa-pencil-alt"></i></button>
+                        <button data-id="${listing.id}" class="delete-listing-btn bg-red-500 text-white w-8 h-8 rounded-md hover:bg-red-600 flex items-center justify-center" title="Xóa tin này"><i class="fas fa-trash"></i></button>
                     </div>`;
                 adminListingsContainer.appendChild(item);
             });
@@ -548,6 +556,7 @@
         function handleEditListing(listingId) {
             const listingToEdit = sessionListings.find(l => l.id === listingId);
             if (!listingToEdit) return;
+            clearAdminForm(); // Xóa form trước khi điền dữ liệu mới
             currentEditId = listingId;
             adminForm.code.value = listingToEdit.code;
             adminForm.address.value = listingToEdit.address;
@@ -558,13 +567,13 @@
             adminForm.wc.value = listingToEdit.wc;
             adminForm.electricity.value = listingToEdit.electricity;
             adminForm.water.value = listingToEdit.water;
-            if (document.getElementById('admin-water-unit')) {
-                 document.getElementById('admin-water-unit').value = listingToEdit.waterUnit || 'khoi';
-            }
+            if (document.getElementById('admin-water-unit')) document.getElementById('admin-water-unit').value = listingToEdit.waterUnit || 'khoi';
             adminForm.serviceFee.value = listingToEdit.serviceFee;
             adminForm.internet.value = listingToEdit.internet;
-            imagePreviewContainer.innerHTML = '<p class="col-span-full text-sm text-blue-600 italic">Để thay đổi, vui lòng chọn lại tất cả ảnh cho tin đăng này.</p>';
-            uploadedFiles = [];
+            
+            currentEditImages = [...(listingToEdit.images || [])]; // Copy ảnh hiện tại vào mảng quản lý
+            renderAdminImagePreviews(); // Hiển thị các ảnh này
+            
             submitBtnText.textContent = 'Cập Nhật Tin Đăng';
             window.scrollTo({ top: document.getElementById('admin-view').offsetTop, behavior: 'smooth' });
         }
@@ -602,11 +611,7 @@
         adminListingsContainer.addEventListener('click', (e) => {
             const editBtn = e.target.closest('.edit-listing-btn');
             const deleteBtn = e.target.closest('.delete-listing-btn');
-            if (editBtn) {
-                const idToEdit = editBtn.dataset.id;
-                handleEditListing(idToEdit);
-                return;
-            }
+            if (editBtn) { const idToEdit = editBtn.dataset.id; handleEditListing(idToEdit); return; }
             if (deleteBtn) {
                 const idToDelete = deleteBtn.dataset.id;
                 const listingToDelete = sessionListings.find(l => l.id === idToDelete);
@@ -619,10 +624,7 @@
             }
         });
         
-        adminSearchInput.addEventListener('input', () => {
-            const searchTerm = adminSearchInput.value.toLowerCase().trim();
-            renderAdminListings(searchTerm);
-        });
+        adminSearchInput.addEventListener('input', () => { renderAdminListings(adminSearchInput.value.toLowerCase().trim()); });
 
         confirmModalCancel.addEventListener('click', () => confirmModal.classList.add('hidden'));
         confirmModal.addEventListener('click', (e) => { if (e.target === confirmModal) confirmModal.classList.add('hidden'); });
