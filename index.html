@@ -47,6 +47,16 @@
             max-height: 200px;
             overflow-y: auto;
         }
+        /* Lazy Loading styles */
+        .lazy-load {
+            background-color: #e5e7eb; /* gray-200 */
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            50% {
+                opacity: .5;
+            }
+        }
     </style>
 </head>
 <body class="text-gray-800">
@@ -80,19 +90,23 @@
                     <h1 class="text-2xl font-bold text-blue-600"><i class="fas fa-house-chimney-window mr-2"></i>Tìm Phòng Trọ</h1>
                     <p class="text-sm text-gray-500 italic -mt-1">Tìm trọ miễn phí - An tâm lựa chọn.</p>
                 </div>
-                <div class="hidden lg:flex items-center gap-3">
+                <div class="hidden lg:flex items-center flex-wrap gap-3">
                     <div class="relative">
-                        <input type="search" id="search-input-desktop" placeholder="Tìm theo địa chỉ, mã nhà..." class="border border-gray-300 rounded-lg pl-10 pr-4 py-2 text-sm w-64 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="search" id="search-input-desktop" placeholder="Tìm theo địa chỉ, mã nhà..." class="border border-gray-300 rounded-lg pl-10 pr-4 py-2 text-sm w-52 focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
                     </div>
+                    
                     <div class="flex items-center gap-2">
-                        <label for="sort-price-desktop" class="text-sm font-medium"><i class="fas fa-dollar-sign mr-1"></i>Giá:</label>
-                        <select id="sort-price-desktop" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="newest">Mới nhất</option>
-                            <option value="asc">Tăng dần</option>
-                            <option value="desc">Giảm dần</option>
+                        <label for="filter-price-desktop" class="text-sm font-medium"><i class="fas fa-dollar-sign mr-1"></i>Giá:</label>
+                        <select id="filter-price-desktop" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="all">Tất cả mức giá</option>
+                            <option value="under_3m">Dưới 3 triệu</option>
+                            <option value="3m_5m">Từ 3 - 5 triệu</option>
+                            <option value="5m_7m">Từ 5 - 7 triệu</option>
+                            <option value="over_7m">Trên 7 triệu</option>
                         </select>
                     </div>
+
                     <div class="flex items-center gap-2">
                         <label for="filter-ward-desktop" class="text-sm font-medium"><i class="fas fa-map-marker-alt mr-1"></i>Phường:</label>
                         <select id="filter-ward-desktop" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -103,11 +117,11 @@
                     <div class="relative flex items-center gap-2">
                         <label class="text-sm font-medium"><i class="fas fa-star mr-1"></i>Tiện ích:</label>
                         <div class="relative">
-                            <button id="utility-filter-btn-desktop" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-40 text-left">
+                            <button id="utility-filter-btn-desktop" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-36 text-left">
                                 Chọn tiện ích
                             </button>
                             <div id="utility-filter-panel-desktop" class="utility-dropdown-panel hidden absolute top-full mt-1 w-56 bg-white border border-gray-300 rounded-lg shadow-lg z-10 p-3 space-y-2">
-                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -119,6 +133,16 @@
                             <option value="Đã cho thuê">Đã cho thuê</option>
                         </select>
                     </div>
+
+                    <div class="flex items-center gap-2">
+                        <label for="sort-order-desktop" class="text-sm font-medium"><i class="fas fa-sort-amount-down mr-1"></i>Sắp xếp:</label>
+                        <select id="sort-order-desktop" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="newest">Mới nhất</option>
+                            <option value="price_asc">Giá tăng dần</option>
+                            <option value="price_desc">Giá giảm dần</option>
+                        </select>
+                    </div>
+
                     <button id="go-to-admin-btn-desktop" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300"><i class="fas fa-user-shield mr-2"></i>Admin</button>
                 </div>
                 <div class="lg:hidden">
@@ -154,11 +178,21 @@
                 </div>
             </div>
             <div>
-                <label for="sort-price-mobile" class="text-sm font-medium text-gray-700">Sắp xếp theo giá</label>
-                <select id="sort-price-mobile" class="border border-gray-300 rounded-lg px-3 py-2 text-sm mt-1 w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <label for="filter-price-mobile" class="text-sm font-medium text-gray-700">Lọc theo khoảng giá</label>
+                <select id="filter-price-mobile" class="border border-gray-300 rounded-lg px-3 py-2 text-sm mt-1 w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="all">Tất cả mức giá</option>
+                    <option value="under_3m">Dưới 3 triệu</option>
+                    <option value="3m_5m">Từ 3 - 5 triệu</option>
+                    <option value="5m_7m">Từ 5 - 7 triệu</option>
+                    <option value="over_7m">Trên 7 triệu</option>
+                </select>
+            </div>
+             <div>
+                <label for="sort-order-mobile" class="text-sm font-medium text-gray-700">Sắp xếp theo</label>
+                <select id="sort-order-mobile" class="border border-gray-300 rounded-lg px-3 py-2 text-sm mt-1 w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
                     <option value="newest">Mới nhất</option>
-                    <option value="asc">Tăng dần</option>
-                    <option value="desc">Giảm dần</option>
+                    <option value="price_asc">Giá tăng dần</option>
+                    <option value="price_desc">Giá giảm dần</option>
                 </select>
             </div>
             <div>
@@ -170,7 +204,7 @@
             <div>
                 <label class="text-sm font-medium text-gray-700">Lọc theo tiện ích</label>
                 <div id="utility-filter-panel-mobile" class="utility-dropdown-panel mt-1 border border-gray-300 rounded-lg p-3 space-y-2">
-                    </div>
+                </div>
             </div>
             <div>
                 <label for="filter-status-mobile" class="text-sm font-medium text-gray-700">Lọc theo trạng thái</label>
@@ -312,7 +346,7 @@
                     <img id="main-gallery-image" src="" alt="Ảnh phòng trọ" class="w-full h-[60vh] object-contain rounded-md mb-2 bg-gray-100 cursor-pointer">
                     
                     <div id="discount-banner" class="hidden absolute top-4 left-4 bg-red-600 text-white font-bold px-4 py-2 rounded-lg shadow-lg text-base sm:text-lg animate-pulse z-10">
-                        </div>
+                    </div>
 
                     <button id="gallery-prev-btn" class="gallery-nav-btn absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-30 hover:bg-opacity-60 text-white rounded-full w-10 h-10 flex items-center justify-center text-2xl">
                         &#10094;
@@ -342,8 +376,8 @@
     <script>
     document.addEventListener('DOMContentLoaded', () => {
         // ========== CẤU HÌNH LIÊN HỆ ==========
-        const FACEBOOK_USERNAME = "nhatrohanoi25"; // !!! THAY THẾ bằng username Facebook của bạn
-        const ZALO_PHONE_NUMBER = "0936018987"; // !!! THAY THẾ bằng số điện thoại Zalo
+        const FACEBOOK_USERNAME = "nhatrohanoi25"; 
+        const ZALO_PHONE_NUMBER = "0936018987";
         // ======================================
 
         let listingsData = []; 
@@ -370,10 +404,12 @@
         const backToMainFromLoginBtn = document.getElementById('back-to-main-from-login');
         const grid = document.getElementById('listings-grid');
         const searchInputDesktop = document.getElementById('search-input-desktop');
-        const sortPriceDesktop = document.getElementById('sort-price-desktop');
+        const filterPriceDesktop = document.getElementById('filter-price-desktop');
+        const sortOrderDesktop = document.getElementById('sort-order-desktop');
         const filterWardDesktop = document.getElementById('filter-ward-desktop');
         const searchInputMobile = document.getElementById('search-input-mobile');
-        const sortPriceMobile = document.getElementById('sort-price-mobile');
+        const filterPriceMobile = document.getElementById('filter-price-mobile');
+        const sortOrderMobile = document.getElementById('sort-order-mobile');
         const filterWardMobile = document.getElementById('filter-ward-mobile');
         const utilityFilterPanelDesktop = document.getElementById('utility-filter-panel-desktop');
         const utilityFilterBtnDesktop = document.getElementById('utility-filter-btn-desktop');
@@ -440,7 +476,11 @@
                 const statusColor = statusText === 'Đã cho thuê' ? 'bg-red-500' : 'bg-green-500';
                 card.innerHTML = `
                     <div class="relative">
-                        <img src="${listing.images[0]}" alt="Ảnh phòng trọ" class="w-full h-48 object-cover" onerror="this.onerror=null;this.src='https://placehold.co/600x400/cccccc/ffffff?text=Lỗi+Ảnh';">
+                        <img class="lazy-load w-full h-48 object-cover" 
+                             src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" 
+                             data-src="${listing.images[0]}" 
+                             alt="Ảnh phòng trọ" 
+                             onerror="this.onerror=null;this.src='https://placehold.co/600x400/cccccc/ffffff?text=Lỗi+Ảnh';">
                         <div class="absolute top-2 right-2 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded">${listing.ward}</div>
                         <div class="absolute bottom-2 left-2 px-2 py-1 rounded text-xs font-bold ${statusColor} text-white">${statusText}</div>
                     </div>
@@ -456,30 +496,82 @@
             });
         }
         
+        function initializeLazyLoading() {
+            const lazyImages = document.querySelectorAll('.lazy-load');
+            if ("IntersectionObserver" in window) {
+                const observer = new IntersectionObserver((entries, observer) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const img = entry.target;
+                            img.src = img.dataset.src;
+                            img.classList.remove('lazy-load');
+                            img.onload = () => {
+                                img.removeAttribute('data-src');
+                            };
+                            observer.unobserve(img);
+                        }
+                    });
+                }, { rootMargin: "0px 0px 100px 0px" }); // Start loading 100px before it enters viewport
+
+                lazyImages.forEach(img => observer.observe(img));
+            } else {
+                // Fallback for older browsers
+                lazyImages.forEach(img => {
+                    img.src = img.dataset.src;
+                    img.classList.remove('lazy-load');
+                });
+            }
+        }
+
         function updateAndRender() {
             let dataToRender = authToken ? sessionListings : listingsData;
             let filteredData = [...dataToRender];
+            
+            // Search filter
             const searchTerm = searchInputDesktop.value.toLowerCase().trim();
             if (searchTerm) {
                 filteredData = filteredData.filter(item => item.address.toLowerCase().includes(searchTerm) || (item.code && item.code.toLowerCase().includes(searchTerm)));
             }
+            
+            // Ward filter
             if (filterWardDesktop.value !== 'all') {
                 filteredData = filteredData.filter(item => item.ward === filterWardDesktop.value);
             }
-            // New Utility Filter Logic
+
+            // Price Range filter
+            const priceRange = filterPriceDesktop.value;
+            if (priceRange !== 'all') {
+                filteredData = filteredData.filter(item => {
+                    switch(priceRange) {
+                        case 'under_3m': return item.price < 3000000;
+                        case '3m_5m': return item.price >= 3000000 && item.price <= 5000000;
+                        case '5m_7m': return item.price > 5000000 && item.price <= 7000000;
+                        case 'over_7m': return item.price > 7000000;
+                        default: return true;
+                    }
+                });
+            }
+            
+            // Utility Filter Logic
             const selectedUtilities = Array.from(utilityFilterPanelDesktop.querySelectorAll('input:checked')).map(cb => cb.value);
             if (selectedUtilities.length > 0) {
                 filteredData = filteredData.filter(item => selectedUtilities.every(util => (item.utilities || []).includes(util)));
             }
+
+            // Status filter
             if (filterStatusDesktop.value !== 'all') {
                 const statusValue = filterStatusDesktop.value;
                 filteredData = filteredData.filter(item => (item.status || 'Chưa cho thuê') === statusValue);
             }
-            const sortBy = sortPriceDesktop.value;
-            if (sortBy === 'asc') filteredData.sort((a, b) => a.price - b.price);
-            else if (sortBy === 'desc') filteredData.sort((a, b) => b.price - a.price);
-            else filteredData.sort((a, b) => b.timestamp - a.timestamp);
+
+            // Sorting
+            const sortBy = sortOrderDesktop.value;
+            if (sortBy === 'price_asc') filteredData.sort((a, b) => a.price - b.price);
+            else if (sortBy === 'price_desc') filteredData.sort((a, b) => b.price - a.price);
+            else filteredData.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)); // newest
+            
             renderListings(filteredData);
+            initializeLazyLoading();
         }
 
         function findListingById(listingId) { const dataPool = authToken ? new Map(sessionListings.map(item => [item.id, item])) : listingsMap; return dataPool.get(listingId); }
@@ -506,8 +598,7 @@
             }
             updateGalleryView();
 
-            // Random discount logic
-            const randomDiscount = Math.floor(Math.random() * 11) + 10; // 10 to 20
+            const randomDiscount = Math.floor(Math.random() * 11) + 10;
             discountBanner.innerHTML = `<i class="fas fa-tags mr-2"></i> Giảm ${randomDiscount}% cho khách chốt cọc hôm nay!`;
             discountBanner.classList.remove('hidden');
 
@@ -517,6 +608,10 @@
             const zaloLink = `https://zalo.me/${ZALO_PHONE_NUMBER}`;
             const statusText = listing.status || 'Chưa cho thuê';
             const statusColor = statusText === 'Đã cho thuê' ? 'bg-red-500' : 'bg-green-500';
+
+            const listingUrl = `${window.location.origin}${window.location.pathname}#${listing.id}`;
+            const facebookShareLink = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(listingUrl)}`;
+            const zaloShareLink = `https://zalo.me/share/dpa/?link=${encodeURIComponent(listingUrl)}`;
 
             detailsSection.innerHTML = `
                 <h2 class="text-2xl font-bold mb-2 text-blue-700">${listing.address}</h2>
@@ -536,8 +631,15 @@
                     <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-barcode mr-2"></i>Mã nhà:</strong> ${listing.code}</div>
                 </div>
                 <div class="mt-6 pt-4 border-t flex flex-col gap-2">
-                    <a href="${facebookMessageLink}" target="_blank" class="inline-block w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 text-center text-lg"><i class="fab fa-facebook-messenger mr-2"></i> Nhắn tin Facebook</a>
-                    <a href="${zaloLink}" target="_blank" class="inline-block w-full bg-blue-400 hover:bg-blue-500 text-white font-bold py-3 px-4 rounded-lg transition duration-300 text-center text-lg"><i class="fas fa-comment-dots mr-2"></i> Nhắn tin Zalo</a>
+                    <div class="grid grid-cols-2 gap-2">
+                        <a href="${facebookMessageLink}" target="_blank" class="text-center w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300"><i class="fab fa-facebook-messenger mr-2"></i> Facebook</a>
+                        <a href="${zaloLink}" target="_blank" class="text-center w-full bg-blue-400 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-lg transition duration-300"><i class="fas fa-comment-dots mr-2"></i> Zalo</a>
+                    </div>
+                    <div class="mt-2 text-center text-sm text-gray-500">Hoặc chia sẻ tin đăng này</div>
+                    <div class="grid grid-cols-2 gap-2">
+                         <a href="${facebookShareLink}" target="_blank" class="text-center w-full bg-indigo-700 hover:bg-indigo-800 text-white font-bold py-2 px-4 rounded-lg transition duration-300"><i class="fab fa-facebook-f mr-2"></i> Chia sẻ Facebook</a>
+                         <a href="${zaloShareLink}" target="_blank" class="text-center w-full bg-sky-500 hover:bg-sky-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300"><i class="fas fa-share-alt mr-2"></i> Chia sẻ Zalo</a>
+                    </div>
                 </div>
             `;
             listingModal.classList.remove('hidden');
@@ -759,18 +861,18 @@
         goToAdminBtnMobile.addEventListener('click', handleGoToAdmin);
         goToMainBtn.addEventListener('click', () => { updateAndRender(); switchView('main'); });
         
-        const desktopAndMobileFilters = [searchInputDesktop, searchInputMobile, sortPriceDesktop, sortPriceMobile, filterWardDesktop, filterWardMobile, filterStatusDesktop, filterStatusMobile];
+        const desktopAndMobileFilters = [searchInputDesktop, searchInputMobile, filterPriceDesktop, filterPriceMobile, sortOrderDesktop, sortOrderMobile, filterWardDesktop, filterWardMobile, filterStatusDesktop, filterStatusMobile];
         desktopAndMobileFilters.forEach(filter => {
             if(filter) filter.addEventListener(filter.tagName === 'SELECT' ? 'change' : 'input', () => {
                 syncFilters(searchInputDesktop, searchInputMobile);
-                syncFilters(sortPriceDesktop, sortPriceMobile);
+                syncFilters(filterPriceDesktop, filterPriceMobile);
+                syncFilters(sortOrderDesktop, sortOrderMobile);
                 syncFilters(filterWardDesktop, filterWardMobile);
                 syncFilters(filterStatusDesktop, filterStatusMobile);
                 updateAndRender();
             });
         });
         
-        // Utility Checkbox Syncing and Filtering
         function syncUtilityCheckboxes(sourcePanel, targetPanel) {
             const sourceChecks = sourcePanel.querySelectorAll('input[type="checkbox"]');
             const targetChecks = targetPanel.querySelectorAll('input[type="checkbox"]');
@@ -785,7 +887,6 @@
         utilityFilterPanelDesktop.addEventListener('change', () => syncUtilityCheckboxes(utilityFilterPanelDesktop, utilityFilterPanelMobile));
         utilityFilterPanelMobile.addEventListener('change', () => syncUtilityCheckboxes(utilityFilterPanelMobile, utilityFilterPanelDesktop));
 
-        // Utility Dropdown Toggle
         utilityFilterBtnDesktop.addEventListener('click', (e) => {
             e.stopPropagation();
             utilityFilterPanelDesktop.classList.toggle('hidden');
@@ -796,14 +897,11 @@
             }
         });
 
-
         grid.addEventListener('click', (e) => { const card = e.target.closest('.listing-card'); if (!card) return; const listingId = card.dataset.id; showListingModal(listingId); });
         
         const hideModal = () => {
             listingModal.classList.add('hidden');
-            if (discountBanner) {
-                discountBanner.classList.add('hidden');
-            }
+            if (discountBanner) discountBanner.classList.add('hidden');
         };
 
         closeListingModalBtn.addEventListener('click', hideModal);
@@ -812,7 +910,7 @@
         openFilterBtn.addEventListener('click', toggleFilterMenu);
         closeFilterBtn.addEventListener('click', toggleFilterMenu);
         filterOverlay.addEventListener('click', toggleFilterMenu);
-        parseDataBtn.addEventListener('click', () => { /* Logic bóc tách dữ liệu cần được thêm vào đây */ });
+        parseDataBtn.addEventListener('click', () => { /* Logic bóc tách dữ liệu */ });
         saveCloudinarySettingsBtn.addEventListener('click', saveCloudinarySettings);
         dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
         dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
