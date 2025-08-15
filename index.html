@@ -452,14 +452,24 @@
                     serviceFee: parseInt(adminForm.serviceFee.value) || 0,
                     internet: parseInt(adminForm.internet.value) || 0,
                 };
+                
+                // ========== START: SỬA LỖI ==========
                 if (currentEditId) {
                     const listingIndex = sessionListings.findIndex(l => l.id === currentEditId);
                     if (listingIndex > -1) {
                         const existingListing = sessionListings[listingIndex];
-                        listingData.images = imageUrls.length > 0 ? imageUrls : existingListing.images;
-                        listingData.id = existingListing.id;
-                        listingData.timestamp = Date.now();
-                        sessionListings[listingIndex] = listingData;
+                        
+                        // Tạo đối tượng chứa dữ liệu cập nhật
+                        const updatedData = {
+                            ...listingData, // Lấy tất cả dữ liệu từ form
+                            images: imageUrls.length > 0 ? imageUrls : existingListing.images, // Cập nhật ảnh (giữ ảnh cũ nếu không upload ảnh mới)
+                            timestamp: Date.now() // Cập nhật thời gian
+                        };
+                        
+                        // Dùng Object.assign để hợp nhất dữ liệu mới vào tin đăng cũ.
+                        // Cách này sẽ giữ lại `id` và các thuộc tính khác không có trong form.
+                        Object.assign(sessionListings[listingIndex], updatedData);
+                        
                         alert('Cập nhật tin đăng thành công!');
                     }
                 } else {
@@ -469,6 +479,8 @@
                     sessionListings.push(listingData);
                     alert('Thêm tin đăng mới thành công!');
                 }
+                // ========== END: SỬA LỖI ==========
+
                 clearAdminForm();
                 renderAdminListings(adminSearchInput.value.toLowerCase().trim());
                 populateWards();
