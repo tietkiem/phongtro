@@ -311,6 +311,9 @@
                 <div id="gallery-section" class="relative mb-4">
                     <img id="main-gallery-image" src="" alt="Ảnh phòng trọ" class="w-full h-[60vh] object-contain rounded-md mb-2 bg-gray-100 cursor-pointer">
                     
+                    <div id="discount-banner" class="hidden absolute top-4 left-4 bg-red-600 text-white font-bold px-4 py-2 rounded-lg shadow-lg text-base sm:text-lg animate-pulse z-10">
+                        </div>
+
                     <button id="gallery-prev-btn" class="gallery-nav-btn absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-30 hover:bg-opacity-60 text-white rounded-full w-10 h-10 flex items-center justify-center text-2xl">
                         &#10094;
                     </button>
@@ -386,6 +389,7 @@
         const mainGalleryImage = document.getElementById('main-gallery-image');
         const thumbnailContainer = document.getElementById('thumbnail-gallery-container');
         const detailsSection = document.getElementById('details-section');
+        const discountBanner = document.getElementById('discount-banner');
         const goToAdminBtnDesktop = document.getElementById('go-to-admin-btn-desktop');
         const goToAdminBtnMobile = document.getElementById('go-to-admin-btn-mobile');
         const goToMainBtn = document.getElementById('go-to-main-btn');
@@ -501,6 +505,11 @@
                 mainGalleryImage.src = 'https://placehold.co/800x600/cccccc/ffffff?text=Không+có+ảnh';
             }
             updateGalleryView();
+
+            // Random discount logic
+            const randomDiscount = Math.floor(Math.random() * 11) + 10; // 10 to 20
+            discountBanner.innerHTML = `<i class="fas fa-tags mr-2"></i> Giảm ${randomDiscount}% cho khách chốt cọc hôm nay!`;
+            discountBanner.classList.remove('hidden');
 
             const waterPriceText = listing.water > 0 ? (listing.waterUnit === 'nguoi' ? formatCurrency(listing.water) + '/người' : formatCurrency(listing.water) + '/khối') : 'Miễn phí';
             const prefilledMessage = `Chào bạn, tôi quan tâm đến phòng trọ tại địa chỉ: ${listing.address} (Mã nhà: ${listing.code}).`;
@@ -789,8 +798,17 @@
 
 
         grid.addEventListener('click', (e) => { const card = e.target.closest('.listing-card'); if (!card) return; const listingId = card.dataset.id; showListingModal(listingId); });
-        closeListingModalBtn.addEventListener('click', () => listingModal.classList.add('hidden'));
-        listingModal.addEventListener('click', (e) => { if (e.target === listingModal) listingModal.classList.add('hidden'); });
+        
+        const hideModal = () => {
+            listingModal.classList.add('hidden');
+            if (discountBanner) {
+                discountBanner.classList.add('hidden');
+            }
+        };
+
+        closeListingModalBtn.addEventListener('click', hideModal);
+        listingModal.addEventListener('click', (e) => { if (e.target === listingModal) hideModal(); });
+
         openFilterBtn.addEventListener('click', toggleFilterMenu);
         closeFilterBtn.addEventListener('click', toggleFilterMenu);
         filterOverlay.addEventListener('click', toggleFilterMenu);
