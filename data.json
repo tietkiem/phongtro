@@ -198,17 +198,16 @@
     ]
   },
   {
-    "id": "P1754966959985",
-    "timestamp": 1754966959985,
     "code": "885",
     "address": "\udfe0 Ngách 31 Ngõ 136 Cầu Diễn - Nam Từ Liêm",
     "ward": "Cầu Diễn",
-    "price": 88000000,
+    "price": 8800000,
     "area": 27,
     "wc": "Khép kín",
     "elevator": "Có",
     "electricity": 3800,
     "water": 35000,
+    "waterUnit": "khoi",
     "serviceFee": 150000,
     "internet": 100000,
     "images": [
@@ -217,20 +216,21 @@
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754966951/daijplmutgcrkernumjy.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754966949/kxcsphnfzqmobfdnzqav.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754966950/hxhizsqrrbhkfncyic2o.jpg"
-    ]
+    ],
+    "id": "P1754966959985",
+    "timestamp": 1755190064777
   },
   {
-    "id": "P1754967063009",
-    "timestamp": 1754967063009,
     "code": "141",
     "address": "\udfe0 Ngõ 60/40 Nguyễn Đạo AN",
     "ward": "Bắc Từ Liêm",
-    "price": 79000000,
+    "price": 7900000,
     "area": 46,
     "wc": "Khép kín",
     "elevator": "Có",
     "electricity": 3800,
     "water": 35000,
+    "waterUnit": "khoi",
     "serviceFee": 150000,
     "internet": 100000,
     "images": [
@@ -240,7 +240,9 @@
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967054/rlx2i6i9pcmpi0aw6whv.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967055/suyfn3kwvyhobn7oe1rx.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967052/praxbcbn9rpiwrxnhnw7.jpg"
-    ]
+    ],
+    "id": "P1754967063009",
+    "timestamp": 1755190082401
   },
   {
     "id": "P1754967340802",
@@ -291,17 +293,16 @@
     ]
   },
   {
-    "id": "P1754967527258",
-    "timestamp": 1754967527258,
     "code": "324",
     "address": "\udfe0 1194 Láng - Phường Láng Thượng",
-    "ward": "Láng Thượng",
+    "ward": "Cầu Giấy",
     "price": 7500000,
     "area": 40,
     "wc": "Chung",
     "elevator": "Có",
     "electricity": 4000,
     "water": 0,
+    "waterUnit": "khoi",
     "serviceFee": 150000,
     "internet": 10000,
     "images": [
@@ -313,7 +314,9 @@
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967520/dfaz3meevlxb36wqnntt.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967518/lwpsud1fkhuvyty1gb1c.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754967519/vkp59uqoadvb49gxm50a.jpg"
-    ]
+    ],
+    "id": "P1754967527258",
+    "timestamp": 1755186739822
   },
   {
     "id": "P1754967586097",
@@ -479,17 +482,16 @@
     ]
   },
   {
-    "id": "P1754968067797",
-    "timestamp": 1754968067798,
     "code": "801",
     "address": "\udfe0 Ngách 23 Ngõ 304 Hồ Tùng Mậu",
-    "ward": "phú diễn",
+    "ward": "Mai Dịch",
     "price": 5200000,
     "area": 30,
     "wc": "Khép kín",
     "elevator": "Có",
     "electricity": 3800,
     "water": 30000,
+    "waterUnit": "khoi",
     "serviceFee": 100000,
     "internet": 100000,
     "images": [
@@ -499,7 +501,9 @@
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754968060/nxb9dz563ugdkp9z7v7e.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754968059/mq7d3lsjwgxnnggvm7nz.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754968062/psf5zmr87xwzr7w0n9sk.jpg"
-    ]
+    ],
+    "id": "P1754968067797",
+    "timestamp": 1755186714894
   },
   {
     "id": "P1754968130593",
@@ -729,17 +733,16 @@
     ]
   },
   {
-    "id": "P1754983358087",
-    "timestamp": 1754983358087,
     "code": "346",
-    "address": "\udfe0Ngõ 275 Quan Nhân - Thanh Xuân",
-    "ward": "Nhân Chính",
+    "address": "\udfe0Ngõ 275 Quan Nhân - Nhân Chính",
+    "ward": "Thanh Xuân",
     "price": 4500000,
     "area": 30,
     "wc": "Khép kín",
     "elevator": "Không",
     "electricity": 4000,
     "water": 150000,
+    "waterUnit": "khoi",
     "serviceFee": 150000,
     "internet": 100000,
     "images": [
@@ -747,7 +750,9 @@
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983351/ppuvstiwxrzemmqbpzok.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983351/smay3n3s3ee9wwqsbgqi.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983351/vzybfkjr6j2puicer7uw.jpg"
-    ]
+    ],
+    "id": "P1754983358087",
+    "timestamp": 1755186690278
   },
   {
     "id": "P1754983431447",
@@ -887,17 +892,16 @@
     ]
   },
   {
-    "id": "P1754983982849",
-    "timestamp": 1754983982849,
     "code": "1038",
-    "address": "\udfe0 Ngõ 168/54 Nguyễn Lân - Thanh Xuân",
-    "ward": "Phương Liệt",
+    "address": "\udfe0 Ngõ 168/54 Nguyễn Lân - Phương Liệt",
+    "ward": "Thanh Xuân",
     "price": 4700000,
     "area": 25,
     "wc": "Khép kín",
     "elevator": "Có",
     "electricity": 4000,
     "water": 120000,
+    "waterUnit": "khoi",
     "serviceFee": 150000,
     "internet": 100000,
     "images": [
@@ -909,20 +913,21 @@
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983969/nt3aheaaffdcffkdjgfb.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983971/keoxneyrly9xqkmylcnq.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754983976/sohfgmxjbwoxx1mhdd8f.jpg"
-    ]
+    ],
+    "id": "P1754983982849",
+    "timestamp": 1755186680213
   },
   {
-    "id": "P1754984062137",
-    "timestamp": 1754984062137,
     "code": "241",
-    "address": "\udfe0 Địa chỉ : Ngõ 8/11/150 Lê Quang Đạo - Nam Từ Liêm",
-    "ward": "Mỹ Đình",
+    "address": "\udfe0 Địa chỉ : Ngõ 8/11/150 Lê Quang Đạo - Mỹ Đình",
+    "ward": "Nam Từ Liêm",
     "price": 4000000,
     "area": 28,
     "wc": "Chung",
     "elevator": "Có",
     "electricity": 4000,
     "water": 120000,
+    "waterUnit": "khoi",
     "serviceFee": 150000,
     "internet": 100000,
     "images": [
@@ -936,20 +941,21 @@
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754984054/ccu2p3kilumqu14braap.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754984052/tqsng01r53jipdr3eiss.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754984054/thkg78vduzpwizghxgvp.jpg"
-    ]
+    ],
+    "id": "P1754984062137",
+    "timestamp": 1755186670237
   },
   {
-    "id": "P1754987179248",
-    "timestamp": 1754987179248,
     "code": "216",
-    "address": "\udfe0 542 Trần Cung- Cổ Nhuế  - Bắc Từ Liêm",
-    "ward": "Cổ nhuế 1",
+    "address": "\udfe0 542 Trần Cung- Cổ Nhuế",
+    "ward": "Bắc Từ Liêm",
     "price": 6000000,
     "area": 35,
     "wc": "Khép kín",
     "elevator": "Có",
     "electricity": 3800,
     "water": 35000,
+    "waterUnit": "khoi",
     "serviceFee": 150000,
     "internet": 100000,
     "images": [
@@ -959,7 +965,9 @@
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754987178/bzp6j89xfqebjfdorncs.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754987178/xnaqrsmtvqqopy1ds4tj.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754987178/nkt1z93rbmhodim6gpoq.jpg"
-    ]
+    ],
+    "id": "P1754987179248",
+    "timestamp": 1755186645557
   },
   {
     "id": "P1754987292894",
@@ -1108,17 +1116,16 @@
     ]
   },
   {
-    "id": "P1754990122793",
-    "timestamp": 1754990122793,
     "code": "857",
-    "address": "Ngõ 92 Trại Cá",
-    "ward": "Phương Trương Định",
+    "address": "Ngõ 92 Trại Cá - Phương Trương Định",
+    "ward": "Hoàng Mai",
     "price": 3000000,
     "area": 25,
     "wc": "Khép kín",
     "elevator": "Không",
     "electricity": 4000,
     "water": 10000,
+    "waterUnit": "khoi",
     "serviceFee": 100000,
     "internet": 100000,
     "images": [
@@ -1133,7 +1140,9 @@
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990117/renhngybbrlaukt9v8yn.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990118/ejdhfnprsznpn2ha3jeu.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990121/y5va9qp2hbqp09hpv9ru.jpg"
-    ]
+    ],
+    "id": "P1754990122793",
+    "timestamp": 1755186549858
   },
   {
     "id": "P1754990263191",
@@ -1162,17 +1171,16 @@
     ]
   },
   {
-    "id": "P1754990328725",
-    "timestamp": 1754990328725,
     "code": "857",
-    "address": "Ngõ 131 Thái Hà",
-    "ward": "Phường Trung Liệt",
+    "address": "Ngõ 131 Thái Hà - Phường Trung Liệt",
+    "ward": "Đống Đa",
     "price": 3200000,
     "area": 30,
     "wc": "Khép kín",
     "elevator": "Không",
     "electricity": 4000,
     "water": 100000,
+    "waterUnit": "khoi",
     "serviceFee": 100000,
     "internet": 100000,
     "images": [
@@ -1194,7 +1202,9 @@
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990323/sfn4ni4sjdgu7k6xnqnp.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990323/y01is6xskrc0xlqacvvb.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990324/acmss6bhkslypuwgngtq.jpg"
-    ]
+    ],
+    "id": "P1754990328725",
+    "timestamp": 1755186527979
   },
   {
     "code": "857",
