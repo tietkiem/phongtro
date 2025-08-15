@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         body {
             font-family: 'Be Vietnam Pro', sans-serif;
@@ -56,6 +57,13 @@
             50% {
                 opacity: .5;
             }
+        }
+        #share-loader {
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -339,7 +347,7 @@
     </div>
 
     <div id="listing-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
-        <div class="bg-white rounded-lg shadow-2xl w-full max-w-4xl max-h-[95vh] flex flex-col">
+        <div id="listing-modal-content" class="bg-white rounded-lg shadow-2xl w-full max-w-4xl max-h-[95vh] flex flex-col">
             <button id="close-listing-modal" class="absolute top-2 right-2 text-white bg-black bg-opacity-50 rounded-full w-8 h-8 flex items-center justify-center text-xl z-20">&times;</button>
             <div class="p-4 flex-grow overflow-y-auto">
                 <div id="gallery-section" class="relative mb-4">
@@ -476,7 +484,7 @@
                 const statusColor = statusText === 'Đã cho thuê' ? 'bg-red-500' : 'bg-green-500';
                 card.innerHTML = `
                     <div class="relative">
-                        <img class="lazy-load w-full h-48 object-cover" 
+                         <img class="lazy-load w-full h-48 object-cover" 
                              src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" 
                              data-src="${listing.images[0]}" 
                              alt="Ảnh phòng trọ" 
@@ -505,17 +513,14 @@
                             const img = entry.target;
                             img.src = img.dataset.src;
                             img.classList.remove('lazy-load');
-                            img.onload = () => {
-                                img.removeAttribute('data-src');
-                            };
+                            img.onload = () => img.removeAttribute('data-src');
                             observer.unobserve(img);
                         }
                     });
-                }, { rootMargin: "0px 0px 100px 0px" }); // Start loading 100px before it enters viewport
+                }, { rootMargin: "0px 0px 100px 0px" });
 
                 lazyImages.forEach(img => observer.observe(img));
             } else {
-                // Fallback for older browsers
                 lazyImages.forEach(img => {
                     img.src = img.dataset.src;
                     img.classList.remove('lazy-load');
@@ -527,18 +532,15 @@
             let dataToRender = authToken ? sessionListings : listingsData;
             let filteredData = [...dataToRender];
             
-            // Search filter
             const searchTerm = searchInputDesktop.value.toLowerCase().trim();
             if (searchTerm) {
                 filteredData = filteredData.filter(item => item.address.toLowerCase().includes(searchTerm) || (item.code && item.code.toLowerCase().includes(searchTerm)));
             }
             
-            // Ward filter
             if (filterWardDesktop.value !== 'all') {
                 filteredData = filteredData.filter(item => item.ward === filterWardDesktop.value);
             }
 
-            // Price Range filter
             const priceRange = filterPriceDesktop.value;
             if (priceRange !== 'all') {
                 filteredData = filteredData.filter(item => {
@@ -552,23 +554,20 @@
                 });
             }
             
-            // Utility Filter Logic
             const selectedUtilities = Array.from(utilityFilterPanelDesktop.querySelectorAll('input:checked')).map(cb => cb.value);
             if (selectedUtilities.length > 0) {
                 filteredData = filteredData.filter(item => selectedUtilities.every(util => (item.utilities || []).includes(util)));
             }
 
-            // Status filter
             if (filterStatusDesktop.value !== 'all') {
                 const statusValue = filterStatusDesktop.value;
                 filteredData = filteredData.filter(item => (item.status || 'Chưa cho thuê') === statusValue);
             }
 
-            // Sorting
             const sortBy = sortOrderDesktop.value;
             if (sortBy === 'price_asc') filteredData.sort((a, b) => a.price - b.price);
             else if (sortBy === 'price_desc') filteredData.sort((a, b) => b.price - a.price);
-            else filteredData.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)); // newest
+            else filteredData.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
             
             renderListings(filteredData);
             initializeLazyLoading();
@@ -609,10 +608,6 @@
             const statusText = listing.status || 'Chưa cho thuê';
             const statusColor = statusText === 'Đã cho thuê' ? 'bg-red-500' : 'bg-green-500';
 
-            const listingUrl = `${window.location.origin}${window.location.pathname}#${listing.id}`;
-            const facebookShareLink = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(listingUrl)}`;
-            const zaloShareLink = `https://zalo.me/share/dpa/?link=${encodeURIComponent(listingUrl)}`;
-
             detailsSection.innerHTML = `
                 <h2 class="text-2xl font-bold mb-2 text-blue-700">${listing.address}</h2>
                 <p class="text-lg font-semibold text-red-600 mb-4">${formatCurrency(listing.price)}/tháng</p>
@@ -632,17 +627,74 @@
                 </div>
                 <div class="mt-6 pt-4 border-t flex flex-col gap-2">
                     <div class="grid grid-cols-2 gap-2">
-                        <a href="${facebookMessageLink}" target="_blank" class="text-center w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300"><i class="fab fa-facebook-messenger mr-2"></i> Facebook</a>
-                        <a href="${zaloLink}" target="_blank" class="text-center w-full bg-blue-400 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-lg transition duration-300"><i class="fas fa-comment-dots mr-2"></i> Zalo</a>
+                        <a href="${facebookMessageLink}" target="_blank" class="text-center w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300"><i class="fab fa-facebook-messenger mr-2"></i> Liên hệ Facebook</a>
+                        <a href="${zaloLink}" target="_blank" class="text-center w-full bg-blue-400 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-lg transition duration-300"><i class="fas fa-comment-dots mr-2"></i> Liên hệ Zalo</a>
                     </div>
-                    <div class="mt-2 text-center text-sm text-gray-500">Hoặc chia sẻ tin đăng này</div>
-                    <div class="grid grid-cols-2 gap-2">
-                         <a href="${facebookShareLink}" target="_blank" class="text-center w-full bg-indigo-700 hover:bg-indigo-800 text-white font-bold py-2 px-4 rounded-lg transition duration-300"><i class="fab fa-facebook-f mr-2"></i> Chia sẻ Facebook</a>
-                         <a href="${zaloShareLink}" target="_blank" class="text-center w-full bg-sky-500 hover:bg-sky-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300"><i class="fas fa-share-alt mr-2"></i> Chia sẻ Zalo</a>
-                    </div>
+                    <button id="share-messenger-btn" class="mt-2 w-full bg-indigo-700 hover:bg-indigo-800 text-white font-bold py-2 px-4 rounded-lg transition duration-300 flex items-center justify-center">
+                        <i class="fab fa-facebook-messenger mr-2"></i>
+                        <span>Chia sẻ ảnh qua tin nhắn</span>
+                        <div id="share-loader" class="w-4 h-4 border-2 border-white rounded-full ml-2 hidden"></div>
+                    </button>
                 </div>
             `;
             listingModal.classList.remove('hidden');
+
+            // Add event listener for the new share button
+            document.getElementById('share-messenger-btn').addEventListener('click', handleShareViaMessenger);
+        }
+
+        async function handleShareViaMessenger() {
+            const modalContent = document.getElementById('listing-modal-content');
+            const shareButton = document.getElementById('share-messenger-btn');
+            const loader = document.getElementById('share-loader');
+            const shareText = shareButton.querySelector('span');
+            
+            if (!modalContent || !html2canvas || !shareButton) return;
+
+            // Show loading state
+            shareText.textContent = 'Đang tạo ảnh...';
+            loader.classList.remove('hidden');
+            shareButton.disabled = true;
+
+            try {
+                // Temporarily hide buttons from screenshot
+                closeListingModalBtn.style.display = 'none';
+                galleryPrevBtn.style.display = 'none';
+                galleryNextBtn.style.display = 'none';
+
+                const canvas = await html2canvas(modalContent, {
+                    allowTaint: true,
+                    useCORS: true,
+                    scrollY: -window.scrollY
+                });
+                
+                // Restore buttons
+                closeListingModalBtn.style.display = 'flex';
+                galleryPrevBtn.style.display = 'flex';
+                galleryNextBtn.style.display = 'flex';
+
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                const file = new File([blob], 'phong-tro.png', { type: 'image/png' });
+                const shareData = {
+                    files: [file],
+                    title: 'Thông tin phòng trọ',
+                    text: 'Mình thấy phòng này có vẻ phù hợp, bạn xem thử nhé!',
+                };
+
+                if (navigator.canShare && navigator.canShare(shareData)) {
+                    await navigator.share(shareData);
+                } else {
+                    alert('Trình duyệt của bạn không hỗ trợ chia sẻ file. Tính năng này hoạt động tốt nhất trên điện thoại hoặc các trình duyệt máy tính mới nhất.');
+                }
+            } catch (err) {
+                console.error('Lỗi khi chia sẻ:', err);
+                alert('Đã có lỗi xảy ra trong quá trình tạo ảnh để chia sẻ.');
+            } finally {
+                // Restore button state
+                shareText.textContent = 'Chia sẻ ảnh qua tin nhắn';
+                loader.classList.add('hidden');
+                shareButton.disabled = false;
+            }
         }
         
         function populateWards() { const data = authToken ? sessionListings : listingsData; const wards = [...new Set(data.map(item => item.ward).filter(Boolean))].sort(); const currentSelectionDesktop = filterWardDesktop.value; filterWardDesktop.innerHTML = '<option value="all">Tất cả</option>'; filterWardMobile.innerHTML = '<option value="all">Tất cả</option>'; wardsDatalist.innerHTML = ''; wards.forEach(ward => { const option = document.createElement('option'); option.value = ward; option.textContent = ward; filterWardDesktop.appendChild(option.cloneNode(true)); filterWardMobile.appendChild(option.cloneNode(true)); wardsDatalist.appendChild(option); }); if (wards.includes(currentSelectionDesktop)) { filterWardDesktop.value = currentSelectionDesktop; filterWardMobile.value = currentSelectionDesktop; } }
