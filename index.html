@@ -142,7 +142,7 @@
                         </select>
                     </div>
 
-                    <div class="flex items-center gap-2">
+                     <div class="flex items-center gap-2">
                         <label for="sort-order-desktop" class="text-sm font-medium"><i class="fas fa-sort-amount-down mr-1"></i>Sắp xếp:</label>
                         <select id="sort-order-desktop" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="newest">Mới nhất</option>
@@ -465,7 +465,6 @@
         const adminStatusBtn = document.getElementById('admin-status-btn');
 
         // --- FUNCTIONS ---
-        function syncFilters(source, target) { target.value = source.value; }
         function toggleFilterMenu() { filterPanel.classList.toggle('-translate-x-full'); filterOverlay.classList.toggle('hidden'); }
         async function loadListings() { try { const response = await fetch(`data.json?v=${new Date().getTime()}`); if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`); const data = await response.json(); listingsData = data; sessionListings = JSON.parse(JSON.stringify(data)); listingsMap = new Map(data.map(item => [item.id, item])); updateAndRender(); populateWards(); populateUtilitiesFilter(); } catch (error) { console.error('Could not fetch listings data:', error); grid.innerHTML = `<p class="col-span-full text-center text-red-500">Lỗi tải dữ liệu. Vui lòng kiểm tra file data.json và làm mới trang.</p>`; } }
         const formatCurrency = (amount) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
@@ -638,8 +637,6 @@
                 </div>
             `;
             listingModal.classList.remove('hidden');
-
-            // Add event listener for the new share button
             document.getElementById('share-messenger-btn').addEventListener('click', handleShareViaMessenger);
         }
 
@@ -649,48 +646,36 @@
             const loader = document.getElementById('share-loader');
             const shareText = shareButton.querySelector('span');
             
-            if (!modalContent || !html2canvas || !shareButton) return;
+            if (!modalContent || typeof html2canvas === 'undefined' || !shareButton) return;
 
-            // Show loading state
             shareText.textContent = 'Đang tạo ảnh...';
             loader.classList.remove('hidden');
             shareButton.disabled = true;
 
             try {
-                // Temporarily hide buttons from screenshot
                 closeListingModalBtn.style.display = 'none';
                 galleryPrevBtn.style.display = 'none';
                 galleryNextBtn.style.display = 'none';
 
-                const canvas = await html2canvas(modalContent, {
-                    allowTaint: true,
-                    useCORS: true,
-                    scrollY: -window.scrollY
-                });
+                const canvas = await html2canvas(modalContent, { allowTaint: true, useCORS: true, scrollY: -window.scrollY });
                 
-                // Restore buttons
                 closeListingModalBtn.style.display = 'flex';
                 galleryPrevBtn.style.display = 'flex';
                 galleryNextBtn.style.display = 'flex';
 
                 const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
                 const file = new File([blob], 'phong-tro.png', { type: 'image/png' });
-                const shareData = {
-                    files: [file],
-                    title: 'Thông tin phòng trọ',
-                    text: 'Mình thấy phòng này có vẻ phù hợp, bạn xem thử nhé!',
-                };
+                const shareData = { files: [file], title: 'Thông tin phòng trọ', text: 'Mình thấy phòng này có vẻ phù hợp, bạn xem thử nhé!', };
 
                 if (navigator.canShare && navigator.canShare(shareData)) {
                     await navigator.share(shareData);
                 } else {
-                    alert('Trình duyệt của bạn không hỗ trợ chia sẻ file. Tính năng này hoạt động tốt nhất trên điện thoại hoặc các trình duyệt máy tính mới nhất.');
+                    alert('Trình duyệt của bạn không hỗ trợ chia sẻ file. Tính năng này hoạt động tốt nhất trên điện thoại.');
                 }
             } catch (err) {
                 console.error('Lỗi khi chia sẻ:', err);
                 alert('Đã có lỗi xảy ra trong quá trình tạo ảnh để chia sẻ.');
             } finally {
-                // Restore button state
                 shareText.textContent = 'Chia sẻ ảnh qua tin nhắn';
                 loader.classList.add('hidden');
                 shareButton.disabled = false;
@@ -913,23 +898,29 @@
         goToAdminBtnMobile.addEventListener('click', handleGoToAdmin);
         goToMainBtn.addEventListener('click', () => { updateAndRender(); switchView('main'); });
         
-        const desktopAndMobileFilters = [searchInputDesktop, searchInputMobile, filterPriceDesktop, filterPriceMobile, sortOrderDesktop, sortOrderMobile, filterWardDesktop, filterWardMobile, filterStatusDesktop, filterStatusMobile];
-        desktopAndMobileFilters.forEach(filter => {
-            if(filter) filter.addEventListener(filter.tagName === 'SELECT' ? 'change' : 'input', () => {
-                syncFilters(searchInputDesktop, searchInputMobile);
-                syncFilters(filterPriceDesktop, filterPriceMobile);
-                syncFilters(sortOrderDesktop, sortOrderMobile);
-                syncFilters(filterWardDesktop, filterWardMobile);
-                syncFilters(filterStatusDesktop, filterStatusMobile);
+        // --- CORRECTED BI-DIRECTIONAL FILTER SYNC ---
+        const setupFilterSync = (desktopEl, mobileEl, eventType) => {
+            desktopEl.addEventListener(eventType, () => {
+                mobileEl.value = desktopEl.value;
                 updateAndRender();
             });
-        });
-        
+            mobileEl.addEventListener(eventType, () => {
+                desktopEl.value = mobileEl.value;
+                updateAndRender();
+            });
+        };
+
+        setupFilterSync(searchInputDesktop, searchInputMobile, 'input');
+        setupFilterSync(filterPriceDesktop, filterPriceMobile, 'change');
+        setupFilterSync(sortOrderDesktop, sortOrderMobile, 'change');
+        setupFilterSync(filterWardDesktop, filterWardMobile, 'change');
+        setupFilterSync(filterStatusDesktop, filterStatusMobile, 'change');
+
         function syncUtilityCheckboxes(sourcePanel, targetPanel) {
             const sourceChecks = sourcePanel.querySelectorAll('input[type="checkbox"]');
             const targetChecks = targetPanel.querySelectorAll('input[type="checkbox"]');
             sourceChecks.forEach((sourceCb, index) => {
-                if (targetChecks[index]) {
+                if (targetChecks[index] && targetChecks[index].checked !== sourceCb.checked) {
                     targetChecks[index].checked = sourceCb.checked;
                 }
             });
