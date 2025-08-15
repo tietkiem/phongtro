@@ -457,7 +457,7 @@
             const prefilledMessage = `Chào bạn, tôi quan tâm đến phòng trọ tại địa chỉ: ${listing.address} (Mã nhà: ${listing.code}).`;
             const facebookMessageLink = `https://m.me/${FACEBOOK_USERNAME}?ref=${encodeURIComponent(prefilledMessage)}`;
             const phone = listing.phone || '';
-            const zaloLink = phone ? `https://zalo.me/${phone.replace(/^0/, '')}` : '';
+            const zaloLink = "https://zalo.me/0936018987";
             const callLink = phone ? `tel:${phone}` : '';
 
             detailsSection.innerHTML = `
@@ -483,7 +483,7 @@
                     <a href="${facebookMessageLink}" target="_blank" class="inline-block w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 text-center text-lg">
                         <i class="fab fa-facebook-messenger mr-2"></i> Nhắn tin qua Facebook
                     </a>
-                    ${phone ? `<a href="${zaloLink}" target="_blank" class="inline-block w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg transition duration-300 text-center text-lg"><i class="fab fa-zalo mr-2"></i> Liên hệ Zalo</a>` : ''}
+                    <a href="${zaloLink}" target="_blank" class="inline-block w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg transition duration-300 text-center text-lg"><i class="fab fa-zalo mr-2"></i> Liên hệ Zalo</a>
                     ${phone ? `<a href="${callLink}" class="inline-block w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-4 rounded-lg transition duration-300 text-center text-lg"><i class="fas fa-phone-alt mr-2"></i> Gọi điện thoại</a>` : ''}
                 </div>
             `;
@@ -769,7 +769,7 @@
         function handleSwipe() { const swipeThreshold = 50; if (touchEndX < touchStartX - swipeThreshold) { showNextImage(); } if (touchEndX > touchStartX + swipeThreshold) { showPrevImage(); } }
 
         // --- KHỞI TẠO ---
-        loadListings();
+        loadListings(); // Đảm bảo gọi hàm này để tải dữ liệu từ data.json khi trang được mở
         switchView('main');
     });
     </script>
