@@ -143,6 +143,20 @@
                     <option value="all">Tất cả</option>
                 </select>
             </div>
+            <div>
+                <label for="filter-utility-mobile" class="text-sm font-medium text-gray-700">Lọc theo tiện ích</label>
+                <select id="filter-utility-mobile" class="border border-gray-300 rounded-lg px-3 py-2 text-sm mt-1 w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="all">Tất cả</option>
+                </select>
+            </div>
+            <div>
+                <label for="filter-status-mobile" class="text-sm font-medium text-gray-700">Lọc theo trạng thái</label>
+                <select id="filter-status-mobile" class="border border-gray-300 rounded-lg px-3 py-2 text-sm mt-1 w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="all">Tất cả</option>
+                    <option value="Chưa cho thuê">Chưa cho thuê</option>
+                    <option value="Đã cho thuê">Đã cho thuê</option>
+                </select>
+            </div>
         </div>
         <div class="border-t pt-6">
             <button id="go-to-admin-btn-mobile" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300">
@@ -352,14 +366,69 @@
         const publishStatus = document.getElementById('publish-status');
         const galleryPrevBtn = document.getElementById('gallery-prev-btn');
         const galleryNextBtn = document.getElementById('gallery-next-btn');
+        const adminUtilities = document.getElementById('admin-utilities');
+        const adminPhone = document.getElementById('admin-phone');
+        const adminStatusBtn = document.getElementById('admin-status-btn');
 
         // --- FUNCTIONS ---
         function syncFilters(source, target) { target.value = source.value; }
         function toggleFilterMenu() { filterPanel.classList.toggle('-translate-x-full'); filterOverlay.classList.toggle('hidden'); }
         async function loadListings() { try { const response = await fetch(`data.json?v=${new Date().getTime()}`); if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`); const data = await response.json(); listingsData = data; sessionListings = JSON.parse(JSON.stringify(data)); listingsMap = new Map(data.map(item => [item.id, item])); updateAndRender(); populateWards(); } catch (error) { console.error('Could not fetch listings data:', error); grid.innerHTML = `<p class="col-span-full text-center text-red-500">Lỗi tải dữ liệu. Vui lòng kiểm tra file data.json và làm mới trang.</p>`; } }
         const formatCurrency = (amount) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
-        function renderListings(data) { grid.innerHTML = ''; if (data.length === 0) { grid.innerHTML = `<p class="col-span-full text-center text-gray-500 py-10">Không tìm thấy phòng trọ nào phù hợp.</p>`; return; } data.forEach(listing => { const card = document.createElement('div'); card.className = 'listing-card bg-white rounded-lg shadow-lg overflow-hidden cursor-pointer'; card.setAttribute('data-id', listing.id); card.innerHTML = `<div class="relative"><img src="${listing.images[0]}" alt="Ảnh phòng trọ" class="w-full h-48 object-cover" onerror="this.onerror=null;this.src='https://placehold.co/600x400/cccccc/ffffff?text=Lỗi+Ảnh';"><div class="absolute top-2 right-2 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded">${listing.ward}</div></div><div class="p-4"><p class="font-bold text-lg text-red-500">${formatCurrency(listing.price)}/tháng</p><p class="text-sm text-gray-600 truncate"><i class="fas fa-map-marker-alt mr-1 text-gray-400"></i>${listing.address}</p></div>`; grid.appendChild(card); }); }
-        function updateAndRender() { let dataToRender = authToken ? sessionListings : listingsData; let filteredData = [...dataToRender]; const searchTerm = searchInputDesktop.value.toLowerCase().trim(); if (searchTerm) { filteredData = filteredData.filter(item => item.address.toLowerCase().includes(searchTerm) || (item.code && item.code.toLowerCase().includes(searchTerm))); } const selectedWard = filterWardDesktop.value; if (selectedWard !== 'all') { filteredData = filteredData.filter(item => item.ward === selectedWard); } const sortBy = sortPriceDesktop.value; if (sortBy === 'asc') filteredData.sort((a, b) => a.price - b.price); else if (sortBy === 'desc') filteredData.sort((a, b) => b.price - a.price); else filteredData.sort((a, b) => b.timestamp - a.timestamp); renderListings(filteredData); }
+        function renderListings(data) {
+            grid.innerHTML = '';
+            if (data.length === 0) {
+                grid.innerHTML = `<p class="col-span-full text-center text-gray-500 py-10">Không tìm thấy phòng trọ nào phù hợp.</p>`;
+                return;
+            }
+            data.forEach(listing => {
+                const card = document.createElement('div');
+                card.className = 'listing-card bg-white rounded-lg shadow-lg overflow-hidden cursor-pointer';
+                card.setAttribute('data-id', listing.id);
+                card.innerHTML = `
+                    <div class="relative">
+                        <img src="${listing.images[0]}" alt="Ảnh phòng trọ" class="w-full h-48 object-cover" onerror="this.onerror=null;this.src='https://placehold.co/600x400/cccccc/ffffff?text=Lỗi+Ảnh';">
+                        <div class="absolute top-2 right-2 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded">${listing.ward}</div>
+                        <div class="absolute bottom-2 left-2 px-2 py-1 rounded text-xs font-bold ${listing.status === 'Đã cho thuê' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}">${listing.status || 'Chưa cho thuê'}</div>
+                    </div>
+                    <div class="p-4">
+                        <p class="font-bold text-lg text-red-500">${formatCurrency(listing.price)}/tháng</p>
+                        <p class="text-sm text-gray-600 truncate"><i class="fas fa-map-marker-alt mr-1 text-gray-400"></i>${listing.address}</p>
+                        <div class="flex flex-wrap gap-1 mt-2">
+                            ${(listing.utilities || []).map(u => `<span class="bg-gray-200 text-xs px-2 py-1 rounded">${u}</span>`).join('')}
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+        function updateAndRender() {
+            let dataToRender = authToken ? sessionListings : listingsData;
+            let filteredData = [...dataToRender];
+            const searchTerm = searchInputDesktop.value.toLowerCase().trim();
+            if (searchTerm) {
+                filteredData = filteredData.filter(item => item.address.toLowerCase().includes(searchTerm) || (item.code && item.code.toLowerCase().includes(searchTerm)));
+            }
+            const selectedWard = filterWardDesktop.value;
+            if (selectedWard !== 'all') {
+                filteredData = filteredData.filter(item => item.ward === selectedWard);
+            }
+            // Tiện ích
+            const filterUtilDesktop = document.getElementById('filter-utility-desktop');
+            if (filterUtilDesktop && filterUtilDesktop.value !== 'all') {
+                filteredData = filteredData.filter(item => (item.utilities || []).includes(filterUtilDesktop.value));
+            }
+            // Trạng thái
+            const filterStatusDesktop = document.getElementById('filter-status-desktop');
+            if (filterStatusDesktop && filterStatusDesktop.value !== 'all') {
+                filteredData = filteredData.filter(item => item.status === filterStatusDesktop.value);
+            }
+            const sortBy = sortPriceDesktop.value;
+            if (sortBy === 'asc') filteredData.sort((a, b) => a.price - b.price);
+            else if (sortBy === 'desc') filteredData.sort((a, b) => b.price - a.price);
+            else filteredData.sort((a, b) => b.timestamp - a.timestamp);
+            renderListings(filteredData);
+        }
         function findListingById(listingId) { const dataPool = authToken ? new Map(sessionListings.map(item => [item.id, item])) : listingsMap; return dataPool.get(listingId); }
         function updateGalleryView() { if (!currentGalleryImages || currentGalleryImages.length === 0) return; mainGalleryImage.src = currentGalleryImages[currentGalleryIndex]; galleryPrevBtn.style.display = currentGalleryIndex === 0 ? 'none' : 'flex'; galleryNextBtn.style.display = currentGalleryIndex === currentGalleryImages.length - 1 ? 'none' : 'flex'; const thumbnails = document.querySelectorAll('#thumbnail-gallery-container img'); thumbnails.forEach((thumb, index) => { if (index === currentGalleryIndex) { thumb.classList.add('border-blue-500'); thumb.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' }); } else { thumb.classList.remove('border-blue-500'); } }); }
         function showNextImage() { if (currentGalleryIndex < currentGalleryImages.length - 1) { currentGalleryIndex++; updateGalleryView(); } }
@@ -387,10 +456,17 @@
             const waterPriceText = listing.water > 0 ? (listing.waterUnit === 'nguoi' ? formatCurrency(listing.water) + '/người' : formatCurrency(listing.water) + '/khối') : 'Miễn phí';
             const prefilledMessage = `Chào bạn, tôi quan tâm đến phòng trọ tại địa chỉ: ${listing.address} (Mã nhà: ${listing.code}).`;
             const facebookMessageLink = `https://m.me/${FACEBOOK_USERNAME}?ref=${encodeURIComponent(prefilledMessage)}`;
-            
+            const phone = listing.phone || '';
+            const zaloLink = phone ? `https://zalo.me/${phone.replace(/^0/, '')}` : '';
+            const callLink = phone ? `tel:${phone}` : '';
+
             detailsSection.innerHTML = `
                 <h2 class="text-2xl font-bold mb-2 text-blue-700">${listing.address}</h2>
                 <p class="text-lg font-semibold text-red-600 mb-4">${formatCurrency(listing.price)}/tháng</p>
+                <div class="flex gap-2 mb-2">
+                    <span class="px-2 py-1 rounded text-xs font-bold ${listing.status === 'Đã cho thuê' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}">${listing.status || 'Chưa cho thuê'}</span>
+                    ${(listing.utilities || []).map(u => `<span class="bg-gray-200 text-xs px-2 py-1 rounded">${u}</span>`).join('')}
+                </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
                     <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-ruler-combined mr-2"></i>Diện tích:</strong> ${listing.area} m²</div>
                     <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-toilet mr-2"></i>Vệ sinh:</strong> ${listing.wc}</div>
@@ -400,12 +476,17 @@
                     <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-tint mr-2"></i>Giá nước:</strong> ${waterPriceText}</div>
                     <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-wifi mr-2"></i>Giá mạng:</strong> ${listing.internet > 0 ? formatCurrency(listing.internet) + '/phòng' : 'Miễn phí'}</div>
                     <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-barcode mr-2"></i>Mã nhà:</strong> ${listing.code}</div>
+                    <div class="bg-gray-100 p-3 rounded-lg"><strong><i class="fas fa-phone mr-2"></i>Số điện thoại:</strong> ${phone ? `<a href="${callLink}" class="text-blue-600 underline">${phone}</a>` : 'Chưa có'}
+                    </div>
                 </div>
-                <div class="mt-6 pt-4 border-t">
+                <div class="mt-6 pt-4 border-t flex flex-col gap-2">
                     <a href="${facebookMessageLink}" target="_blank" class="inline-block w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 text-center text-lg">
                         <i class="fab fa-facebook-messenger mr-2"></i> Nhắn tin qua Facebook
                     </a>
-                </div>`;
+                    ${phone ? `<a href="${zaloLink}" target="_blank" class="inline-block w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg transition duration-300 text-center text-lg"><i class="fab fa-zalo mr-2"></i> Liên hệ Zalo</a>` : ''}
+                    ${phone ? `<a href="${callLink}" class="inline-block w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-4 rounded-lg transition duration-300 text-center text-lg"><i class="fas fa-phone-alt mr-2"></i> Gọi điện thoại</a>` : ''}
+                </div>
+            `;
             listingModal.classList.remove('hidden');
         }
         
@@ -420,7 +501,7 @@
             for (const field of requiredFields) { if (!adminForm[field].value) { alert(`Vui lòng điền thông tin: ${adminForm[field].previousElementSibling.textContent}`); return; } }
             if (!currentEditId && uploadedFiles.length === 0) { alert('Vui lòng chọn ít nhất một ảnh cho tin đăng mới.'); return; }
             if (currentEditId && currentEditImages.length === 0 && uploadedFiles.length === 0) { alert('Tin đăng phải có ít nhất một ảnh. Vui lòng thêm ảnh mới.'); return; }
-            
+
             submitListingBtn.disabled = true;
             submitSpinner.classList.remove('hidden');
             try {
@@ -430,18 +511,32 @@
                     newImageUrls = await uploadToCloudinary(uploadedFiles);
                 }
                 submitBtnText.textContent = 'Đang lưu...';
-                
+
+                // Lấy tiện ích
+                const utilities = Array.from(adminUtilities.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+
                 const listingData = {
-                    code: adminForm.code.value, address: adminForm.address.value, ward: adminForm.ward.value,
-                    price: parseInt(adminForm.price.value), area: parseInt(adminForm.area.value), wc: adminForm.wc.value,
-                    elevator: adminForm.elevator.value, electricity: parseInt(adminForm.electricity.value) || 0,
-                    water: parseInt(adminForm.water.value) || 0, waterUnit: document.getElementById('admin-water-unit')?.value || 'khoi',
-                    serviceFee: parseInt(adminForm.serviceFee.value) || 0, internet: parseInt(adminForm.internet.value) || 0,
+                    code: adminForm.code.value,
+                    address: adminForm.address.value,
+                    ward: adminForm.ward.value,
+                    price: parseInt(adminForm.price.value),
+                    area: parseInt(adminForm.area.value),
+                    wc: adminForm.wc.value,
+                    elevator: adminForm.elevator.value,
+                    electricity: parseInt(adminForm.electricity.value) || 0,
+                    water: parseInt(adminForm.water.value) || 0,
+                    waterUnit: document.getElementById('admin-water-unit')?.value || 'khoi',
+                    serviceFee: parseInt(adminForm.serviceFee.value) || 0,
+                    internet: parseInt(adminForm.internet.value) || 0,
+                    utilities,
+                    phone: adminPhone.value.trim(),
+                    status: adminStatus ? "Đã cho thuê" : "Chưa cho thuê"
                 };
 
                 if (currentEditId) {
                     const listingIndex = sessionListings.findIndex(l => l.id === currentEditId);
                     if (listingIndex > -1) {
+                        // Kết hợp ảnh cũ (đã lọc) và ảnh mới
                         const finalImages = [...currentEditImages, ...newImageUrls];
                         const updatedData = { ...listingData, images: finalImages, timestamp: Date.now() };
                         Object.assign(sessionListings[listingIndex], updatedData);
@@ -457,7 +552,8 @@
                 clearAdminForm();
                 renderAdminListings(adminSearchInput.value.toLowerCase().trim());
                 populateWards();
-            } catch (error) { console.error("Lỗi:", error); alert(`Đã xảy ra lỗi: ${error.message}`);
+            } catch (error) {
+                console.error("Lỗi:", error); alert(`Đã xảy ra lỗi: ${error.message}`);
             } finally {
                 submitListingBtn.disabled = false;
                 submitSpinner.classList.add('hidden');
@@ -472,24 +568,19 @@
             dataParserInput.value = '';
             uploadedFiles = [];
             currentEditImages = [];
-            currentEditId = null; 
+            currentEditId = null;
             submitBtnText.textContent = 'Thêm Tin Đăng Mới';
             adminForm.images.value = '';
-        }
-
-        function parsePrice(priceStr) { if (!priceStr) return 0; priceStr = priceStr.toLowerCase().replace(/,/g, '.'); let price = 0; if (priceStr.includes('tr')) { const parts = priceStr.split('tr'); const mainPart = parseFloat(parts[0]) || 0; price = mainPart * 1000000; if (parts[1]) { const subPart = parseInt(parts[1]) || 0; price += subPart * 100000; } } else { price = parseInt(priceStr.replace(/\D/g, '')) || 0; } return price; }
-        function parseKNumber(kStr) { if (!kStr) return 0; kStr = kStr.toLowerCase().replace(/,/g, '.'); let value = 0; if (kStr.includes('k')) { const parts = kStr.split('k'); const mainPart = parseFloat(parts[0]) || 0; value = mainPart * 1000; if (parts[1]) { const subPart = parseInt(parts[1]) || 0; value += subPart * 100; } } else { value = parseInt(kStr.replace(/\D/g, '')) || 0; } return value; }
-        function parseData() { const text = dataParserInput.value; if (!text) { alert('Vui lòng dán nội dung vào ô.'); return; } const getVal = (regex, defaultVal = '') => (text.match(regex) || [])[1] || defaultVal; adminForm.code.value = getVal(/Mã\s*(\S+)/i); adminForm.address.value = getVal(/[🕍🏠]\s*(.*)/i).trim(); const priceStr = getVal(/Giá\s*[-:]?\s*([^\n\r]*)/i).trim(); adminForm.price.value = parsePrice(priceStr); const areaStr = getVal(/Diện tích\s*(\d+)/i); adminForm.area.value = parseInt(areaStr) || 0; const elecStr = getVal(/Điện\s*([^\s\/]+)/i); adminForm.electricity.value = parseKNumber(elecStr); const waterStr = getVal(/Nước\s*([^\s\/]+)/i); adminForm.water.value = parseKNumber(waterStr); const serviceFeeStr = getVal(/(?:Dịch vụ chung|dvc)[:\s]*([^\s\/]+)/i); adminForm.serviceFee.value = parseKNumber(serviceFeeStr); const internetStr = getVal(/Mạng\s*([^\s\/]+)/i) || getVal(/wifi\s*([^\s\/]+)/i); adminForm.internet.value = parseKNumber(internetStr); if(adminForm.internet.value === 0 && /gồm.*wifi/i.test(text.toLowerCase())) adminForm.internet.value = 100000; adminForm.elevator.value = /thang máy/i.test(text.toLowerCase()) ? 'Có' : 'Không'; adminForm.wc.value = /khép kín|giặt riêng/i.test(text.toLowerCase()) ? 'Khép kín' : 'Chung'; const address = adminForm.address.value.toLowerCase(); const allWards = [...new Set(sessionListings.map(item => item.ward).filter(Boolean))]; adminForm.ward.value = allWards.find(w => address.includes(w.toLowerCase())) || ''; alert('Bóc tách dữ liệu hoàn tất! Vui lòng kiểm tra lại thông tin và chọn ảnh.'); }
-        
-        function handleImageFiles(files) { 
-            uploadedFiles.push(...Array.from(files));
-            renderAdminImagePreviews();
+            adminPhone.value = '';
+            adminStatus = false;
+            adminStatusBtn.textContent = "Chưa cho thuê";
+            adminStatusBtn.className = "mt-1 px-3 py-2 rounded-md font-bold bg-green-100 text-green-700 border border-green-300";
+            Array.from(adminUtilities.querySelectorAll('input[type="checkbox"]')).forEach(cb => cb.checked = false);
         }
 
         function renderAdminImagePreviews() {
             imagePreviewContainer.innerHTML = '';
-            
-            // Render ảnh cũ (URL)
+            // Ảnh cũ (URL)
             currentEditImages.forEach((imageUrl, index) => {
                 const item = document.createElement('div');
                 item.className = 'image-preview-item';
@@ -508,8 +599,7 @@
                 item.appendChild(deleteBtn);
                 imagePreviewContainer.appendChild(item);
             });
-
-            // Render ảnh mới (File object)
+            // Ảnh mới (File object)
             uploadedFiles.forEach((file, index) => {
                 const item = document.createElement('div');
                 item.className = 'image-preview-item';
@@ -530,33 +620,11 @@
                 imagePreviewContainer.appendChild(item);
             });
         }
-        
-        function renderAdminListings(searchTerm = '') {
-            adminListingsContainer.innerHTML = '';
-            let listingsToRender = [...sessionListings];
-            if (searchTerm) { listingsToRender = listingsToRender.filter(listing => (listing.address?.toLowerCase().includes(searchTerm)) || (listing.code?.toLowerCase().includes(searchTerm))); }
-            if (listingsToRender.length === 0) { adminListingsContainer.innerHTML = '<p class="text-sm text-gray-500">Không tìm thấy tin đăng nào.</p>'; return; }
-            const sortedListings = listingsToRender.sort((a, b) => b.timestamp - a.timestamp);
-            sortedListings.forEach(listing => {
-                const item = document.createElement('div');
-                item.className = 'flex items-center justify-between bg-gray-50 p-2 rounded-md';
-                item.innerHTML = `
-                    <div class="flex-grow truncate pr-4">
-                        <p class="text-sm text-gray-800 font-medium">${listing.address}</p>
-                        <p class="text-xs text-gray-500">${listing.ward} - ${formatCurrency(listing.price)}</p>
-                    </div>
-                    <div class="flex-shrink-0 flex gap-2">
-                        <button data-id="${listing.id}" class="edit-listing-btn bg-blue-500 text-white w-8 h-8 rounded-md hover:bg-blue-600 flex items-center justify-center" title="Sửa tin này"><i class="fas fa-pencil-alt"></i></button>
-                        <button data-id="${listing.id}" class="delete-listing-btn bg-red-500 text-white w-8 h-8 rounded-md hover:bg-red-600 flex items-center justify-center" title="Xóa tin này"><i class="fas fa-trash"></i></button>
-                    </div>`;
-                adminListingsContainer.appendChild(item);
-            });
-        }
-        
+
         function handleEditListing(listingId) {
             const listingToEdit = sessionListings.find(l => l.id === listingId);
             if (!listingToEdit) return;
-            clearAdminForm(); // Xóa form trước khi điền dữ liệu mới
+            clearAdminForm();
             currentEditId = listingId;
             adminForm.code.value = listingToEdit.code;
             adminForm.address.value = listingToEdit.address;
@@ -570,16 +638,79 @@
             if (document.getElementById('admin-water-unit')) document.getElementById('admin-water-unit').value = listingToEdit.waterUnit || 'khoi';
             adminForm.serviceFee.value = listingToEdit.serviceFee;
             adminForm.internet.value = listingToEdit.internet;
-            
-            currentEditImages = [...(listingToEdit.images || [])]; // Copy ảnh hiện tại vào mảng quản lý
-            renderAdminImagePreviews(); // Hiển thị các ảnh này
-            
+            adminPhone.value = listingToEdit.phone || '';
+            adminStatus = listingToEdit.status === "Đã cho thuê";
+            adminStatusBtn.textContent = adminStatus ? "Đã cho thuê" : "Chưa cho thuê";
+            adminStatusBtn.className = adminStatus
+                ? "mt-1 px-3 py-2 rounded-md font-bold bg-red-100 text-red-700 border border-red-300"
+                : "mt-1 px-3 py-2 rounded-md font-bold bg-green-100 text-green-700 border border-green-300";
+            // Tiện ích
+            Array.from(adminUtilities.querySelectorAll('input[type="checkbox"]')).forEach(cb => {
+                cb.checked = (listingToEdit.utilities || []).includes(cb.value);
+            });
+            currentEditImages = [...(listingToEdit.images || [])];
+            renderAdminImagePreviews();
             submitBtnText.textContent = 'Cập Nhật Tin Đăng';
             window.scrollTo({ top: document.getElementById('admin-view').offsetTop, behavior: 'smooth' });
         }
 
-        function showConfirmModal(title, text, onOk) { confirmModalTitle.textContent = title; confirmModalText.textContent = text; confirmModal.classList.remove('hidden'); const newOk = confirmModalOk.cloneNode(true); confirmModalOk.parentNode.replaceChild(newOk, confirmModalOk); confirmModalOk = newOk; confirmModalOk.addEventListener('click', () => { onOk(); confirmModal.classList.add('hidden'); }, { once: true }); }
-        
+        // Lọc tiện ích và trạng thái ngoài trang chủ/mobile
+        function updateAndRender() {
+            let dataToRender = authToken ? sessionListings : listingsData;
+            let filteredData = [...dataToRender];
+            const searchTerm = searchInputDesktop.value.toLowerCase().trim();
+            if (searchTerm) {
+                filteredData = filteredData.filter(item => item.address.toLowerCase().includes(searchTerm) || (item.code && item.code.toLowerCase().includes(searchTerm)));
+            }
+            const selectedWard = filterWardDesktop.value;
+            if (selectedWard !== 'all') {
+                filteredData = filteredData.filter(item => item.ward === selectedWard);
+            }
+            // Tiện ích
+            const filterUtilDesktop = document.getElementById('filter-utility-desktop');
+            if (filterUtilDesktop && filterUtilDesktop.value !== 'all') {
+                filteredData = filteredData.filter(item => (item.utilities || []).includes(filterUtilDesktop.value));
+            }
+            // Trạng thái
+            const filterStatusDesktop = document.getElementById('filter-status-desktop');
+            if (filterStatusDesktop && filterStatusDesktop.value !== 'all') {
+                filteredData = filteredData.filter(item => item.status === filterStatusDesktop.value);
+            }
+            const sortBy = sortPriceDesktop.value;
+            if (sortBy === 'asc') filteredData.sort((a, b) => a.price - b.price);
+            else if (sortBy === 'desc') filteredData.sort((a, b) => b.price - a.price);
+            else filteredData.sort((a, b) => b.timestamp - a.timestamp);
+            renderListings(filteredData);
+        }
+
+        // Thêm bộ lọc trạng thái ngoài trang chủ/mobile
+        function renderStatusFilterOptions() {
+            const filterDesktop = document.getElementById('filter-status-desktop');
+            const filterMobile = document.getElementById('filter-status-mobile');
+            if (!filterDesktop) {
+                const div = document.createElement('div');
+                div.className = "flex items-center gap-2";
+                div.innerHTML = `<label class="text-sm font-medium"><i class="fas fa-toggle-on mr-1"></i>Trạng thái:</label>
+                    <select id="filter-status-desktop" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="all">Tất cả</option>
+                        <option value="Chưa cho thuê">Chưa cho thuê</option>
+                        <option value="Đã cho thuê">Đã cho thuê</option>
+                    </select>`;
+                document.querySelector('.lg\\:flex.items-center.gap-3').appendChild(div);
+            }
+            if (!filterMobile) {
+                const div = document.createElement('div');
+                div.innerHTML = `<label for="filter-status-mobile" class="text-sm font-medium text-gray-700">Lọc theo trạng thái</label>
+                    <select id="filter-status-mobile" class="border border-gray-300 rounded-lg px-3 py-2 text-sm mt-1 w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="all">Tất cả</option>
+                        <option value="Chưa cho thuê">Chưa cho thuê</option>
+                        <option value="Đã cho thuê">Đã cho thuê</option>
+                    </select>`;
+                document.getElementById('filter-panel').querySelector('.space-y-4').appendChild(div);
+            }
+        }
+        renderStatusFilterOptions();
+
         // --- EVENT LISTENERS ---
         loginBtn.addEventListener('click', async () => { const username = usernameInput.value; const password = passwordInput.value; loginBtn.disabled = true; loginError.classList.add('hidden'); try { const response = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }), }); const data = await response.json(); if (!response.ok) { throw new Error(data.message || 'Lỗi không xác định.'); } authToken = data.token; switchView('admin'); loadCloudinarySettings(); renderAdminListings(); usernameInput.value = ''; passwordInput.value = ''; } catch (error) { loginError.textContent = error.message; loginError.classList.remove('hidden'); } finally { loginBtn.disabled = false; } });
         logoutBtn.addEventListener('click', () => { authToken = null; switchView('main'); });
@@ -620,30 +751,6 @@
                     renderAdminListings(adminSearchInput.value.toLowerCase().trim());
                     populateWards();
                     alert('Đã xóa tin đăng. Hãy nhấn nút "Lưu và Xuất Bản" để cập nhật vĩnh viễn.');
-                });
-            }
-        });
-        
-        adminSearchInput.addEventListener('input', () => { renderAdminListings(adminSearchInput.value.toLowerCase().trim()); });
-
-        confirmModalCancel.addEventListener('click', () => confirmModal.classList.add('hidden'));
-        confirmModal.addEventListener('click', (e) => { if (e.target === confirmModal) confirmModal.classList.add('hidden'); });
-        publishBtn.addEventListener('click', async () => { if (!authToken) { alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại."); switchView('login'); return; } const isConfirmed = confirm("Bạn có chắc chắn muốn xuất bản dữ liệu không?"); if (!isConfirmed) return; publishStatus.textContent = 'Đang kết nối và xuất bản...'; publishStatus.className = 'text-sm mt-2 text-blue-600'; publishBtn.disabled = true; let response; try { const dataString = JSON.stringify(sessionListings, null, 2); response = await fetch('/api/publish', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` }, body: dataString, }); const responseText = await response.text(); if (!response.ok) { throw new Error(responseText); } const result = JSON.parse(responseText); publishStatus.textContent = 'Xuất bản thành công! Website sẽ được cập nhật sau vài phút.'; publishStatus.className = 'text-sm mt-2 text-green-600'; listingsData = JSON.parse(JSON.stringify(sessionListings)); listingsMap = new Map(listingsData.map(item => [item.id, item])); } catch (error) { console.error("Đã xảy ra lỗi khi xuất bản. Chi tiết bên dưới:"); console.error(error.message); publishStatus.textContent = `Xuất bản thất bại! Hãy mở Console (nhấn F12) để xem chi tiết lỗi.`; publishStatus.className = 'text-sm mt-2 text-red-600'; } finally { publishBtn.disabled = false; } });
-        galleryNextBtn.addEventListener('click', showNextImage);
-        galleryPrevBtn.addEventListener('click', showPrevImage);
-        let touchStartX = 0;
-        let touchEndX = 0;
-        mainGalleryImage.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; }, { passive: true });
-        mainGalleryImage.addEventListener('touchend', (e) => { touchEndX = e.changedTouches[0].screenX; handleSwipe(); });
-        function handleSwipe() { const swipeThreshold = 50; if (touchEndX < touchStartX - swipeThreshold) { showNextImage(); } if (touchEndX > touchStartX + swipeThreshold) { showPrevImage(); } }
-
-        // --- KHỞI TẠO ---
-        loadListings();
-        switchView('main');
-    });
-    </script>
-</body>
-</html>
                 });
             }
         });
