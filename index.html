@@ -7,7 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         body {
             font-family: 'Be Vietnam Pro', sans-serif;
@@ -57,13 +56,6 @@
             50% {
                 opacity: .5;
             }
-        }
-        #share-loader {
-            border-top-color: transparent;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -398,6 +390,7 @@
         let currentGalleryIndex = 0;
         let currentEditId = null;
         let adminStatus = false;
+        let currentViewingListingId = null; // BIẾN MỚI để lưu ID tin đang xem cho chức năng chia sẻ
         const ALL_UTILITIES = [
             'Điều hòa', 'Nóng lạnh', 'Máy giặt', 'Giường', 'Tủ đồ', 
             'Bếp', 'Tủ lạnh', 'Ban công', 'Gác xép'
@@ -578,6 +571,7 @@
         function showPrevImage() { if (currentGalleryIndex > 0) { currentGalleryIndex--; updateGalleryView(); } }
         
         function showListingModal(listingId) {
+            currentViewingListingId = listingId; // CẬP NHẬT TẠI ĐÂY: Lưu ID tin đang xem
             const listing = findListingById(listingId);
             if (!listing) { console.error(`Listing with ID ${listingId} not found.`); return; }
             currentGalleryImages = listing.images;
@@ -629,56 +623,40 @@
                         <a href="${facebookMessageLink}" target="_blank" class="text-center w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300"><i class="fab fa-facebook-messenger mr-2"></i> Liên hệ Facebook</a>
                         <a href="${zaloLink}" target="_blank" class="text-center w-full bg-blue-400 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-lg transition duration-300"><i class="fas fa-comment-dots mr-2"></i> Liên hệ Zalo</a>
                     </div>
-                    <button id="share-messenger-btn" class="mt-2 w-full bg-indigo-700 hover:bg-indigo-800 text-white font-bold py-2 px-4 rounded-lg transition duration-300 flex items-center justify-center">
-                        <i class="fab fa-facebook-messenger mr-2"></i>
-                        <span>Chia sẻ ảnh qua tin nhắn</span>
-                        <div id="share-loader" class="w-4 h-4 border-2 border-white rounded-full ml-2 hidden"></div>
+                    <button id="share-btn" class="mt-2 w-full bg-indigo-700 hover:bg-indigo-800 text-white font-bold py-2 px-4 rounded-lg transition duration-300 flex items-center justify-center">
+                        <i class="fas fa-share-alt mr-2"></i>
+                        <span>Chia sẻ tin đăng</span>
                     </button>
                 </div>
             `;
             listingModal.classList.remove('hidden');
-            document.getElementById('share-messenger-btn').addEventListener('click', handleShareViaMessenger);
+            document.getElementById('share-btn').addEventListener('click', handleShare);
         }
 
-        async function handleShareViaMessenger() {
-            const modalContent = document.getElementById('listing-modal-content');
-            const shareButton = document.getElementById('share-messenger-btn');
-            const loader = document.getElementById('share-loader');
-            const shareText = shareButton.querySelector('span');
+        // HÀM CHIA SẺ MỚI (THAY THẾ HÀM CŨ)
+        async function handleShare() {
+            if (!currentViewingListingId) {
+                alert("Không tìm thấy thông tin tin đăng để chia sẻ.");
+                return;
+            }
             
-            if (!modalContent || typeof html2canvas === 'undefined' || !shareButton) return;
+            const listingToShare = findListingById(currentViewingListingId);
+            if (!listingToShare) return;
 
-            shareText.textContent = 'Đang tạo ảnh...';
-            loader.classList.remove('hidden');
-            shareButton.disabled = true;
+            const shareData = {
+                title: `Phòng trọ tại ${listingToShare.address}`,
+                text: `Mình thấy phòng trọ này có vẻ phù hợp, giá ${formatCurrency(listingToShare.price)}/tháng. Bạn xem thử nhé!`,
+                url: `${window.location.origin}${window.location.pathname}#id=${listingToShare.id}`
+            };
 
-            try {
-                closeListingModalBtn.style.display = 'none';
-                galleryPrevBtn.style.display = 'none';
-                galleryNextBtn.style.display = 'none';
-
-                const canvas = await html2canvas(modalContent, { allowTaint: true, useCORS: true, scrollY: -window.scrollY });
-                
-                closeListingModalBtn.style.display = 'flex';
-                galleryPrevBtn.style.display = 'flex';
-                galleryNextBtn.style.display = 'flex';
-
-                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-                const file = new File([blob], 'phong-tro.png', { type: 'image/png' });
-                const shareData = { files: [file], title: 'Thông tin phòng trọ', text: 'Mình thấy phòng này có vẻ phù hợp, bạn xem thử nhé!', };
-
-                if (navigator.canShare && navigator.canShare(shareData)) {
+            if (navigator.share) {
+                try {
                     await navigator.share(shareData);
-                } else {
-                    alert('Trình duyệt của bạn không hỗ trợ chia sẻ file. Tính năng này hoạt động tốt nhất trên điện thoại.');
+                } catch (err) {
+                    console.error('Lỗi khi chia sẻ:', err);
                 }
-            } catch (err) {
-                console.error('Lỗi khi chia sẻ:', err);
-                alert('Đã có lỗi xảy ra trong quá trình tạo ảnh để chia sẻ.');
-            } finally {
-                shareText.textContent = 'Chia sẻ ảnh qua tin nhắn';
-                loader.classList.add('hidden');
-                shareButton.disabled = false;
+            } else {
+                alert('Trình duyệt của bạn không hỗ trợ tính năng chia sẻ này.');
             }
         }
         
@@ -702,7 +680,6 @@
             });
         }
 
-        // --- BÓC TÁCH DỮ LIỆU THÔNG MINH (PHIÊN BẢN MỚI NHẤT) ---
         function parseAndFillData() {
             const text = dataParserInput.value;
             if (!text.trim()) {
@@ -710,13 +687,11 @@
                 return;
             }
 
-            // Hàm trợ giúp để trích xuất dữ liệu bằng Regex
             const extract = (regex, sourceText = text, group = 1) => {
                 const match = sourceText.match(regex);
                 return match ? match[group].trim() : null;
             };
             
-            // --- Định nghĩa các mẫu Regex (ĐÃ CẬP NHẬT) ---
             const priceRegex = /giá.*?\s+([\d\.,]+)\s*(triệu|tr)/i;
             const areaRegex = /diện tích.*?\s+(\d+)\s*m/i;
             const addressRegex = /(?:Địa chỉ|add)\s*:\s*(.*)/i;
@@ -726,8 +701,6 @@
             const serviceFeeRegex = /dịch vụ chung.*?\s+([\d\.,]+)k/i;
             const internetRegex = /(?:wifi|mạng).*?\s+([\d\.,]+)k/i;
 
-
-            // --- Bắt đầu trích xuất ---
             let price = extract(priceRegex);
             if (price) {
                 price = parseFloat(price.replace(/,/g, '')) * 1000000;
@@ -766,7 +739,6 @@
             const internet = extract(internetRegex);
             if (internet) adminForm.internet.value = parseFloat(internet.replace(/,/g, '')) * 1000;
 
-            // --- Tự động check các tiện ích ---
             const lowerCaseText = text.toLowerCase();
             ALL_UTILITIES.forEach(util => {
                 const checkbox = adminUtilities.querySelector(`input[value="${util}"]`);
@@ -968,6 +940,17 @@
             renderAdminImagePreviews();
         }
 
+        // HÀM MỚI: Kiểm tra URL khi tải trang để mở tin đăng
+        function checkUrlForListing() {
+            if (window.location.hash && window.location.hash.startsWith('#id=')) {
+                const listingId = window.location.hash.substring(4);
+                const listingExists = findListingById(listingId);
+                if (listingExists) {
+                    showListingModal(listingId);
+                }
+            }
+        }
+
         // --- EVENT LISTENERS ---
         loginBtn.addEventListener('click', async () => { const username = usernameInput.value; const password = passwordInput.value; loginBtn.disabled = true; loginError.classList.add('hidden'); try { const response = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }), }); const data = await response.json(); if (!response.ok) { throw new Error(data.message || 'Lỗi không xác định.'); } authToken = data.token; switchView('admin'); loadCloudinarySettings(); renderAdminListings(); usernameInput.value = ''; passwordInput.value = ''; } catch (error) { loginError.textContent = error.message; loginError.classList.remove('hidden'); } finally { loginBtn.disabled = false; } });
         logoutBtn.addEventListener('click', () => { authToken = null; switchView('main'); });
@@ -1023,6 +1006,8 @@
         const hideModal = () => {
             listingModal.classList.add('hidden');
             if (discountBanner) discountBanner.classList.add('hidden');
+            // Xóa hash trên URL khi đóng modal để tránh lỗi khi refresh
+            history.pushState("", document.title, window.location.pathname + window.location.search);
         };
 
         closeListingModalBtn.addEventListener('click', hideModal);
@@ -1074,10 +1059,13 @@
         mainGalleryImage.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; }, { passive: true });
         mainGalleryImage.addEventListener('touchend', (e) => { const touchEndX = e.changedTouches[0].screenX; const swipeThreshold = 50; if (touchEndX < touchStartX - swipeThreshold) showNextImage(); if (touchEndX > touchStartX + swipeThreshold) showPrevImage(); });
 
-        // --- KHỞI TẠO ---
-        loadListings();
+        // --- KHỞI TẠO (ĐÃ CẬP NHẬT) ---
         populateAdminUtilities();
         switchView('main');
+        loadListings().then(() => {
+            // Chạy hàm này sau khi dữ liệu đã được tải xong
+            checkUrlForListing();
+        });
     });
     </script>
 </body>
