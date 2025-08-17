@@ -702,7 +702,7 @@
             });
         }
 
-        // --- LOGIC BÓC TÁCH DỮ LIỆU THÔNG MINH ---
+        // --- BÓC TÁCH DỮ LIỆU THÔNG MINH (PHIÊN BẢN MỚI NHẤT) ---
         function parseAndFillData() {
             const text = dataParserInput.value;
             if (!text.trim()) {
@@ -716,20 +716,15 @@
                 return match ? match[group].trim() : null;
             };
             
-            // --- Định nghĩa các mẫu Regex ---
-            // Mẫu cho giá: Tìm số theo sau là "triệu" hoặc "tr"
+            // --- Định nghĩa các mẫu Regex (ĐÃ CẬP NHẬT) ---
             const priceRegex = /giá.*?\s+([\d\.,]+)\s*(triệu|tr)/i;
-            // Mẫu cho diện tích: Tìm số theo sau là m2, m²
             const areaRegex = /diện tích.*?\s+(\d+)\s*m/i;
-            // Mẫu cho địa chỉ: Tìm dòng có chứa các từ khóa như "số", "ngõ", "đường"...
-            const addressRegex = /(địa chỉ|tại|add)?:?\s*(số\s+\d+.*?(phường|p\.).*?)/i;
-            // Mẫu cho phường: Tìm chữ "Phường" hoặc "P." và lấy tên phường
+            const addressRegex = /(?:Địa chỉ|add)\s*:\s*(.*)/i;
             const wardRegex = /(phường|p\.)\s+([^,.\n]+)/i;
-            // Mẫu cho các loại phí (điện, nước, dịch vụ...)
             const electricityRegex = /điện.*?\s+([\d\.,]+)k/i;
-            const waterRegex = /nước.*?\s+([\d\.,]+)k\s*\/\s*(người|khối)/i;
-            const serviceFeeRegex = /dịch vụ.*?\s+([\d\.,]+)k/i;
-            const internetRegex = /mạng.*?\s+([\d\.,]+)k/i;
+            const waterRegex = /nước.*?\s+([\d\.,]+)k\s*\/\s*[\d\s]*?(người|khối)/i;
+            const serviceFeeRegex = /dịch vụ chung.*?\s+([\d\.,]+)k/i;
+            const internetRegex = /(?:wifi|mạng).*?\s+([\d\.,]+)k/i;
 
 
             // --- Bắt đầu trích xuất ---
@@ -742,7 +737,7 @@
             const area = extract(areaRegex);
             if (area) adminForm.area.value = area;
 
-            const address = extract(addressRegex, text, 2);
+            const address = extract(addressRegex, text, 1);
             if (address) adminForm.address.value = address;
             
             const ward = extract(wardRegex);
@@ -757,7 +752,7 @@
                 const waterUnitMatch = text.match(waterRegex);
                 if (waterUnitMatch && waterUnitMatch[2]) {
                     const waterUnit = waterUnitMatch[2];
-                     if (waterUnit.toLowerCase().includes('người')) {
+                    if (waterUnit.toLowerCase().includes('người')) {
                         document.getElementById('admin-water-unit').value = 'nguoi';
                     } else {
                         document.getElementById('admin-water-unit').value = 'khoi';
@@ -776,7 +771,6 @@
             ALL_UTILITIES.forEach(util => {
                 const checkbox = adminUtilities.querySelector(`input[value="${util}"]`);
                 if (checkbox) {
-                    // Check for variations, e.g., "nong lanh", "nóng lạnh"
                     const normalizedUtil = util.toLowerCase();
                     if (lowerCaseText.includes(normalizedUtil)) {
                         checkbox.checked = true;
@@ -983,7 +977,6 @@
         goToAdminBtnMobile.addEventListener('click', handleGoToAdmin);
         goToMainBtn.addEventListener('click', () => { updateAndRender(); switchView('main'); });
         
-        // --- CORRECTED BI-DIRECTIONAL FILTER SYNC ---
         const setupFilterSync = (desktopEl, mobileEl, eventType) => {
             desktopEl.addEventListener(eventType, () => {
                 mobileEl.value = desktopEl.value;
