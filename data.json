@@ -1552,9 +1552,9 @@
   },
   {
     "id": "P1754989878965",
-    "timestamp": 1754989878965,
+    "timestamp": 1755429043260,
     "code": "1051",
-    "address": "198 Thái H",
+    "address": "198 Thái Hà",
     "ward": "Đống Đa",
     "price": 5400000,
     "area": 30,
@@ -1572,11 +1572,23 @@
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754989875/wuo6i0x09gqaijcoiray.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754989875/hvfijlsddpxfccks7oan.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754989876/z15ke3vfmj9jhqam8k11.jpg"
-    ]
+    ],
+    "waterUnit": "khoi",
+    "utilities": [
+      "Điều hòa",
+      "Nóng lạnh",
+      "Máy giặt",
+      "Giường",
+      "Tủ đồ",
+      "Bếp",
+      "Tủ lạnh",
+      "Gác xép"
+    ],
+    "status": "Chưa cho thuê"
   },
   {
     "id": "P1754989960387",
-    "timestamp": 1754989960387,
+    "timestamp": 1755429055155,
     "code": "20",
     "address": "Ngõ 67 Thái Thịnh",
     "ward": "Đống Đa",
@@ -1598,11 +1610,23 @@
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754989952/ykdesajkl4qe7micgbnt.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754989952/irlmxcrgoxd9xmcidzvj.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754989953/x5yrtyc8deqcx9judepv.jpg"
-    ]
+    ],
+    "waterUnit": "khoi",
+    "utilities": [
+      "Điều hòa",
+      "Nóng lạnh",
+      "Máy giặt",
+      "Giường",
+      "Tủ đồ",
+      "Bếp",
+      "Tủ lạnh",
+      "Gác xép"
+    ],
+    "status": "Chưa cho thuê"
   },
   {
     "id": "P1754990025921",
-    "timestamp": 1754990025921,
+    "timestamp": 1755429065229,
     "code": "990",
     "address": "Ngõ 124/6 Khương Trung",
     "ward": "Thanh Xuân",
@@ -1621,7 +1645,19 @@
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990021/dulrwhpgaqppnlboo3in.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990022/xeznilzqhpekmz5hby7v.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990024/t9ype0yia59j8ziqsmmo.jpg"
-    ]
+    ],
+    "waterUnit": "khoi",
+    "utilities": [
+      "Điều hòa",
+      "Nóng lạnh",
+      "Máy giặt",
+      "Giường",
+      "Tủ đồ",
+      "Bếp",
+      "Tủ lạnh",
+      "Gác xép"
+    ],
+    "status": "Chưa cho thuê"
   },
   {
     "code": "857",
@@ -1650,11 +1686,21 @@
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990121/y5va9qp2hbqp09hpv9ru.jpg"
     ],
     "id": "P1754990122793",
-    "timestamp": 1755186549858
+    "timestamp": 1755428957331,
+    "utilities": [
+      "Điều hòa",
+      "Nóng lạnh",
+      "Máy giặt",
+      "Giường",
+      "Tủ đồ",
+      "Bếp",
+      "Tủ lạnh"
+    ],
+    "status": "Chưa cho thuê"
   },
   {
     "id": "P1754990263191",
-    "timestamp": 1754990263191,
+    "timestamp": 1755429075708,
     "code": "1155",
     "address": "Ngõ 344 Thái Hà",
     "ward": "Đống Đa",
@@ -1676,7 +1722,18 @@
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990262/di6gri9bjy5smgej4wfl.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990258/g3zonttads9nnd8cvbhj.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990261/t5wtyr6mrj1h5zy66nzw.jpg"
-    ]
+    ],
+    "waterUnit": "khoi",
+    "utilities": [
+      "Điều hòa",
+      "Nóng lạnh",
+      "Máy giặt",
+      "Giường",
+      "Tủ đồ",
+      "Bếp",
+      "Tủ lạnh"
+    ],
+    "status": "Chưa cho thuê"
   },
   {
     "code": "857",
@@ -1797,7 +1854,7 @@
   },
   {
     "id": "P1754990514319",
-    "timestamp": 1754990514319,
+    "timestamp": 1755429087084,
     "code": "1136",
     "address": "Ngách 79 Ngõ 44 Trần Thái Tông",
     "ward": "Cầu Giấy",
@@ -1813,7 +1870,19 @@
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990513/sk0dpc17fifppmyfnlj0.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990512/waelf5juaznknlyxuqie.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1754990512/qakdmezb1370wl1htl6m.jpg"
-    ]
+    ],
+    "waterUnit": "khoi",
+    "utilities": [
+      "Điều hòa",
+      "Nóng lạnh",
+      "Máy giặt",
+      "Giường",
+      "Tủ đồ",
+      "Bếp",
+      "Tủ lạnh",
+      "Ban công"
+    ],
+    "status": "Chưa cho thuê"
   },
   {
     "code": "1128",
@@ -1940,7 +2009,17 @@
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1755158072/zmudeomrvmlvxyftbb2h.jpg"
     ],
     "id": "P1755158077307",
-    "timestamp": 1755161551671
+    "timestamp": 1755428968995,
+    "utilities": [
+      "Điều hòa",
+      "Nóng lạnh",
+      "Máy giặt",
+      "Giường",
+      "Tủ đồ",
+      "Bếp",
+      "Tủ lạnh"
+    ],
+    "status": "Chưa cho thuê"
   },
   {
     "code": "602 1PK + 2 PN",
@@ -1965,7 +2044,18 @@
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1755158418/qlmo9deqyjqxqs7nbqlf.jpg"
     ],
     "id": "P1755158420325",
-    "timestamp": 1755161544845
+    "timestamp": 1755428986020,
+    "utilities": [
+      "Điều hòa",
+      "Nóng lạnh",
+      "Máy giặt",
+      "Giường",
+      "Tủ đồ",
+      "Bếp",
+      "Tủ lạnh",
+      "Ban công"
+    ],
+    "status": "Chưa cho thuê"
   },
   {
     "code": "Trục 1",
@@ -2031,7 +2121,18 @@
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1755158728/en1mdi0wbd61vqdoiyao.jpg"
     ],
     "id": "P1755158775382",
-    "timestamp": 1755161508653
+    "timestamp": 1755429108524,
+    "utilities": [
+      "Điều hòa",
+      "Nóng lạnh",
+      "Máy giặt",
+      "Giường",
+      "Tủ đồ",
+      "Bếp",
+      "Tủ lạnh",
+      "Gác xép"
+    ],
+    "status": "Chưa cho thuê"
   },
   {
     "code": "Trục 1",
@@ -2068,7 +2169,17 @@
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1755158974/oesmnrkk9zapzqcauxz9.jpg"
     ],
     "id": "P1755158988863",
-    "timestamp": 1755161522155
+    "timestamp": 1755429000819,
+    "utilities": [
+      "Điều hòa",
+      "Nóng lạnh",
+      "Máy giặt",
+      "Giường",
+      "Tủ đồ",
+      "Bếp",
+      "Tủ lạnh"
+    ],
+    "status": "Chưa cho thuê"
   },
   {
     "code": "Trục 2",
@@ -2108,7 +2219,7 @@
   },
   {
     "id": "P1755160236943",
-    "timestamp": 1755160236943,
+    "timestamp": 1755429097036,
     "code": "Trục 1",
     "address": "19/35 TRẦN THÁI TÔNG",
     "ward": "Cầu Giấy",
@@ -2129,11 +2240,22 @@
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1755160235/m1tbcruszefmrsfvqjxf.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1755160233/nj5tpmu71k6zimzpa5gq.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1755160233/tiyuge1bnoc8wgljggqi.jpg"
-    ]
+    ],
+    "waterUnit": "khoi",
+    "utilities": [
+      "Điều hòa",
+      "Nóng lạnh",
+      "Máy giặt",
+      "Giường",
+      "Tủ đồ",
+      "Bếp",
+      "Tủ lạnh"
+    ],
+    "status": "Chưa cho thuê"
   },
   {
     "id": "P1755160324305",
-    "timestamp": 1755160324305,
+    "timestamp": 1755429024731,
     "code": "Trục 2",
     "address": "19/35 TRẦN THÁI TÔNG",
     "ward": "Cầu Giấy",
@@ -2156,11 +2278,23 @@
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1755160311/zt2tjcerjsodo0uud4xr.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1755160311/lgmjnajjqdftoqhcujpu.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1755160312/ulg9jlkajj2ej9vipv2l.jpg"
-    ]
+    ],
+    "waterUnit": "khoi",
+    "utilities": [
+      "Điều hòa",
+      "Nóng lạnh",
+      "Máy giặt",
+      "Giường",
+      "Tủ đồ",
+      "Bếp",
+      "Tủ lạnh",
+      "Gác xép"
+    ],
+    "status": "Chưa cho thuê"
   },
   {
     "id": "P1755160858129",
-    "timestamp": 1755160858129,
+    "timestamp": 1755429011563,
     "code": "NGÕ 165 DƯƠNG QUẢNG HÀM",
     "address": "NGÕ 165 DƯƠNG QUẢNG HÀM",
     "ward": "Cầu Giấy",
@@ -2179,6 +2313,17 @@
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1755160854/orp4vveo0ks2nbgahz5l.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1755160851/bjuucnuu7fgmjwymjgwf.jpg",
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1755160850/po45souitanuiuwpvd0m.jpg"
-    ]
+    ],
+    "waterUnit": "khoi",
+    "utilities": [
+      "Điều hòa",
+      "Nóng lạnh",
+      "Máy giặt",
+      "Giường",
+      "Tủ đồ",
+      "Bếp",
+      "Tủ lạnh"
+    ],
+    "status": "Chưa cho thuê"
   }
 ]
