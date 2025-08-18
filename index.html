@@ -390,7 +390,7 @@
         let currentGalleryIndex = 0;
         let currentEditId = null;
         let adminStatus = false;
-        let currentViewingListingId = null;
+        let currentViewingListingId = null; 
         const ALL_UTILITIES = [
             'Điều hòa', 'Nóng lạnh', 'Máy giặt', 'Giường', 'Tủ đồ', 
             'Bếp', 'Tủ lạnh', 'Ban công', 'Gác xép'
@@ -398,7 +398,6 @@
 
         // --- DOM ELEMENTS ---
         const allViews = { login: document.getElementById('login-view'), main: document.getElementById('main-view'), admin: document.getElementById('admin-view') };
-        // ... (all other DOM elements are the same)
         const usernameInput = document.getElementById('username');
         const passwordInput = document.getElementById('password');
         const loginBtn = document.getElementById('login-btn');
@@ -726,12 +725,20 @@
 
         function populateAdminUtilities() { if (!adminUtilities) return; adminUtilities.innerHTML = ''; ALL_UTILITIES.forEach(util => { const label = document.createElement('label'); label.className = 'flex items-center space-x-2 text-sm'; const checkbox = document.createElement('input'); checkbox.type = 'checkbox'; checkbox.value = util; checkbox.className = 'rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50'; label.appendChild(checkbox); label.appendChild(document.createTextNode(` ${util}`)); adminUtilities.appendChild(label); }); }
         
+        // HÀM ĐÃ ĐƯỢC CẬP NHẬT VỚI SỐ ĐẾM
         function renderAdminListings(searchTerm = '') {
             const adminListingCount = document.getElementById('admin-listing-count');
             adminListingsContainer.innerHTML = '';
             const filtered = sessionListings.filter(l => l.address.toLowerCase().includes(searchTerm) || (l.code && l.code.toLowerCase().includes(searchTerm))).sort((a,b) => (b.timestamp || 0) - (a.timestamp || 0));
-            if (adminListingCount) { adminListingCount.textContent = `${filtered.length} / ${sessionListings.length} tin`; }
-            if (filtered.length === 0) { adminListingsContainer.innerHTML = `<p class="text-gray-500 text-center">Không tìm thấy tin đăng.</p>`; return; }
+            
+            if (adminListingCount) { 
+                adminListingCount.textContent = `${filtered.length} / ${sessionListings.length} tin`;
+            }
+
+            if (filtered.length === 0) {
+                adminListingsContainer.innerHTML = `<p class="text-gray-500 text-center">Không tìm thấy tin đăng.</p>`;
+                return;
+            }
             filtered.forEach(l => {
                 const item = document.createElement('div');
                 item.className = 'p-2 border rounded-md flex justify-between items-center bg-gray-50';
