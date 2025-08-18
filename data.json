@@ -1489,10 +1489,10 @@
   },
   {
     "id": "P1754987329925",
-    "timestamp": 1755249274174,
+    "timestamp": 1755537112130,
     "code": "216",
     "address": "21/51/155 Cầu Giấy ",
-    "ward": "Cầu giấy",
+    "ward": "Cầu Giấy",
     "price": 4700000,
     "area": 25,
     "wc": "Khép kín",
@@ -3659,7 +3659,7 @@
   },
   {
     "code": "HPH 599",
-    "address": "Ngõ 51 Tương Mai, Hai Bà Trung",
+    "address": "Ngõ 51 Tương Mai",
     "ward": "Hoàng Mai",
     "price": 4600000,
     "area": 28,
@@ -3687,7 +3687,7 @@
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1755530202/xz9jqyzpibceqxe4jnoy.jpg"
     ],
     "id": "P1755530204849",
-    "timestamp": 1755530204849
+    "timestamp": 1755537233642
   },
   {
     "code": "HPH 599",
@@ -4727,7 +4727,7 @@
   {
     "code": "HPH 450",
     "address": "Ngách 12 Ngõ 129 Nguyễn Trãi",
-    "ward": "Thanh Xuân ",
+    "ward": "Thanh Xuân",
     "price": 4300000,
     "area": 27,
     "wc": "Khép kín",
@@ -4758,7 +4758,7 @@
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1755534351/i2l1fqlrroohn1pjaj21.jpg"
     ],
     "id": "P1755534355260",
-    "timestamp": 1755534355260
+    "timestamp": 1755537264522
   },
   {
     "code": "HPH 428",
@@ -5128,7 +5128,7 @@
   {
     "code": "HPH 59",
     "address": "46B Trần Hữu Tước",
-    "ward": "Cầu giấy",
+    "ward": "Cầu Giấy",
     "price": 4500000,
     "area": 25,
     "wc": "Khép kín",
@@ -5157,7 +5157,7 @@
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1755535629/xhtly366qgyaqikgo1e4.jpg"
     ],
     "id": "P1755535630544",
-    "timestamp": 1755535630544
+    "timestamp": 1755537098859
   },
   {
     "code": "HPH 59",
@@ -5341,7 +5341,7 @@
   {
     "code": "HPH 122",
     "address": "Ngõ 196 Phú Diễn",
-    "ward": "Bắc Từ  Liêm",
+    "ward": "Bắc Từ Liêm",
     "price": 4800000,
     "area": 28,
     "wc": "Khép kín",
@@ -5368,7 +5368,7 @@
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1755536099/hbs62sljj8hr4onipnyf.jpg"
     ],
     "id": "P1755536102268",
-    "timestamp": 1755536102268
+    "timestamp": 1755537201642
   },
   {
     "code": "HPH 12",
@@ -5407,7 +5407,7 @@
   {
     "code": "HPH 122",
     "address": "Ngõ 56 Phú Kiều",
-    "ward": "Bắc Từ  Liêm",
+    "ward": "Bắc Từ Liêm",
     "price": 4300000,
     "area": 28,
     "wc": "Khép kín",
@@ -5444,7 +5444,7 @@
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1755536223/q057gy8gyhxugvt4l164.jpg"
     ],
     "id": "P1755536228098",
-    "timestamp": 1755536228098
+    "timestamp": 1755537189789
   },
   {
     "code": "HPH 306",
@@ -5565,7 +5565,7 @@
   {
     "code": "HPH 785",
     "address": "Ngách 51/31 Ngoạ Long - Cầu Diễn ",
-    "ward": "Bắc Từ  Liêm",
+    "ward": "Bắc Từ Liêm",
     "price": 3000000,
     "area": 28,
     "wc": "Khép kín",
@@ -5594,7 +5594,7 @@
       "https://res.cloudinary.com/domiqn6vf/image/upload/v1755536468/kbbcqbpuxjlplcpdlfxp.jpg"
     ],
     "id": "P1755536470512",
-    "timestamp": 1755536470512
+    "timestamp": 1755537176362
   },
   {
     "code": "HPH 182",
